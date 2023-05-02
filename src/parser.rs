@@ -85,9 +85,9 @@ impl Vertex {
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Edge {
     #[serde(rename = "$text")]
-    to: usize,
+    pub to: usize,
     #[serde(rename = "@cost")]
-    cost: f64,
+    pub cost: f64,
 }
 
 #[cfg(test)]
