@@ -1,3 +1,6 @@
+use std::{ops::Index, slice::SliceIndex};
+
+use delegate::delegate;
 use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
 
@@ -38,12 +41,43 @@ pub struct Graph {
     vertices: Vec<Vertex>,
 }
 
+impl Graph {
+    delegate! {
+        to self.vertices {
+            /// Yields an Iterator over all vertices in this graph.
+            /// The vertices are traversend in increasing order, starting from index `0`.
+            pub fn iter(&self) -> std::slice::Iter<Vertex>;
+        }
+    }
+}
+
+impl<I> Index<I> for Graph
+where
+    I: SliceIndex<[Vertex]>,
+{
+    type Output = <Vec<Vertex> as Index<I>>::Output;
+    delegate! {
+        to self.vertices {
+            fn index(&self, index: I) -> &<Self as Index<I>>::Output;
+        }
+    }
+}
+
 /// This representes a vertex and contains the collection of edges from this vertex
 /// to all adjacent vertices.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Vertex {
     #[serde(rename = "$value")]
     edges: Vec<Edge>,
+}
+
+impl Vertex {
+    delegate! {
+        to self.edges {
+            /// Yields an Iterator over all edges from this vertex to the adjacent edges.
+            pub fn iter(&self) -> std::slice::Iter<Edge>;
+        }
+    }
 }
 
 /// Represents a directed edge from a known node to the node `to`,
