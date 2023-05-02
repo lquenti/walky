@@ -1,7 +1,15 @@
 [package]
 name = "walky"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+description = "A TSP solver written in Rust"
+homepage = "https://github.com/lquenti/walky"
+repository = "https://github.com/lquenti/walky"
+license = "MIT"
+authors = ["Lars Quentin <lars@lquenti.de>", "Johann Carl Meyer <info@johannc.de>"]
+readme = "./README.md"
+
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
