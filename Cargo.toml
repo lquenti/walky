@@ -6,3 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = {version = "4.2.5", features = ["derive"]}          # for cli arg parsing
+quick-xml = {version = "0.28.2", features = ["serialize"]} # for xml-parsing
+serde = {version = "1.0.160", features = ["derive"]}       # for xml-parsing
