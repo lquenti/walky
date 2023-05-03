@@ -47,6 +47,10 @@ impl Graph {
             /// Yields an Iterator over all vertices in this graph.
             /// The vertices are traversend in increasing order, starting from index `0`.
             pub fn iter(&self) -> std::slice::Iter<Vertex>;
+
+            /// return the number of vertices in the graph
+            #[call(len)]
+            pub fn num_vertices(&self) -> usize;
         }
     }
 
@@ -82,12 +86,9 @@ where
     }
 }
 
-impl From<&[&[Edge]]> for Graph {
-    fn from(value: &[&[Edge]]) -> Self {
-        let vec = value
-            .iter()
-            .map(|&vert_slice| Vertex::from(vert_slice))
-            .collect();
+impl From<Vec<Vec<Edge>>> for Graph {
+    fn from(value: Vec<Vec<Edge>>) -> Self {
+        let vec = value.into_iter().map(Vertex::from).collect();
         Graph { vertices: vec }
     }
 }
@@ -109,8 +110,8 @@ impl Vertex {
     }
 }
 
-impl From<&[Edge]> for Vertex {
-    fn from(value: &[Edge]) -> Self {
+impl From<Vec<Edge>> for Vertex {
+    fn from(value: Vec<Edge>) -> Self {
         Vertex {
             edges: Vec::from(value),
         }
@@ -135,33 +136,34 @@ mod test_graph_methods {
 
     #[test]
     fn build_vertex_from_slice() {
-        let edges = [Edge { to: 0, cost: 1.0 }, Edge { to: 30, cost: 0.34 }];
+        let edges = vec![Edge { to: 0, cost: 1.0 }, Edge { to: 30, cost: 0.34 }];
         let expected = Vertex {
             edges: vec![Edge { to: 0, cost: 1.0 }, Edge { to: 30, cost: 0.34 }],
         };
-        assert_eq!(expected, Vertex::from(&edges[..]));
+        assert_eq!(expected, Vertex::from(edges));
     }
 
     #[test]
     fn build_graph_from_slice() {
-        let vertices = [
-            &[Edge { to: 0, cost: 1.0 }, Edge { to: 30, cost: 0.34 }][..],
-            &[Edge { to: 10, cost: 5.34 }][..],
+        let vertices = vec![
+            vec![Edge { to: 0, cost: 1.0 }, Edge { to: 30, cost: 0.34 }],
+            vec![Edge { to: 10, cost: 5.34 }],
         ];
         let expected = Graph {
-            vertices: vec![Vertex::from(vertices[0]), Vertex::from(vertices[1])],
+            vertices: vec![
+                Vertex::from(vertices[0].clone()),
+                Vertex::from(vertices[1].clone()),
+            ],
         };
-        assert_eq!(expected, Graph::from(&vertices[..]));
+        assert_eq!(expected, Graph::from(vertices));
     }
 
     #[test]
     fn directed_edge_weight() {
-        let graph = Graph::from(
-            &[
-                &[Edge { to: 0, cost: 1.0 }, Edge { to: 30, cost: 0.34 }][..],
-                &[Edge { to: 10, cost: 5.34 }][..],
-            ][..],
-        );
+        let graph = Graph::from(vec![
+            vec![Edge { to: 0, cost: 1.0 }, Edge { to: 30, cost: 0.34 }],
+            vec![Edge { to: 10, cost: 5.34 }],
+        ]);
         let expected = 1.0 + 0.34 + 5.34;
         assert_abs_diff_eq!(expected, graph.directed_edge_weight());
     }
@@ -170,13 +172,11 @@ mod test_graph_methods {
     /// e.g. qucikcheck
     #[test]
     fn undirected_edge_weight() {
-        let graph = Graph::from(
-            &[
-                &[Edge { to: 2, cost: 1.0 }, Edge { to: 1, cost: 0.34 }][..],
-                &[Edge { to: 0, cost: 0.34 }][..],
-                &[Edge { to: 0, cost: 1.0 }][..],
-            ][..],
-        );
+        let graph = Graph::from(vec![
+            vec![Edge { to: 2, cost: 1.0 }, Edge { to: 1, cost: 0.34 }],
+            vec![Edge { to: 0, cost: 0.34 }],
+            vec![Edge { to: 0, cost: 1.0 }],
+        ]);
         assert_abs_diff_eq!(
             graph.directed_edge_weight() / 2.0,
             graph.undirected_edge_weight()
