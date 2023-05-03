@@ -12,12 +12,12 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct TravellingSalesmanProblemInstance {
-    name: String,
-    source: String,
-    description: String,
-    double_precision: u32,
-    ignored_digits: u32,
-    graph: Graph,
+    pub name: String,
+    pub source: String,
+    pub description: String,
+    pub double_precision: u32,
+    pub ignored_digits: u32,
+    pub graph: Graph,
 }
 
 impl TravellingSalesmanProblemInstance {
@@ -48,6 +48,23 @@ impl Graph {
             /// The vertices are traversend in increasing order, starting from index `0`.
             pub fn iter(&self) -> std::slice::Iter<Vertex>;
         }
+    }
+
+    /// Returns the sum over all (directed) edges in the graph.
+    /// For undirected graphs the graph contains 2 directed edged per undirected edge,
+    /// hence the sum will be twice as big.
+    pub fn directed_edge_weight(&self) -> f64 {
+        todo!()
+    }
+
+    /// # Precondition
+    /// The graph shall be undirected, meaning: for vertices `u` and `v`
+    /// the graph contains two directed edges: `u -> v` and `u <- v`, both with the same cost.
+    ///
+    /// # Returns
+    /// Return the sum of cost over all **undirected** edges in the graph.
+    pub fn undirected_edge_weight(&self) -> f64 {
+        self.directed_edge_weight() * 0.5
     }
 }
 
