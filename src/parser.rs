@@ -54,7 +54,9 @@ impl Graph {
     /// For undirected graphs the graph contains 2 directed edged per undirected edge,
     /// hence the sum will be twice as big.
     pub fn directed_edge_weight(&self) -> f64 {
-        todo!()
+        self.iter()
+            .map(|vertex| vertex.iter().map(|edge| edge.cost).sum::<f64>())
+            .sum()
     }
 
     /// # Precondition
@@ -80,6 +82,16 @@ where
     }
 }
 
+impl From<&[&[Edge]]> for Graph {
+    fn from(value: &[&[Edge]]) -> Self {
+        let vec = value
+            .iter()
+            .map(|&vert_slice| Vertex::from(vert_slice))
+            .collect();
+        Graph { vertices: vec }
+    }
+}
+
 /// This representes a vertex and contains the collection of edges from this vertex
 /// to all adjacent vertices.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
@@ -97,9 +109,17 @@ impl Vertex {
     }
 }
 
+impl From<&[Edge]> for Vertex {
+    fn from(value: &[Edge]) -> Self {
+        Vertex {
+            edges: Vec::from(value),
+        }
+    }
+}
+
 /// Represents a directed edge from a known node to the node `to`,
 /// the edge has cost/weight/distance `cost`.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Edge {
     #[serde(rename = "$text")]
     pub to: usize,
@@ -108,7 +128,64 @@ pub struct Edge {
 }
 
 #[cfg(test)]
-mod test {
+mod test_graph_methods {
+    use approx::assert_abs_diff_eq;
+
+    use super::*;
+
+    #[test]
+    fn build_vertex_from_slice() {
+        let edges = [Edge { to: 0, cost: 1.0 }, Edge { to: 30, cost: 0.34 }];
+        let expected = Vertex {
+            edges: vec![Edge { to: 0, cost: 1.0 }, Edge { to: 30, cost: 0.34 }],
+        };
+        assert_eq!(expected, Vertex::from(&edges[..]));
+    }
+
+    #[test]
+    fn build_graph_from_slice() {
+        let vertices = [
+            &[Edge { to: 0, cost: 1.0 }, Edge { to: 30, cost: 0.34 }][..],
+            &[Edge { to: 10, cost: 5.34 }][..],
+        ];
+        let expected = Graph {
+            vertices: vec![Vertex::from(vertices[0]), Vertex::from(vertices[1])],
+        };
+        assert_eq!(expected, Graph::from(&vertices[..]));
+    }
+
+    #[test]
+    fn directed_edge_weight() {
+        let graph = Graph::from(
+            &[
+                &[Edge { to: 0, cost: 1.0 }, Edge { to: 30, cost: 0.34 }][..],
+                &[Edge { to: 10, cost: 5.34 }][..],
+            ][..],
+        );
+        let expected = 1.0 + 0.34 + 5.34;
+        assert_abs_diff_eq!(expected, graph.directed_edge_weight());
+    }
+
+    /// maybe here woul be a good place to do property based testing with
+    /// e.g. qucikcheck
+    #[test]
+    fn undirected_edge_weight() {
+        let graph = Graph::from(
+            &[
+                &[Edge { to: 2, cost: 1.0 }, Edge { to: 1, cost: 0.34 }][..],
+                &[Edge { to: 0, cost: 0.34 }][..],
+                &[Edge { to: 0, cost: 1.0 }][..],
+            ][..],
+        );
+        assert_abs_diff_eq!(
+            graph.directed_edge_weight() / 2.0,
+            graph.undirected_edge_weight()
+        );
+    }
+}
+
+#[cfg(test)]
+mod test_parsing {
     use quick_xml::de::from_str;
 
     use super::*;
