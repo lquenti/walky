@@ -4,8 +4,8 @@ use delegate::delegate;
 use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
 
-/// Can be parsed from an xml document with
-/// [this](http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf)
+/// Can be parsed from an xml document with the
+/// [XML-TSPLIB](http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf)
 /// format.
 ///
 /// Here, we impose no further restrictions, such as the graph being undirected.
