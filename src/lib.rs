@@ -3,6 +3,7 @@ use std::{fs::File, io::Read, path::PathBuf};
 
 use clap::Parser;
 
+pub mod mst;
 pub mod parser;
 
 /// This struct contains all the arguments captured from the command line.
