@@ -5,6 +5,8 @@ use crate::parser::{Edge, Graph};
 /// greedy algorithm:
 /// we start at the first vertex in our graph and build a MST step by step.
 ///
+/// complexity: O(N^2)
+///
 /// todo: add source for the algorithm
 ///
 /// todo: make the implementation more pretty and more rust ideomatic
