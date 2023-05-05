@@ -31,20 +31,10 @@ fn traverse_graph(
 ) {
     let n = graph_matrix.len();
     if size == 1 {
-        let mut current_cost = 0.0;
-        for i in 0..(n - 1) {
-            let cost = graph_matrix[v[i]][v[i + 1]];
-            if cost == f64::INFINITY {
-                // No chance this one is better
-                return;
-            }
-            current_cost += cost;
-        }
-        if current_cost < max_cost {
+        let new_cost = graph_matrix.evaluate_circle(v);
+        if new_cost < max_cost {
             // New best one
-            for i in 0..v.len() {
-                max_v[i] = v[i];
-            }
+            max_v[..].copy_from_slice(&v[..]);
         }
     }
     for i in 0..n {
@@ -88,10 +78,10 @@ impl From<Vec<Vec<f64>>> for GraphMatrix {
 }
 
 impl Deref for GraphMatrix {
-        type Target = Vec<Vec<f64>>;
-        fn deref(&self) -> &Self::Target {
-            &self.0
-        }
+    type Target = Vec<Vec<f64>>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
 }
 
 impl DerefMut for GraphMatrix {
@@ -101,14 +91,14 @@ impl DerefMut for GraphMatrix {
 }
 
 impl GraphMatrix {
-    fn evaluate_path(self, path: &GraphPath) -> f64 {
+    fn evaluate_path(&self, path: &GraphPath) -> f64 {
         let n = path.len();
         if n <= 1 {
-            return 0.0
+            return 0.0;
         }
         let mut acc = 0.0;
-        for from in 0..(n-1) {
-            let to = from+1;
+        for from in 0..(n - 1) {
+            let to = from + 1;
             let cost = self[path[from]][path[to]];
             if cost == f64::INFINITY {
                 return f64::INFINITY;
@@ -117,17 +107,17 @@ impl GraphMatrix {
         }
         acc
     }
-    fn evaluate_circle(self, path: &GraphPath) -> f64 {
+    fn evaluate_circle(&self, path: &GraphPath) -> f64 {
         if path.len() <= 1 {
-            return 0.0
+            return 0.0;
         }
         let last_edge = self[*path.last().unwrap()][*path.first().unwrap()];
         if last_edge == f64::INFINITY {
-            return f64::INFINITY
+            return f64::INFINITY;
         }
         let path_cost = self.evaluate_path(path);
         if path_cost == f64::INFINITY {
-            return f64::INFINITY
+            return f64::INFINITY;
         }
         path_cost + last_edge
     }
