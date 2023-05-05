@@ -7,8 +7,6 @@ use serde::{Deserialize, Serialize};
 /// Can be parsed from an xml document with the
 /// [XML-TSPLIB](http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf)
 /// format.
-///
-/// Here, we impose no further restrictions, such as the graph being undirected.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct TravellingSalesmanProblemInstance {
@@ -22,6 +20,9 @@ pub struct TravellingSalesmanProblemInstance {
 
 impl TravellingSalesmanProblemInstance {
     /// Parse a TSP instance from an xml `str`.
+    ///
+    /// This parsing does not check whether the graph is a valid TSP instance
+    /// as long as it is a valid xml document.
     pub fn parse_from_xml(xml: &str) -> Result<Self, quick_xml::DeError> {
         from_str(xml)
     }
