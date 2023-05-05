@@ -5,6 +5,7 @@ use clap::Parser;
 
 pub mod mst;
 pub mod parser;
+pub mod solvers;
 
 /// This struct contains all the arguments captured from the command line.
 #[derive(Debug, Parser)]
