@@ -19,6 +19,6 @@ pub fn run(args: Args) -> std::io::Result<()> {
     let mut file = File::open(args.input_file)?;
     let mut xml = String::new();
     file.read_to_string(&mut xml)?;
-    let tsp_instance = TravellingSalesmanProblemInstance::parse_from_xml(&xml[..]);
+    let _tsp_instance = TravellingSalesmanProblemInstance::parse_from_xml(&xml[..]);
     Ok(())
 }
