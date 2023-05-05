@@ -5,46 +5,29 @@ use std::ops::{Deref, DerefMut};
 
 use crate::parser::Graph;
 
+use itertools::Itertools;
+
 /// Simplest possible solution: just go through all the nodes in order.
 pub fn naive_solver(graph: Graph) -> Vec<usize> {
     let graph_matrix: GraphMatrix = graph.into();
-    let n = graph_matrix.len();
-    let mut working_vector = (0..n).collect();
-    let mut curr_vec = vec![0; n];
-    let curr_min = f64::INFINITY;
     traverse_graph(
         &graph_matrix,
-        &mut working_vector,
-        n,
-        &mut curr_vec,
-        curr_min,
-    );
-    curr_vec
+    )
 }
 
 fn traverse_graph(
     graph_matrix: &GraphMatrix,
-    v: &mut GraphPath,
-    size: usize,
-    max_v: &mut GraphPath,
-    max_cost: f64,
-) {
+) -> GraphPath{
     let n = graph_matrix.len();
-    if size == 1 {
-        let new_cost = graph_matrix.evaluate_circle(v);
-        if new_cost < max_cost {
-            // New best one
-            max_v[..].copy_from_slice(&v[..]);
-        }
-    }
-    for i in 0..n {
-        traverse_graph(graph_matrix, v, size - 1, max_v, max_cost);
-        if size % 2 == 1 {
-            v.swap(0, size - 1);
+    (0..n).permutations(n).fold((f64::INFINITY, vec![]), |(cost_acc, v_acc), v| {
+        let cost = graph_matrix.evaluate_circle(&v);
+        if cost < cost_acc {
+            (cost, v)
         } else {
-            v.swap(i, size - 1);
+            (cost_acc, v_acc)
         }
     }
+    ).1
 }
 
 //////////////////////////////////////////
