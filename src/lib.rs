@@ -2,6 +2,7 @@ use crate::parser::TravellingSalesmanProblemInstance;
 use std::{fs::File, io::Read, path::PathBuf};
 
 use clap::Parser;
+use crate::solvers::exact;
 
 pub mod mst;
 pub mod parser;
@@ -19,6 +20,9 @@ pub fn run(args: Args) -> std::io::Result<()> {
     let mut file = File::open(args.input_file)?;
     let mut xml = String::new();
     file.read_to_string(&mut xml)?;
-    let _tsp_instance = TravellingSalesmanProblemInstance::parse_from_xml(&xml[..]);
+    let tsp_instance = TravellingSalesmanProblemInstance::parse_from_xml(&xml[..]);
+    let solution = exact::naive_solver(graph);
+    println!("Cost: {}", solution.0);
+    println!("Solution: {:?}", &solution.1);
     Ok(())
 }

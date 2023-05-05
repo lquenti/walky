@@ -1,6 +1,7 @@
 //! Exact methods to solve the TSP problem.
 
 use std::convert::From;
+use std::fmt::Display;
 use std::ops::{Deref, DerefMut};
 
 use crate::parser::Graph;
@@ -8,7 +9,7 @@ use crate::parser::Graph;
 use itertools::Itertools;
 
 /// Simplest possible solution: just go through all the nodes in order.
-pub fn naive_solver(graph: Graph) -> Vec<usize> {
+pub fn naive_solver(graph: Graph) -> Solution {
     let graph_matrix: GraphMatrix = graph.into();
     traverse_graph(
         &graph_matrix,
@@ -17,7 +18,7 @@ pub fn naive_solver(graph: Graph) -> Vec<usize> {
 
 fn traverse_graph(
     graph_matrix: &GraphMatrix,
-) -> GraphPath{
+) -> Solution {
     let n = graph_matrix.len();
     (0..n).permutations(n).fold((f64::INFINITY, vec![]), |(cost_acc, v_acc), v| {
         let cost = graph_matrix.evaluate_circle(&v);
@@ -27,7 +28,7 @@ fn traverse_graph(
             (cost_acc, v_acc)
         }
     }
-    ).1
+    )
 }
 
 //////////////////////////////////////////
@@ -37,6 +38,7 @@ fn traverse_graph(
 #[derive(Debug, PartialEq)]
 struct GraphMatrix(Vec<Vec<f64>>);
 type GraphPath = Vec<usize>;
+type Solution = (f64, Vec<usize>);
 
 impl From<Graph> for GraphMatrix {
     fn from(graph: Graph) -> Self {
