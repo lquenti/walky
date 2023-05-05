@@ -1,7 +1,7 @@
 //! Exact methods to solve the TSP problem.
 
 use std::convert::From;
-use std::mem;
+use std::ops::{Deref, DerefMut};
 
 use crate::parser::Graph;
 
@@ -61,7 +61,8 @@ fn traverse_graph(
 
 // TODO: Move somewhere else
 
-type GraphMatrix = Vec<Vec<f64>>;
+#[derive(Debug, PartialEq)]
+struct GraphMatrix(Vec<Vec<f64>>);
 type GraphPath = Vec<usize>;
 
 impl From<Graph> for GraphMatrix {
@@ -76,6 +77,58 @@ impl From<Graph> for GraphMatrix {
                 matrix[j][i] = edge.cost;
             }
         }
-        matrix
+        matrix.into()
+    }
+}
+
+impl From<Vec<Vec<f64>>> for GraphMatrix {
+    fn from(matrix: Vec<Vec<f64>>) -> Self {
+        GraphMatrix(matrix)
+    }
+}
+
+impl Deref for GraphMatrix {
+        type Target = Vec<Vec<f64>>;
+        fn deref(&self) -> &Self::Target {
+            &self.0
+        }
+}
+
+impl DerefMut for GraphMatrix {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl GraphMatrix {
+    fn evaluate_path(self, path: &GraphPath) -> f64 {
+        let n = path.len();
+        if n <= 1 {
+            return 0.0
+        }
+        let mut acc = 0.0;
+        for from in 0..(n-1) {
+            let to = from+1;
+            let cost = self[path[from]][path[to]];
+            if cost == f64::INFINITY {
+                return f64::INFINITY;
+            }
+            acc += cost;
+        }
+        acc
+    }
+    fn evaluate_circle(self, path: &GraphPath) -> f64 {
+        if path.len() <= 1 {
+            return 0.0
+        }
+        let last_edge = self[*path.last().unwrap()][*path.first().unwrap()];
+        if last_edge == f64::INFINITY {
+            return f64::INFINITY
+        }
+        let path_cost = self.evaluate_path(path);
+        if path_cost == f64::INFINITY {
+            return f64::INFINITY
+        }
+        path_cost + last_edge
     }
 }
