@@ -3,7 +3,7 @@
 use crate::parser::{Edge, Graph};
 
 /// greedy algorithm:
-/// we start at the first vertex in our graph and build a MST step by step.
+/// start at the first vertex in the graph and build an MST step by step.
 ///
 /// complexity: O(N^2)
 ///
@@ -14,16 +14,10 @@ pub fn prim(graph: &Graph) -> Graph {
     let num_vertices = graph.num_vertices();
     let unconnected_node = num_vertices;
 
-    let mut vertex_in_mst = Vec::with_capacity(num_vertices + 1);
-    for _ in 0..=num_vertices {
-        vertex_in_mst.push(false)
-    }
+    let mut vertex_in_mst = vec![false; num_vertices + 1];
 
     // stores our current MST
-    let mut mst_adj_list: Vec<Vec<Edge>> = Vec::with_capacity(num_vertices + 1);
-    for _ in 0..=num_vertices {
-        mst_adj_list.push(Vec::new())
-    }
+    let mut mst_adj_list: Vec<Vec<Edge>> = vec![Vec::new(); num_vertices + 1];
 
     // `dist_from_mst[i]` stores the edge with that the vertex i can be connected to the MST
     // with minimal cost.
@@ -125,6 +119,7 @@ mod test {
     ///   /   \  
     ///  /     \
     /// 3 ----- 2
+    #[test]
     fn four_vertices_mst_prim() {
         let graph = Graph::from(vec![
             //vertex 0
@@ -161,7 +156,7 @@ mod test {
             //vertex 2
             vec![Edge { to: 0, cost: 0.1 }, Edge { to: 3, cost: 0.1 }],
             //vertex 3
-            vec![Edge { to: 1, cost: 0.1 }, Edge { to: 2, cost: 0.1 }],
+            vec![Edge { to: 2, cost: 0.1 }, Edge { to: 1, cost: 0.1 }],
         ]);
 
         assert_eq!(expected, prim(&graph));
