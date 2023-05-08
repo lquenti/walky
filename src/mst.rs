@@ -2,15 +2,25 @@
 
 use crate::parser::{Edge, Graph};
 
+/// Prims algorithm for computing an MST of the given `graph`.
+/// See [`prim_with_excluded_node`] for more details.
+pub fn prim(graph: &Graph) -> Graph {
+    prim_with_excluded_node(graph, graph.num_vertices())
+}
+
 /// greedy algorithm:
 /// start at the first vertex in the graph and build an MST step by step.
+///
+/// `excluded_vertex`: option to exclude one vertex from the graph and thus the MST computation.
+///     If you do not want to exclude a vertex from the computation, chose
+///     `excluded_vertex >= graph.num_vertices()` ([`prim`] does this for you).
 ///
 /// complexity: O(N^2)
 ///
 /// todo: add source for the algorithm
 ///
 /// todo: make the implementation more pretty and more rust ideomatic
-pub fn prim(graph: &Graph) -> Graph {
+pub fn prim_with_excluded_node(graph: &Graph, excluded_vertex: usize) -> Graph {
     let num_vertices = graph.num_vertices();
     let unconnected_node = num_vertices;
 
@@ -36,15 +46,22 @@ pub fn prim(graph: &Graph) -> Graph {
     // It is used as a base case.
 
     // start with vertex 0
-    dist_from_mst[0] = Edge { to: 0, cost: 0. };
+    let start_index = if excluded_vertex != 0 { 0 } else { 1 };
+    dist_from_mst[start_index] = Edge {
+        to: start_index,
+        cost: 0.,
+    };
 
     // at max. num_vertices many iterations, for every vertex one
     for _ in 0..=num_vertices {
-        let mut next_vertex = num_vertices;
+        let mut next_vertex = unconnected_node;
         for i in 0..num_vertices {
             // get the index of the vertex that is currently not in the MST
             // and has minimal cost to connect to the mst
-            if !vertex_in_mst[i] && dist_from_mst[next_vertex].cost > dist_from_mst[i].cost {
+            if !vertex_in_mst[i]
+                && dist_from_mst[next_vertex].cost > dist_from_mst[i].cost
+                && i != excluded_vertex
+            {
                 next_vertex = i;
             }
         }
@@ -57,7 +74,7 @@ pub fn prim(graph: &Graph) -> Graph {
 
         // add next_vertex to the mst
         vertex_in_mst[next_vertex] = true;
-        if next_vertex != 0 {
+        if next_vertex != start_index {
             let connecting_edge = dist_from_mst[next_vertex].clone();
             let reverse_edge = Edge {
                 to: next_vertex,
@@ -163,5 +180,71 @@ mod test {
         ]);
 
         assert_eq!(expected, prim(&graph));
+    }
+
+    /// graph:
+    /// 0 ----- 1
+    /// |\     /|
+    /// | \   / |
+    /// |  \ /  |
+    /// |   X   |
+    /// |  / \  |
+    /// | /   \ |
+    /// |/     \|
+    /// 3 ----- 2
+    ///
+    /// exclude vertex 0 from MST computation
+    ///
+    /// MST:
+    ///         1
+    ///        /
+    ///       /  
+    ///      /   
+    ///     /    
+    ///    /     
+    ///   /      
+    ///  /      
+    /// 3 ----- 2
+    #[test]
+    fn exclude_one_vertex_from_mst() {
+        let graph = Graph::from(vec![
+            //vertex 0
+            vec![
+                Edge { to: 1, cost: 1.0 },
+                Edge { to: 2, cost: 0.1 },
+                Edge { to: 3, cost: 2.0 },
+            ],
+            //vertex 1
+            vec![
+                Edge { to: 0, cost: 1.0 },
+                Edge { to: 2, cost: 5.0 },
+                Edge { to: 3, cost: 0.1 },
+            ],
+            //vertex 2
+            vec![
+                Edge { to: 0, cost: 0.1 },
+                Edge { to: 1, cost: 1.1 },
+                Edge { to: 3, cost: 0.1 },
+            ],
+            //vertex 3
+            vec![
+                Edge { to: 0, cost: 5.5 },
+                Edge { to: 1, cost: 0.1 },
+                Edge { to: 2, cost: 0.1 },
+            ],
+        ]);
+
+        let expected = Graph::from(vec![
+            //vertex 0 not in the MST
+            vec![],
+            //vertex 1
+            vec![Edge { to: 3, cost: 0.1 }],
+            //vertex 2
+            vec![Edge { to: 3, cost: 0.1 }],
+            //vertex 3
+            vec![Edge { to: 1, cost: 0.1 }, Edge { to: 2, cost: 0.1 }],
+        ]);
+
+        assert_eq!(expected, prim_with_excluded_node(&graph, 0));
     }
 }
