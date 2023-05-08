@@ -14,6 +14,7 @@ pub fn prim(graph: &Graph) -> Graph {
     let num_vertices = graph.num_vertices();
     let unconnected_node = num_vertices;
 
+    // `vertex_in_mst[i] == true`: the vertex i is already in the MST
     let mut vertex_in_mst = vec![false; num_vertices + 1];
 
     // stores our current MST
@@ -21,13 +22,13 @@ pub fn prim(graph: &Graph) -> Graph {
 
     // `dist_from_mst[i]` stores the edge with that the vertex i can be connected to the MST
     // with minimal cost.
-    let mut dist_from_mst: Vec<Edge> = Vec::with_capacity(num_vertices + 1);
-    for _ in 0..=num_vertices {
-        dist_from_mst.push(Edge {
+    let mut dist_from_mst: Vec<Edge> = vec![
+        Edge {
             cost: f64::INFINITY,
             to: unconnected_node,
-        })
-    }
+        };
+        num_vertices + 1
+    ];
 
     // Vertex at index unconnected_node is special: it is not connected to the rest of the graph,
     // and has distance INFINITY to every other node.
