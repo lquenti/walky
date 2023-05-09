@@ -162,7 +162,7 @@ mod test {
             ],
             //vertex 3
             vec![
-                Edge { to: 0, cost: 5.5 },
+                Edge { to: 0, cost: 2.0 },
                 Edge { to: 1, cost: 0.1 },
                 Edge { to: 2, cost: 0.1 },
             ],
@@ -228,7 +228,7 @@ mod test {
             ],
             //vertex 3
             vec![
-                Edge { to: 0, cost: 5.5 },
+                Edge { to: 0, cost: 2.0 },
                 Edge { to: 1, cost: 0.1 },
                 Edge { to: 2, cost: 0.1 },
             ],
