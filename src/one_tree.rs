@@ -67,6 +67,8 @@ pub fn one_tree_lower_bound(graph: &Graph) -> f64 {
 
 #[cfg(test)]
 mod test {
+    use approx::assert_abs_diff_eq;
+
     use super::*;
 
     /// graph:
@@ -172,13 +174,13 @@ mod test {
     ///
     /// 1-tree:
     /// 0 ----- 1
-    ///  \     /
-    ///   \   /  
-    ///    \ /   
-    ///     X    
-    ///    / \   
-    ///   /   \  
-    ///  /     \
+    /// |      /
+    /// |     /  
+    /// |    /   
+    /// |   /    
+    /// |  /     
+    /// | /      
+    /// |/      
     /// 3 ----- 2
     #[test]
     fn compute_1_tree_lower_bound() {
@@ -208,26 +210,14 @@ mod test {
                 Edge { to: 2, cost: 0.1 },
             ],
         ]);
-        println!(
-            "special vertex: {}, result: {}",
-            0,
-            one_tree(&graph, 0).undirected_edge_weight()
-        );
-        println!(
-            "special vertex: {}, result: {}",
-            1,
-            one_tree(&graph, 1).undirected_edge_weight()
-        );
-        println!(
-            "special vertex: {}, result: {}",
-            2,
-            one_tree(&graph, 2).undirected_edge_weight()
-        );
-        println!(
-            "special vertex: {}, result: {}",
-            3,
-            one_tree(&graph, 3).undirected_edge_weight()
-        );
-        todo!()
+        for i in 0..graph.num_vertices() {
+            println!(
+                "special vertex: {}, resulting sum: {}",
+                i,
+                one_tree(&graph, i).undirected_edge_weight()
+            );
+        }
+
+        assert_abs_diff_eq!(0.31, one_tree_lower_bound(&graph));
     }
 }
