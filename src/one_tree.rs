@@ -126,7 +126,7 @@ mod test {
             ],
             //vertex 3
             vec![
-                Edge { to: 0, cost: 5.5 },
+                Edge { to: 0, cost: 2.0 },
                 Edge { to: 1, cost: 0.1 },
                 Edge { to: 2, cost: 0.1 },
             ],
@@ -146,8 +146,88 @@ mod test {
         assert_eq!(expected, one_tree(&graph, special_vertex));
     }
 
+    /// graph:
+    /// 0 ----- 1
+    /// |\     /|
+    /// | \   / |
+    /// |  \ /  |
+    /// |   X   |
+    /// |  / \  |
+    /// | /   \ |
+    /// |/     \|
+    /// 3 ----- 2
+    ///
+    /// special vertex: 0
+    ///
+    /// MST:
+    /// 0       1
+    ///        /
+    ///       /  
+    ///      /   
+    ///     /    
+    ///    /     
+    ///   /      
+    ///  /      
+    /// 3 ----- 2
+    ///
+    /// 1-tree:
+    /// 0 ----- 1
+    ///  \     /
+    ///   \   /  
+    ///    \ /   
+    ///     X    
+    ///    / \   
+    ///   /   \  
+    ///  /     \
+    /// 3 ----- 2
     #[test]
     fn compute_1_tree_lower_bound() {
+        let graph = Graph::from(vec![
+            //vertex 0
+            vec![
+                Edge { to: 1, cost: 1.0 },
+                Edge { to: 2, cost: 0.1 },
+                Edge { to: 3, cost: 0.01 },
+            ],
+            //vertex 1
+            vec![
+                Edge { to: 0, cost: 1.0 },
+                Edge { to: 2, cost: 5.0 },
+                Edge { to: 3, cost: 0.1 },
+            ],
+            //vertex 2
+            vec![
+                Edge { to: 0, cost: 0.1 },
+                Edge { to: 1, cost: 1.1 },
+                Edge { to: 3, cost: 0.1 },
+            ],
+            //vertex 3
+            vec![
+                Edge { to: 0, cost: 0.01 },
+                Edge { to: 1, cost: 0.1 },
+                Edge { to: 2, cost: 0.1 },
+            ],
+        ]);
+        println!(
+            "special vertex: {}, result: {}",
+            0,
+            one_tree(&graph, 0).undirected_edge_weight()
+        );
+        println!(
+            "special vertex: {}, result: {}",
+            1,
+            one_tree(&graph, 1).undirected_edge_weight()
+        );
+        println!(
+            "special vertex: {}, result: {}",
+            2,
+            one_tree(&graph, 2).undirected_edge_weight()
+        );
+        println!(
+            "special vertex: {}, result: {}",
+            3,
+            one_tree(&graph, 3).undirected_edge_weight()
+        );
         todo!()
     }
 }
