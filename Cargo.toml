@@ -18,6 +18,11 @@ clap = {version = "4.2.5", features = ["derive"]}          # for cli arg parsing
 quick-xml = {version = "0.28.2", features = ["serialize"]} # for xml-parsing
 serde = {version = "1.0.160", features = ["derive"]}       # for xml-parsing
 delegate = "0.9.0"                                         # for easy wrapper implementations
+rayon = "1.7.0"                                            # for parallel iterators
 
 [dev-dependencies]
 approx = "0.5.1"                # for assertions with float values
+
+[profile.release]
+debug = true                    # enable profiling in release builds
+
