@@ -70,17 +70,6 @@ pub fn prim_with_excluded_node<D: FindMinCostEdge>(graph: &Graph, excluded_verte
 
     // iterate over maximally `num_vertices` many iterations (for every vertex one)
     for _ in 0..=num_vertices {
-        //let mut next_vertex = unconnected_node;
-        //for i in 0..num_vertices {
-        //    // get the index of the vertex that is currently not in the MST
-        //    // and has minimal cost to connect to the mst
-        //    if !vertex_in_mst[i]
-        //        && dist_from_mst[next_vertex].cost > dist_from_mst[i].cost
-        //        && i != excluded_vertex
-        //    {
-        //        next_vertex = i;
-        //    }
-        //}
         let (next_vertex, next_edge) = dist_from_mst.find_edge_with_minimal_cost(Edge {
             to: num_vertices,
             cost: f64::INFINITY,
