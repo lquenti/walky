@@ -143,7 +143,7 @@ impl From<Vec<Edge>> for Vertex {
 
 /// Represents a directed edge from a known node to the node `to`,
 /// the edge has cost/weight/distance `cost`.
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Copy, Clone)]
 pub struct Edge {
     #[serde(rename = "$text")]
     pub to: usize,
