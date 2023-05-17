@@ -39,9 +39,6 @@ pub fn prim_with_excluded_node<D: FindMinCostEdge>(graph: &Graph, excluded_verte
     let num_vertices = graph.num_vertices();
     let unconnected_node = num_vertices;
 
-    // `vertex_in_mst[i] == true`: vertex i is already used in the MST
-    let mut vertex_in_mst = vec![false; num_vertices + 1];
-
     // stores our current MST
     let mut mst_adj_list: Vec<Vec<Edge>> = vec![Vec::new(); num_vertices + 1];
 
