@@ -4,7 +4,7 @@
 use serde::Serialize;
 
 use crate::{
-    mst::prim_with_excluded_node,
+    mst::{prim_with_excluded_node, prim_with_excluded_node_single_threaded},
     parser::{Edge, Graph},
 };
 
@@ -21,7 +21,7 @@ pub fn one_tree(graph: &Graph, special_vertex: usize) -> Graph {
         "The special vertex has to be a valid vertex in the graph."
     );
 
-    let mut mst = prim_with_excluded_node(graph, special_vertex);
+    let mut mst = prim_with_excluded_node_single_threaded(graph, special_vertex);
     let mut fst_min_edg = Edge {
         to: special_vertex,
         cost: f64::INFINITY,
