@@ -22,6 +22,8 @@ rayon = "1.7.0"                                            # for parallel iterat
 
 [dev-dependencies]
 approx = "0.5.1"                # for assertions with float values
+quickcheck = "1.0.3"            # for property based testing
+quickcheck_macros = "1.0.0"     # for property based testing
 
 [profile.release]
 debug = true                    # enable profiling in release builds
