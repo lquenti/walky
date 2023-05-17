@@ -154,10 +154,14 @@ impl FindMinCostEdge for Vec<(Edge, bool)> {
     fn find_edge_with_minimal_cost(&self, base_case: Edge) -> (usize, Edge) {
         let mut next_vertex = base_case.to;
         let mut reverse_edge = base_case;
-        for (i, &(edge, used_in_mst)) in self.iter().enumerate() {
+        for (i, edge) in
+            self.iter().enumerate().filter_map(
+                |(i, &(edge, used_in_mst))| if used_in_mst { None } else { Some((i, edge)) },
+            )
+        {
             // get the index of the vertex that is currently not in the MST
             // and has minimal cost to connect to the mst
-            if !used_in_mst && reverse_edge.cost > edge.cost {
+            if reverse_edge.cost > edge.cost {
                 next_vertex = i;
                 reverse_edge = edge;
             }
