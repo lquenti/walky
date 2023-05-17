@@ -2,6 +2,7 @@
 
 use crate::parser::{Edge, Graph};
 
+use ordered_float::OrderedFloat;
 use rayon::prelude::*;
 
 /// Prims algorithm for computing an MST of the given `graph`.
@@ -124,6 +125,10 @@ pub fn prim_with_excluded_node<D: FindMinCostEdge>(graph: &Graph, excluded_verte
 /// as well as update the cost of edges.
 pub trait FindMinCostEdge {
     fn from_default_value(default_val: Edge, size: usize) -> Self;
+
+    /// Get the index of the vertex that is currently not in the MST
+    /// and has minimal cost to connect to the mst, as well as the
+    /// corresponding connecting edge to the MST.
     fn find_edge_with_minimal_cost(&self, base_case: Edge) -> (usize, Edge);
     /// update the connection cost of `edge_to.to`.
     /// If `edge_to.cost` is less than the current cost, the cost decreases to
@@ -152,20 +157,19 @@ impl FindMinCostEdge for Vec<(Edge, bool)> {
     }
 
     fn find_edge_with_minimal_cost(&self, base_case: Edge) -> (usize, Edge) {
-        let mut next_vertex = base_case.to;
-        let mut reverse_edge = base_case;
-        for (i, edge) in
-            self.iter().enumerate().filter_map(
+        let (next_vertex, reverse_edge) = self
+            .par_iter()
+            .enumerate()
+            // skip all used vertices
+            .filter_map(
                 |(i, &(edge, used_in_mst))| if used_in_mst { None } else { Some((i, edge)) },
             )
-        {
-            // get the index of the vertex that is currently not in the MST
-            // and has minimal cost to connect to the mst
-            if reverse_edge.cost > edge.cost {
-                next_vertex = i;
-                reverse_edge = edge;
-            }
-        }
+            // find the next vertex via the corresponding edge with minimal cost
+            .min_by(|&(_, edg_i), &(_, edg_j)| {
+                OrderedFloat(edg_i.cost).cmp(&OrderedFloat(edg_j.cost))
+            })
+            // unwrap, or give back the base case
+            .unwrap_or((base_case.to, base_case));
         (next_vertex, reverse_edge)
     }
 
