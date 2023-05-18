@@ -1,8 +1,12 @@
 //! Compute a minimum spanning tree
 
+use std::{cmp::Reverse, print};
+
 use crate::parser::{Edge, Graph};
 
 use ordered_float::OrderedFloat;
+use priority_queue::PriorityQueue;
+use quick_xml::se;
 use rayon::prelude::*;
 
 /// Prims algorithm for computing an MST of the given `graph`.
@@ -20,7 +24,7 @@ pub fn prim_with_excluded_node_multi_threaded(graph: &Graph, excluded_vertex: us
 /// #TODO
 /// improve asymptotic performance by using a priority queue
 pub fn prim_with_excluded_node_single_threaded(graph: &Graph, excluded_vertex: usize) -> Graph {
-    prim_with_excluded_node::<Vec<(Edge, bool)>>(graph, excluded_vertex)
+    prim_with_excluded_node::<VerticesInPriorityQueue>(graph, excluded_vertex)
 }
 
 /// greedy algorithm:
@@ -133,6 +137,70 @@ pub trait FindMinCostEdge {
     fn mark_vertex_as_used(&mut self, used_vertex: usize);
 }
 
+#[derive(Clone, Debug, PartialEq)]
+struct VerticesInPriorityQueue {
+    /// stores the vertices that are not currently in the MST,
+    /// can efficiently find the vertex with minimal connection cost to the MST
+    cost_queue: PriorityQueue<usize, Reverse<OrderedFloat<f64>>>,
+    /// implements the following map:
+    /// given a vertex `i`, the minimal cost edge to the
+    /// MST is to the vertex `j == connection_to_mst[i]`
+    connection_to_mst: Vec<usize>,
+    /// `used[i]`: vertex `i` is already part of the MST
+    used: Vec<bool>,
+}
+impl FindMinCostEdge for VerticesInPriorityQueue {
+    fn from_default_value(default_val: Edge, size: usize) -> Self {
+        VerticesInPriorityQueue {
+            cost_queue: PriorityQueue::from(
+                (0..size)
+                    .map(|i| (i, Reverse(OrderedFloat(default_val.cost))))
+                    .collect::<Vec<(usize, Reverse<OrderedFloat<f64>>)>>(),
+            ),
+            connection_to_mst: vec![default_val.to; size],
+            used: vec![false; size],
+        }
+    }
+
+    fn find_edge_with_minimal_cost(&self, base_case: Edge) -> (usize, Edge) {
+        let (&next_vertex, &Reverse(OrderedFloat(cost))) = self
+            .cost_queue
+            .peek()
+            .unwrap_or((&base_case.to, &Reverse(OrderedFloat(base_case.cost))));
+        let to = self.connection_to_mst[next_vertex];
+
+        (next_vertex, Edge { to, cost })
+    }
+
+    fn update_minimal_cost(&mut self, from: usize, edge_to: Edge) {
+        if self.used[edge_to.to] {
+            return;
+        }
+        let Reverse(OrderedFloat(min_cost)) = self.cost_queue
+            .push_increase(edge_to.to, Reverse(OrderedFloat(edge_to.cost)))
+            .unwrap_or_else(|| panic!("Every unused unused vertex shall be contained in the queue from the beginning. Missing vertex: {}", edge_to.to));
+        if edge_to.cost == min_cost {
+            self.connection_to_mst[edge_to.to] = from;
+        }
+    }
+
+    fn set_cost(&mut self, from: usize, edge_to: Edge) {
+        self.cost_queue
+            .change_priority(&edge_to.to, Reverse(OrderedFloat(edge_to.cost)));
+
+        self.connection_to_mst[edge_to.to] = from;
+    }
+
+    fn set_excluded_vertex(&mut self, excluded_vertex: usize) {
+        self.mark_vertex_as_used(excluded_vertex);
+    }
+
+    fn mark_vertex_as_used(&mut self, used_vertex: usize) {
+        self.cost_queue.remove(&used_vertex);
+        self.used[used_vertex] = true;
+    }
+}
+
 /// Edge: holds the (currently minimal) connection cost,
 /// and the vertex to which to connect to the MST
 ///
@@ -184,6 +252,8 @@ impl FindMinCostEdge for Vec<(Edge, bool)> {
 
 #[cfg(test)]
 mod test {
+    use std::{assert_eq, default};
+
     use quickcheck_macros::quickcheck;
 
     use super::*;
@@ -362,5 +432,55 @@ mod test {
             prim_with_excluded_node_single_threaded(&graph, excluded_vertex),
             prim_with_excluded_node_multi_threaded(&graph, excluded_vertex)
         );
+    }
+
+    #[test]
+    fn test_vertices_in_priority_queue_from_default_value() {
+        let default_val = Edge {
+            to: 3,
+            cost: f64::INFINITY,
+        };
+
+        let size = 5;
+
+        let vert = VerticesInPriorityQueue::from_default_value(default_val, size);
+
+        let mut queue = PriorityQueue::new();
+        for i in 0..size {
+            queue.push(i, Reverse(OrderedFloat(f64::INFINITY)));
+        }
+
+        assert_eq!(vert.cost_queue, queue);
+        assert_eq!(vert.cost_queue.into_vec(), vec![0, 1, 2, 3, 4]);
+        assert_eq!(vert.connection_to_mst, vec![3; 5])
+    }
+
+    #[test]
+    fn test_vertices_in_priority_queue_increase_priority() {
+        let default_val = Edge {
+            to: 4,
+            cost: f64::INFINITY,
+        };
+
+        let size = 5;
+
+        let mut vert = VerticesInPriorityQueue::from_default_value(default_val, size);
+
+        let res = vert.cost_queue.push_increase(0, Reverse(OrderedFloat(1.0)));
+        assert_eq!(res, Some(Reverse(OrderedFloat(f64::INFINITY))));
+    }
+
+    #[test]
+    fn test_vertices_in_priority_queue_update_priority_does_not_panic() {
+        let default_val = Edge {
+            to: 4,
+            cost: f64::INFINITY,
+        };
+
+        let size = 5;
+
+        let mut vert = VerticesInPriorityQueue::from_default_value(default_val, size);
+
+        vert.update_minimal_cost(0, Edge { to: 1, cost: 1.0 });
     }
 }
