@@ -20,6 +20,7 @@ serde = {version = "1.0.160", features = ["derive"]}       # for xml-parsing
 delegate = "0.9.0"                                         # for easy wrapper implementations
 rayon = "1.7.0"                                            # for parallel iterators
 ordered-float = {version = "3.7.0", features = ["serde"]}  # for Total Ordering on floats
+priority-queue = "1.3.1"                                   # for prims algorithm
 
 [dev-dependencies]
 approx = "0.5.1"                # for assertions with float values
