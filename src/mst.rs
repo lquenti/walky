@@ -1,13 +1,12 @@
 //! Compute a minimum spanning tree
 
 use core::panic;
-use std::{cmp::Reverse, print, println};
+use std::cmp::Reverse;
 
 use crate::parser::{Edge, Graph};
 
 use ordered_float::OrderedFloat;
 use priority_queue::PriorityQueue;
-use quick_xml::se;
 use rayon::prelude::*;
 
 /// Prims algorithm for computing an MST of the given `graph`.
