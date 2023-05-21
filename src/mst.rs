@@ -1,6 +1,7 @@
 //! Compute a minimum spanning tree
 
-use std::{cmp::Reverse, print};
+use core::panic;
+use std::{cmp::Reverse, print, println};
 
 use crate::parser::{Edge, Graph};
 
@@ -176,19 +177,19 @@ impl FindMinCostEdge for VerticesInPriorityQueue {
         if self.used[edge_to.to] {
             return;
         }
-        let Reverse(OrderedFloat(min_cost)) = self.cost_queue
+        let Reverse(OrderedFloat(old_cost)) = self.cost_queue
             .push_increase(edge_to.to, Reverse(OrderedFloat(edge_to.cost)))
             .unwrap_or_else(|| panic!("Every unused unused vertex shall be contained in the queue from the beginning. Missing vertex: {}", edge_to.to));
-        if edge_to.cost == min_cost {
+        if edge_to.cost <= old_cost {
             self.connection_to_mst[edge_to.to] = from;
         }
     }
 
     fn set_cost(&mut self, from: usize, edge_to: Edge) {
         self.cost_queue
-            .change_priority(&edge_to.to, Reverse(OrderedFloat(edge_to.cost)));
+            .change_priority(&from, Reverse(OrderedFloat(edge_to.cost)));
 
-        self.connection_to_mst[edge_to.to] = from;
+        self.connection_to_mst[from] = edge_to.to;
     }
 
     fn set_excluded_vertex(&mut self, excluded_vertex: usize) {
@@ -482,5 +483,24 @@ mod test {
         let mut vert = VerticesInPriorityQueue::from_default_value(default_val, size);
 
         vert.update_minimal_cost(0, Edge { to: 1, cost: 1.0 });
+    }
+
+    #[test]
+    fn test_vertices_in_priority_queue_update_priority_works() {
+        let default_val = Edge {
+            to: 4,
+            cost: f64::INFINITY,
+        };
+
+        let size = 5;
+
+        let mut vert = VerticesInPriorityQueue::from_default_value(default_val, size);
+
+        vert.update_minimal_cost(0, Edge { to: 1, cost: 1.0 });
+        assert_eq!(vert.connection_to_mst[1], 0);
+        assert_eq!(
+            vert.cost_queue.get_priority(&1),
+            Some(&Reverse(OrderedFloat(1.0f64)))
+        );
     }
 }
