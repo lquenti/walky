@@ -5,6 +5,7 @@ use std::cmp::Reverse;
 
 use crate::parser::{Edge, Graph};
 
+use delegate::delegate;
 use ordered_float::OrderedFloat;
 use priority_queue::PriorityQueue;
 use rayon::prelude::*;
@@ -15,15 +16,25 @@ pub fn prim(graph: &Graph) -> Graph {
     prim_with_excluded_node_multi_threaded(graph, graph.num_vertices())
 }
 
-/// #TODO
-/// currently only single threaded
+/// multithreaded version of [`prim_with_excluded_node_single_threaded`].
+///
+/// If you have multiple calls to prims algorithm, use a single threaded version
+/// and make the calls in parallel.
 pub fn prim_with_excluded_node_multi_threaded(graph: &Graph, excluded_vertex: usize) -> Graph {
     prim_with_excluded_node::<Vec<(Edge, bool)>>(graph, excluded_vertex)
 }
 
-/// #TODO
-/// improve asymptotic performance by using a priority queue
+/// naive version using only vectors as data structures.
+/// For small enough (might not have to be very small) inputs
+/// this is faster than a priority queue due to
+/// less branching and better auto-vectorization potential.
+/// Asymptotic performance: O(N^2)
 pub fn prim_with_excluded_node_single_threaded(graph: &Graph, excluded_vertex: usize) -> Graph {
+    prim_with_excluded_node::<Vec<(Edge, bool)>>(graph, excluded_vertex)
+}
+
+/// improve asymptotic performance by using a priority queue
+pub fn prim_with_excluded_node_priority_queue(graph: &Graph, excluded_vertex: usize) -> Graph {
     prim_with_excluded_node::<VerticesInPriorityQueue>(graph, excluded_vertex)
 }
 
@@ -212,7 +223,8 @@ impl FindMinCostEdge for Vec<(Edge, bool)> {
 
     fn find_edge_with_minimal_cost(&self, base_case: Edge) -> (usize, Edge) {
         let (next_vertex, reverse_edge) = self
-            .par_iter()
+            //.par_iter()
+            .iter()
             .enumerate()
             // skip all used vertices
             .filter_map(
@@ -247,6 +259,40 @@ impl FindMinCostEdge for Vec<(Edge, bool)> {
 
     fn set_excluded_vertex(&mut self, excluded_vertex: usize) {
         self.mark_vertex_as_used(excluded_vertex);
+    }
+}
+
+#[derive(Debug, PartialEq)]
+struct MultiThreadedVecWrapper(Vec<(Edge, bool)>);
+
+impl FindMinCostEdge for MultiThreadedVecWrapper {
+    fn from_default_value(default_val: Edge, size: usize) -> Self {
+        MultiThreadedVecWrapper(Vec::from_default_value(default_val, size))
+    }
+    delegate! {
+        to self.0 {
+            fn update_minimal_cost(&mut self, from: usize, edge_to: Edge);
+            fn set_cost(&mut self, from: usize, edge_to: Edge);
+            fn set_excluded_vertex(&mut self, excluded_vertex: usize);
+            fn mark_vertex_as_used(&mut self, used_vertex: usize);
+        }
+    }
+    fn find_edge_with_minimal_cost(&self, base_case: Edge) -> (usize, Edge) {
+        let (next_vertex, reverse_edge) = self
+            .0
+            .par_iter()
+            .enumerate()
+            // skip all used vertices
+            .filter_map(
+                |(i, &(edge, used_in_mst))| if used_in_mst { None } else { Some((i, edge)) },
+            )
+            // find the next vertex via the corresponding edge with minimal cost
+            .min_by(|&(_, edg_i), &(_, edg_j)| {
+                OrderedFloat(edg_i.cost).cmp(&OrderedFloat(edg_j.cost))
+            })
+            // unwrap, or give back the base case
+            .unwrap_or((base_case.to, base_case));
+        (next_vertex, reverse_edge)
     }
 }
 
@@ -400,7 +446,7 @@ mod test {
     }
 
     #[test]
-    fn prim_single_and_multi_threaded_agree() {
+    fn prim_all_versions_agree() {
         let graph = Graph::from(vec![
             //vertex 0
             vec![
@@ -428,10 +474,11 @@ mod test {
             ],
         ]);
         let excluded_vertex = 0;
-        assert_eq!(
-            prim_with_excluded_node_single_threaded(&graph, excluded_vertex),
-            prim_with_excluded_node_multi_threaded(&graph, excluded_vertex)
-        );
+        let res_st = prim_with_excluded_node_single_threaded(&graph, excluded_vertex);
+        let res_mt = prim_with_excluded_node_multi_threaded(&graph, excluded_vertex);
+        let res_prio = prim_with_excluded_node_priority_queue(&graph, excluded_vertex);
+        assert_eq!(res_st, res_mt);
+        assert_eq!(res_st, res_prio);
     }
 
     #[test]
