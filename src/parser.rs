@@ -36,7 +36,7 @@ impl TravellingSalesmanProblemInstance {
 }
 
 /// This represents a graph, with the collection of all its edges and vertices.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Graph {
     #[serde(rename = "$value")]
     pub vertices: Vec<Vertex>,
@@ -114,7 +114,7 @@ impl From<Vec<Vec<Edge>>> for Graph {
 
 /// This representes a vertex and contains the collection of edges from this vertex
 /// to all adjacent vertices.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Vertex {
     #[serde(rename = "$value")]
     pub edges: Vec<Edge>,
