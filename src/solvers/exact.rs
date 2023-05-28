@@ -24,6 +24,28 @@ pub fn naive_solver(graph: Graph) -> Solution {
     (best_cost, best_permutation)
 }
 
+/// First improvement of [`naive_solver`]:
+/// We fixate the first element to be at the start.
+/// Since it is a cycle, we do not care where it starts.
+///
+/// Runtime: Theta(n * (n-1)!)
+pub fn first_improved_solver(graph: Graph) -> Solution {
+    let graph_matrix: GraphMatrix = graph.into();
+    let n = graph_matrix.len();
+    let mut best_permutation: GraphPath = (0..n).collect();
+    let mut best_cost = f64::INFINITY;
+
+    let mut current_permutation = best_permutation.clone();
+    while next_permutation(&mut current_permutation[1..]) {
+        let cost = graph_matrix.evaluate_circle(&current_permutation);
+        if cost < best_cost {
+            best_cost = cost;
+            best_permutation = current_permutation.clone();
+        }
+    }
+    (best_cost, best_permutation)
+}
+
 /// Finding the next permutation given an array.
 /// Based on [Nayuki](https://www.nayuki.io/page/next-lexicographical-permutation-algorithm)
 ///
