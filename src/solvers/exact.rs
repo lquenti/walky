@@ -1,37 +1,47 @@
 //! Exact methods to solve the TSP problem.
 
 use std::convert::From;
-use std::fmt::Display;
 use std::ops::{Deref, DerefMut};
 
 use crate::parser::Graph;
 
-use itertools::Itertools;
-
 /// Simplest possible solution: just go through all the nodes in order.
 pub fn naive_solver(graph: Graph) -> Solution {
-    let graph_matrix: GraphMatrix = graph.into();
-    traverse_graph(
-        &graph_matrix,
-    )
-}
-
-fn traverse_graph(
-    graph_matrix: &GraphMatrix,
-) -> Solution {
-    let n = graph_matrix.len();
-    (0..n).permutations(n).fold((f64::INFINITY, vec![]), |(cost_acc, v_acc), v| {
-        let cost = graph_matrix.evaluate_circle(&v);
-        if cost < cost_acc {
-            (cost, v)
-        } else {
-            (cost_acc, v_acc)
-        }
-    }
-    )
+    todo!()
 }
 
 //////////////////////////////////////////
+
+/// Finding the next permutation given an array.
+/// Based on [Nayuki](https://www.nayuki.io/page/next-lexicographical-permutation-algorithm)
+///
+/// It ends when the array is only decreasing.
+/// Thus, in order to get all permutations of [n], start with (1,2,...,n)
+fn next_permutation<T: Ord>(array: &mut [T]) -> bool {
+	// Find non-increasing suffix
+	if array.is_empty() {
+		return false;
+	}
+	let mut i: usize = array.len() - 1;
+	while i > 0 && array[i - 1] >= array[i] {
+		i -= 1;
+	}
+	if i == 0 {
+		return false;
+	}
+
+	// Find successor to pivot
+	let mut j: usize = array.len() - 1;
+	while array[j] <= array[i - 1] {
+		j -= 1;
+	}
+	array.swap(i - 1, j);
+
+	// Reverse suffix
+	array[i .. ].reverse();
+	true
+}
+
 
 // TODO: Move somewhere else
 
@@ -75,35 +85,46 @@ impl DerefMut for GraphMatrix {
     }
 }
 
-impl GraphMatrix {
-    fn evaluate_path(&self, path: &GraphPath) -> f64 {
-        let n = path.len();
-        if n <= 1 {
-            return 0.0;
+#[cfg(test)]
+mod exact_solver {
+    use super::*;
+
+    #[test]
+    fn get_all_permutations() {
+        let mut starting_vec = (0..4).collect::<Vec<i32>>();
+        let mut results = vec![];
+        results.push(starting_vec.clone());
+        while next_permutation(&mut starting_vec) {
+            results.push(starting_vec.clone());
         }
-        let mut acc = 0.0;
-        for from in 0..(n - 1) {
-            let to = from + 1;
-            let cost = self[path[from]][path[to]];
-            if cost == f64::INFINITY {
-                return f64::INFINITY;
-            }
-            acc += cost;
-        }
-        acc
+
+        let expected = vec![
+        vec![0, 1, 2, 3],
+        vec![0, 1, 3, 2],
+        vec![0, 2, 1, 3],
+        vec![0, 2, 3, 1],
+        vec![0, 3, 1, 2],
+        vec![0, 3, 2, 1],
+        vec![1, 0, 2, 3],
+        vec![1, 0, 3, 2],
+        vec![1, 2, 0, 3],
+        vec![1, 2, 3, 0],
+        vec![1, 3, 0, 2],
+        vec![1, 3, 2, 0],
+        vec![2, 0, 1, 3],
+        vec![2, 0, 3, 1],
+        vec![2, 1, 0, 3],
+        vec![2, 1, 3, 0],
+        vec![2, 3, 0, 1],
+        vec![2, 3, 1, 0],
+        vec![3, 0, 1, 2],
+        vec![3, 0, 2, 1],
+        vec![3, 1, 0, 2],
+        vec![3, 1, 2, 0],
+        vec![3, 2, 0, 1],
+        vec![3, 2, 1, 0],
+    ];
+        assert_eq!(expected, results);
     }
-    fn evaluate_circle(&self, path: &GraphPath) -> f64 {
-        if path.len() <= 1 {
-            return 0.0;
-        }
-        let last_edge = self[*path.last().unwrap()][*path.first().unwrap()];
-        if last_edge == f64::INFINITY {
-            return f64::INFINITY;
-        }
-        let path_cost = self.evaluate_path(path);
-        if path_cost == f64::INFINITY {
-            return f64::INFINITY;
-        }
-        path_cost + last_edge
-    }
+
 }
