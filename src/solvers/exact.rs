@@ -18,30 +18,29 @@ pub fn naive_solver(graph: Graph) -> Solution {
 /// It ends when the array is only decreasing.
 /// Thus, in order to get all permutations of [n], start with (1,2,...,n)
 fn next_permutation<T: Ord>(array: &mut [T]) -> bool {
-	// Find non-increasing suffix
-	if array.is_empty() {
-		return false;
-	}
-	let mut i: usize = array.len() - 1;
-	while i > 0 && array[i - 1] >= array[i] {
-		i -= 1;
-	}
-	if i == 0 {
-		return false;
-	}
+    // Find non-increasing suffix
+    if array.is_empty() {
+        return false;
+    }
+    let mut i: usize = array.len() - 1;
+    while i > 0 && array[i - 1] >= array[i] {
+        i -= 1;
+    }
+    if i == 0 {
+        return false;
+    }
 
-	// Find successor to pivot
-	let mut j: usize = array.len() - 1;
-	while array[j] <= array[i - 1] {
-		j -= 1;
-	}
-	array.swap(i - 1, j);
+    // Find successor to pivot
+    let mut j: usize = array.len() - 1;
+    while array[j] <= array[i - 1] {
+        j -= 1;
+    }
+    array.swap(i - 1, j);
 
-	// Reverse suffix
-	array[i .. ].reverse();
-	true
+    // Reverse suffix
+    array[i..].reverse();
+    true
 }
-
 
 // TODO: Move somewhere else
 
@@ -99,32 +98,31 @@ mod exact_solver {
         }
 
         let expected = vec![
-        vec![0, 1, 2, 3],
-        vec![0, 1, 3, 2],
-        vec![0, 2, 1, 3],
-        vec![0, 2, 3, 1],
-        vec![0, 3, 1, 2],
-        vec![0, 3, 2, 1],
-        vec![1, 0, 2, 3],
-        vec![1, 0, 3, 2],
-        vec![1, 2, 0, 3],
-        vec![1, 2, 3, 0],
-        vec![1, 3, 0, 2],
-        vec![1, 3, 2, 0],
-        vec![2, 0, 1, 3],
-        vec![2, 0, 3, 1],
-        vec![2, 1, 0, 3],
-        vec![2, 1, 3, 0],
-        vec![2, 3, 0, 1],
-        vec![2, 3, 1, 0],
-        vec![3, 0, 1, 2],
-        vec![3, 0, 2, 1],
-        vec![3, 1, 0, 2],
-        vec![3, 1, 2, 0],
-        vec![3, 2, 0, 1],
-        vec![3, 2, 1, 0],
-    ];
+            vec![0, 1, 2, 3],
+            vec![0, 1, 3, 2],
+            vec![0, 2, 1, 3],
+            vec![0, 2, 3, 1],
+            vec![0, 3, 1, 2],
+            vec![0, 3, 2, 1],
+            vec![1, 0, 2, 3],
+            vec![1, 0, 3, 2],
+            vec![1, 2, 0, 3],
+            vec![1, 2, 3, 0],
+            vec![1, 3, 0, 2],
+            vec![1, 3, 2, 0],
+            vec![2, 0, 1, 3],
+            vec![2, 0, 3, 1],
+            vec![2, 1, 0, 3],
+            vec![2, 1, 3, 0],
+            vec![2, 3, 0, 1],
+            vec![2, 3, 1, 0],
+            vec![3, 0, 1, 2],
+            vec![3, 0, 2, 1],
+            vec![3, 1, 0, 2],
+            vec![3, 1, 2, 0],
+            vec![3, 2, 0, 1],
+            vec![3, 2, 1, 0],
+        ];
         assert_eq!(expected, results);
     }
-
 }

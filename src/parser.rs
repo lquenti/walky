@@ -135,9 +135,7 @@ impl Vertex {
 
 impl From<Vec<Edge>> for Vertex {
     fn from(value: Vec<Edge>) -> Self {
-        Vertex {
-            edges: value,
-        }
+        Vertex { edges: value }
     }
 }
 

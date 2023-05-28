@@ -1,9 +1,9 @@
 use crate::parser::TravellingSalesmanProblemInstance;
 use std::{error::Error, fs::File, io::Read, path::PathBuf};
 
+use crate::solvers::exact;
 use clap::Parser;
 use one_tree::one_tree_lower_bound;
-use crate::solvers::exact;
 
 pub mod mst;
 pub mod one_tree;
