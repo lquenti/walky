@@ -7,14 +7,7 @@ use crate::parser::{Edge, Graph, Vertex};
 pub fn is_fully_connected(g: &Graph) -> bool {
     let n = g.num_vertices();
 
-    // Now we verify that each vertex has n-1 connections...
-    // TODO write me more functional
-    for v in g.iter() {
-        if v.num_edges() != n-1 {
-            return false
-        }
-    }
-    true
+    g.iter().all(|v| v.num_edges() == n - 1)
 }
 
 #[cfg(test)]
