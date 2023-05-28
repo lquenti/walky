@@ -15,7 +15,9 @@ pub fn is_fully_connected(g: &Graph) -> bool {
 pub fn is_multi_edge(graph: &Graph) -> bool {
     graph.vertices.iter().any(|vertex| {
         let destinations: Vec<usize> = vertex.edges.iter().map(|edge| edge.to).collect();
-        let unique_destinations: Vec<usize> = destinations.clone().into_iter()
+        let unique_destinations: Vec<usize> = destinations
+            .clone()
+            .into_iter()
             .collect::<HashSet<_>>()
             .into_iter()
             .collect();
@@ -35,54 +37,146 @@ mod test_preconditions {
 
     #[test]
     fn test_fully_connected_graph() {
-            let graph = Graph {
-        vertices: vec![
-            Vertex { edges: vec![Edge { to: 1, cost: 0.0 }, Edge { to: 2, cost: 0.0 }, Edge { to: 3, cost: 0.0 }] },
-            Vertex { edges: vec![Edge { to: 0, cost: 0.0 }, Edge { to: 2, cost: 0.0 }, Edge { to: 3, cost: 0.0 }] },
-            Vertex { edges: vec![Edge { to: 0, cost: 0.0 }, Edge { to: 1, cost: 0.0 }, Edge { to: 3, cost: 0.0 }] },
-            Vertex { edges: vec![Edge { to: 0, cost: 0.0 }, Edge { to: 1, cost: 0.0 }, Edge { to: 2, cost: 0.0 }] },
-        ],
-    };
-    assert!(is_fully_connected(&graph))
+        let graph = Graph {
+            vertices: vec![
+                Vertex {
+                    edges: vec![
+                        Edge { to: 1, cost: 0.0 },
+                        Edge { to: 2, cost: 0.0 },
+                        Edge { to: 3, cost: 0.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 0.0 },
+                        Edge { to: 2, cost: 0.0 },
+                        Edge { to: 3, cost: 0.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 0.0 },
+                        Edge { to: 1, cost: 0.0 },
+                        Edge { to: 3, cost: 0.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 0.0 },
+                        Edge { to: 1, cost: 0.0 },
+                        Edge { to: 2, cost: 0.0 },
+                    ],
+                },
+            ],
+        };
+        assert!(is_fully_connected(&graph))
     }
 
     #[test]
     fn test_not_fully_connected_graph() {
-            let graph = Graph {
-        vertices: vec![
-            Vertex { edges: vec![Edge { to: 1, cost: 0.0 }, Edge { to: 2, cost: 0.0 }, Edge { to: 3, cost: 0.0 }] },
-            Vertex { edges: vec![Edge { to: 2, cost: 0.0 }, Edge { to: 3, cost: 0.0 }] },
-            Vertex { edges: vec![Edge { to: 0, cost: 0.0 }, Edge { to: 1, cost: 0.0 }, Edge { to: 3, cost: 0.0 }] },
-            Vertex { edges: vec![Edge { to: 0, cost: 0.0 }, Edge { to: 1, cost: 0.0 }, Edge { to: 2, cost: 0.0 }] },
-        ],
-    };
-    assert!(!is_fully_connected(&graph));
+        let graph = Graph {
+            vertices: vec![
+                Vertex {
+                    edges: vec![
+                        Edge { to: 1, cost: 0.0 },
+                        Edge { to: 2, cost: 0.0 },
+                        Edge { to: 3, cost: 0.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![Edge { to: 2, cost: 0.0 }, Edge { to: 3, cost: 0.0 }],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 0.0 },
+                        Edge { to: 1, cost: 0.0 },
+                        Edge { to: 3, cost: 0.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 0.0 },
+                        Edge { to: 1, cost: 0.0 },
+                        Edge { to: 2, cost: 0.0 },
+                    ],
+                },
+            ],
+        };
+        assert!(!is_fully_connected(&graph));
     }
 
     #[test]
     fn test_not_multi_edge() {
-            let graph = Graph {
-        vertices: vec![
-            Vertex { edges: vec![Edge { to: 1, cost: 0.0 }, Edge { to: 2, cost: 0.0 }, Edge { to: 3, cost: 0.0 }] },
-            Vertex { edges: vec![Edge { to: 0, cost: 0.0 }, Edge { to: 2, cost: 0.0 }, Edge { to: 3, cost: 0.0 }] },
-            Vertex { edges: vec![Edge { to: 0, cost: 0.0 }, Edge { to: 1, cost: 0.0 }, Edge { to: 3, cost: 0.0 }] },
-            Vertex { edges: vec![Edge { to: 0, cost: 0.0 }, Edge { to: 1, cost: 0.0 }, Edge { to: 2, cost: 0.0 }] },
-        ],
-    };
-    assert!(!is_multi_edge(&graph))
+        let graph = Graph {
+            vertices: vec![
+                Vertex {
+                    edges: vec![
+                        Edge { to: 1, cost: 0.0 },
+                        Edge { to: 2, cost: 0.0 },
+                        Edge { to: 3, cost: 0.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 0.0 },
+                        Edge { to: 2, cost: 0.0 },
+                        Edge { to: 3, cost: 0.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 0.0 },
+                        Edge { to: 1, cost: 0.0 },
+                        Edge { to: 3, cost: 0.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 0.0 },
+                        Edge { to: 1, cost: 0.0 },
+                        Edge { to: 2, cost: 0.0 },
+                    ],
+                },
+            ],
+        };
+        assert!(!is_multi_edge(&graph))
     }
 
     #[test]
     fn test_is_multi_edge() {
-            let graph = Graph {
-        vertices: vec![
-            Vertex { edges: vec![Edge { to: 1, cost: 0.0 }, Edge { to: 2, cost: 0.0 }, Edge { to: 1, cost: 0.0 }] },
-            Vertex { edges: vec![Edge { to: 0, cost: 0.0 }, Edge { to: 2, cost: 0.0 }, Edge { to: 3, cost: 0.0 }] },
-            Vertex { edges: vec![Edge { to: 0, cost: 0.0 }, Edge { to: 1, cost: 0.0 }, Edge { to: 3, cost: 0.0 }] },
-            Vertex { edges: vec![Edge { to: 0, cost: 0.0 }, Edge { to: 1, cost: 0.0 }, Edge { to: 2, cost: 0.0 }] },
-        ],
-    };
-    assert!(is_multi_edge(&graph))
+        let graph = Graph {
+            vertices: vec![
+                Vertex {
+                    edges: vec![
+                        Edge { to: 1, cost: 0.0 },
+                        Edge { to: 2, cost: 0.0 },
+                        Edge { to: 1, cost: 0.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 0.0 },
+                        Edge { to: 2, cost: 0.0 },
+                        Edge { to: 3, cost: 0.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 0.0 },
+                        Edge { to: 1, cost: 0.0 },
+                        Edge { to: 3, cost: 0.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 0.0 },
+                        Edge { to: 1, cost: 0.0 },
+                        Edge { to: 2, cost: 0.0 },
+                    ],
+                },
+            ],
+        };
+        assert!(is_multi_edge(&graph))
     }
 
     /*
