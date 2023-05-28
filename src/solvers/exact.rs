@@ -4,6 +4,9 @@ use crate::solvers::matrix::{GraphMatrix, GraphPath, Solution};
 use crate::parser::Graph;
 
 /// Simplest possible solution: just go through all the nodes in order.
+/// No further optimizations. See [`next_permutation`] on how the permutations are generated.
+///
+/// Runtime: Theta(n * n!)
 pub fn naive_solver(graph: Graph) -> Solution {
     let graph_matrix: GraphMatrix = graph.into();
     let n = graph_matrix.len();

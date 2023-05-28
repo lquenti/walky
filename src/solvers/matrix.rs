@@ -46,6 +46,8 @@ impl DerefMut for GraphMatrix {
 }
 
 impl GraphMatrix {
+
+    /// Evaluates the accumulative path cost given the current underlying graph
     fn evaluate_path(&self, path: &GraphPath) -> f64 {
         let n = path.len();
         if n <= 1 {
@@ -59,6 +61,9 @@ impl GraphMatrix {
         }
         acc
     }
+
+    /// Evaluates the accumulative circle path cost given the current underlying graph
+    /// This is equivalent to `GraphMatrix.evaluate_path` + returning to the initial vertex
     pub fn evaluate_circle(&self, path: &GraphPath) -> f64 {
         if path.len() <= 1 {
             return 0.0;
