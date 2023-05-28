@@ -2,3 +2,7 @@
 flamegraph.svg
 callgrind.out.*
 perf.data*
+# problems with nvim
+.idea
+# For development
+Cargo.lock

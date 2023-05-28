@@ -2,11 +2,16 @@ use crate::parser::TravellingSalesmanProblemInstance;
 use std::{error::Error, fs::File, io::Read, path::PathBuf};
 
 use clap::Parser;
+<<<<<<< HEAD
 use one_tree::one_tree_lower_bound;
+=======
+use crate::solvers::exact;
+>>>>>>> 2-brute-force-solution
 
 pub mod mst;
 pub mod one_tree;
 pub mod parser;
+pub mod solvers;
 
 /// This struct contains all the arguments captured from the command line.
 #[derive(Debug, Parser)]
