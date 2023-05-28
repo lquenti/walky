@@ -107,9 +107,6 @@ impl GraphMatrix {
         for from in 0..(n - 1) {
             let to = from + 1;
             let cost = self[path[from]][path[to]];
-            if cost == f64::INFINITY {
-                return f64::INFINITY;
-            }
             acc += cost;
         }
         acc
@@ -119,13 +116,7 @@ impl GraphMatrix {
             return 0.0;
         }
         let last_edge = self[*path.last().unwrap()][*path.first().unwrap()];
-        if last_edge == f64::INFINITY {
-            return f64::INFINITY;
-        }
         let path_cost = self.evaluate_path(path);
-        if path_cost == f64::INFINITY {
-            return f64::INFINITY;
-        }
         path_cost + last_edge
     }
 }
