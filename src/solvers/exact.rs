@@ -7,7 +7,20 @@ use crate::parser::Graph;
 
 /// Simplest possible solution: just go through all the nodes in order.
 pub fn naive_solver(graph: Graph) -> Solution {
-    todo!()
+    let graph_matrix: GraphMatrix = graph.into();
+    let n = graph_matrix.len();
+    let mut best_permutation: GraphPath = (0..n).collect();
+    let mut best_cost = f64::INFINITY;
+
+    let mut current_permutation = best_permutation.clone();
+    while next_permutation(&mut current_permutation) {
+        let cost = graph_matrix.evaluate_circle(&current_permutation);
+        if cost < best_cost {
+            best_cost = cost;
+            best_permutation = current_permutation.clone();
+        }
+    }
+    (best_cost, best_permutation)
 }
 
 //////////////////////////////////////////
@@ -81,6 +94,39 @@ impl Deref for GraphMatrix {
 impl DerefMut for GraphMatrix {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
+    }
+}
+
+impl GraphMatrix {
+    fn evaluate_path(&self, path: &GraphPath) -> f64 {
+        let n = path.len();
+        if n <= 1 {
+            return 0.0;
+        }
+        let mut acc = 0.0;
+        for from in 0..(n - 1) {
+            let to = from + 1;
+            let cost = self[path[from]][path[to]];
+            if cost == f64::INFINITY {
+                return f64::INFINITY;
+            }
+            acc += cost;
+        }
+        acc
+    }
+    fn evaluate_circle(&self, path: &GraphPath) -> f64 {
+        if path.len() <= 1 {
+            return 0.0;
+        }
+        let last_edge = self[*path.last().unwrap()][*path.first().unwrap()];
+        if last_edge == f64::INFINITY {
+            return f64::INFINITY;
+        }
+        let path_cost = self.evaluate_path(path);
+        if path_cost == f64::INFINITY {
+            return f64::INFINITY;
+        }
+        path_cost + last_edge
     }
 }
 
