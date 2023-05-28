@@ -1,10 +1,8 @@
 //! This module is about computing the 1-tree lower bound for the TSP.
 //! See [this article](https://doi.org/10.1287/opre.18.6.1138) for further information.
 
-use serde::Serialize;
-
 use crate::{
-    mst::{prim_with_excluded_node, prim_with_excluded_node_single_threaded},
+    mst::prim_with_excluded_node_single_threaded,
     parser::{Edge, Graph},
 };
 

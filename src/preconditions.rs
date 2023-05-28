@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::parser::{Edge, Graph, Vertex};
+use crate::parser::Graph;
 
 /// This function checks whether the graph is fully connected.
 /// This is a prerequisite for the TSP.
@@ -50,6 +50,7 @@ pub fn is_undirected(graph: &Graph) -> bool {
 #[cfg(test)]
 mod test_preconditions {
     use super::*;
+    use crate::parser::{Edge, Vertex};
 
     #[test]
     fn test_fully_connected_graph() {

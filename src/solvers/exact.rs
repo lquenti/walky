@@ -62,35 +62,6 @@ struct GraphMatrix(Vec<Vec<f64>>);
 type GraphPath = Vec<usize>;
 type Solution = (f64, Vec<usize>);
 
-fn is_same_undirected_circle(seq1: &GraphPath, seq2: &GraphPath) -> bool {
-    if seq1.len() != seq2.len() {
-        return false;
-    }
-
-    let n = seq1.len();
-
-    // Generate all possible rotations of seq1 in both directions
-    let rotations = (0..n).map(|i| {
-        seq1[i..]
-            .iter()
-            .chain(seq1[..i].iter())
-            .copied()
-            .collect::<GraphPath>()
-    });
-    let reversed_rotations = rotations
-        .clone()
-        .map(|xs| xs.into_iter().rev().collect::<GraphPath>());
-
-    // Check if any rotation matches
-    for rotation in rotations.chain(reversed_rotations) {
-        if rotation[..] == seq2[..] {
-            return true;
-        }
-    }
-
-    false
-}
-
 impl From<Graph> for GraphMatrix {
     fn from(graph: Graph) -> Self {
         let n: usize = graph.num_vertices();
@@ -156,6 +127,39 @@ mod exact_solver {
 
     use super::*;
     use crate::parser::{Edge, Graph, Vertex};
+
+    /// Checks whether two paths describe the same undirected circle.
+    /// This means that it is agnostic of
+    /// - starting Vertex
+    /// - direction
+    fn is_same_undirected_circle(seq1: &GraphPath, seq2: &GraphPath) -> bool {
+        if seq1.len() != seq2.len() {
+            return false;
+        }
+
+        let n = seq1.len();
+
+        // Generate all possible rotations of seq1 in both directions
+        let rotations = (0..n).map(|i| {
+            seq1[i..]
+                .iter()
+                .chain(seq1[..i].iter())
+                .copied()
+                .collect::<GraphPath>()
+        });
+        let reversed_rotations = rotations
+            .clone()
+            .map(|xs| xs.into_iter().rev().collect::<GraphPath>());
+
+        // Check if any rotation matches
+        for rotation in rotations.chain(reversed_rotations) {
+            if rotation[..] == seq2[..] {
+                return true;
+            }
+        }
+
+        false
+    }
 
     #[test]
     fn test_is_same_undirected_circle() {
