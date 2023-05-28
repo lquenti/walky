@@ -39,7 +39,7 @@ impl TravellingSalesmanProblemInstance {
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Graph {
     #[serde(rename = "$value")]
-    vertices: Vec<Vertex>,
+    pub vertices: Vec<Vertex>,
 }
 
 impl Graph {
@@ -117,7 +117,7 @@ impl From<Vec<Vec<Edge>>> for Graph {
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Vertex {
     #[serde(rename = "$value")]
-    edges: Vec<Edge>,
+    pub edges: Vec<Edge>,
 }
 
 impl Vertex {
@@ -129,6 +129,10 @@ impl Vertex {
             /// Adds an edge to the vertex
             #[call(push)]
             pub fn add_edge(&mut self, edge: Edge);
+
+            /// return the number of edges connected to the vertex
+            #[call(len)]
+            pub fn num_edges(&self) -> usize;
         }
     }
 }

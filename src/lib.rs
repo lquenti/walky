@@ -8,6 +8,7 @@ use one_tree::one_tree_lower_bound;
 pub mod mst;
 pub mod one_tree;
 pub mod parser;
+pub mod preconditions;
 pub mod solvers;
 
 /// This struct contains all the arguments captured from the command line.
