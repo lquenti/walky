@@ -7,8 +7,6 @@ use serde::{Deserialize, Serialize};
 /// Can be parsed from an xml document with the
 /// [XML-TSPLIB](http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf)
 /// format.
-///
-/// Here, we impose no further restrictions, such as the graph being undirected.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct TravellingSalesmanProblemInstance {
@@ -22,6 +20,9 @@ pub struct TravellingSalesmanProblemInstance {
 
 impl TravellingSalesmanProblemInstance {
     /// Parse a TSP instance from an xml `str`.
+    ///
+    /// This parsing does not check whether the graph is a valid TSP instance
+    /// as long as it is a valid xml document.
     pub fn parse_from_xml(xml: &str) -> Result<Self, quick_xml::DeError> {
         from_str(xml)
     }
@@ -72,6 +73,24 @@ impl Graph {
     pub fn undirected_edge_weight(&self) -> f64 {
         self.directed_edge_weight() * 0.5
     }
+
+    /// adds an undirected edge to the graph.
+    /// There is no check, whether the edge might already exist in the graph.
+    pub fn add_undirected_edge(&mut self, from: usize, to: usize, cost: f64) {
+        debug_assert!(
+            from < self.num_vertices(),
+            "The vertex 'from' has to be a valid vertex in the graph"
+        );
+        debug_assert!(
+            to < self.num_vertices(),
+            "The vertex 'to' has to be a valid vertex in the graph"
+        );
+
+        let edge = Edge { to, cost };
+        let edge_reverse = Edge { to: from, cost };
+        self.vertices[from].add_edge(edge);
+        self.vertices[to].add_edge(edge_reverse);
+    }
 }
 
 impl<I> Index<I> for Graph
@@ -106,6 +125,10 @@ impl Vertex {
         to self.edges {
             /// Yields an Iterator over all edges from this vertex to the adjacent edges.
             pub fn iter(&self) -> std::slice::Iter<Edge>;
+
+            /// Adds an edge to the vertex
+            #[call(push)]
+            pub fn add_edge(&mut self, edge: Edge);
         }
     }
 }
@@ -120,7 +143,7 @@ impl From<Vec<Edge>> for Vertex {
 
 /// Represents a directed edge from a known node to the node `to`,
 /// the edge has cost/weight/distance `cost`.
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Copy, Clone)]
 pub struct Edge {
     #[serde(rename = "$text")]
     pub to: usize,
