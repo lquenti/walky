@@ -1,7 +1,7 @@
 //! Exact methods to solve the TSP problem.
 
-use crate::solvers::matrix::{GraphMatrix, GraphPath, Solution};
 use crate::parser::Graph;
+use crate::solvers::matrix::{GraphMatrix, GraphPath, Solution};
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
@@ -238,12 +238,15 @@ mod exact_solver {
                 },
             ],
         };
-        let (best_cost, best_permutation) = naive_solver(graph);
-        assert!(relative_eq!(37.41646270666716, best_cost));
-        assert!(is_same_undirected_circle(
-            &vec![0, 3, 4, 1, 2],
-            &best_permutation
-        ));
+        // Test each solution
+        for f in [naive_solver, first_improved_solver].iter() {
+            let (best_cost, best_permutation) = f(graph.clone());
+            assert!(relative_eq!(37.41646270666716, best_cost));
+            assert!(is_same_undirected_circle(
+                &vec![0, 3, 4, 1, 2],
+                &best_permutation
+            ));
+        }
     }
 
     #[test]
@@ -576,12 +579,14 @@ mod exact_solver {
                 },
             ],
         };
-        let (best_cost, best_permutation) = naive_solver(graph);
-        assert!(relative_eq!(33.03008250868411, best_cost));
-        assert!(is_same_undirected_circle(
-            &vec![0, 5, 3, 2, 8, 1, 7, 6, 4],
-            &best_permutation
-        ));
+        for f in [naive_solver, first_improved_solver].iter() {
+            let (best_cost, best_permutation) = f(graph.clone());
+            assert!(relative_eq!(33.03008250868411, best_cost));
+            assert!(is_same_undirected_circle(
+                &vec![0, 5, 3, 2, 8, 1, 7, 6, 4],
+                &best_permutation
+            ));
+        }
     }
 
     #[test]
@@ -618,12 +623,14 @@ mod exact_solver {
                 },
             ],
         };
-        let (best_cost, best_permutation) = naive_solver(graph);
-        assert!(relative_eq!(best_cost, 17.0));
-        assert!(is_same_undirected_circle(
-            &best_permutation,
-            &vec![0, 1, 3, 2]
-        ));
+        for f in [naive_solver, first_improved_solver].iter() {
+            let (best_cost, best_permutation) = f(graph.clone());
+            assert!(relative_eq!(best_cost, 17.0));
+            assert!(is_same_undirected_circle(
+                &best_permutation,
+                &vec![0, 1, 3, 2]
+            ));
+        }
     }
 
     #[test]

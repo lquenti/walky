@@ -46,7 +46,6 @@ impl DerefMut for GraphMatrix {
 }
 
 impl GraphMatrix {
-
     /// Evaluates the accumulative path cost given the current underlying graph
     fn evaluate_path(&self, path: &GraphPath) -> f64 {
         let n = path.len();
