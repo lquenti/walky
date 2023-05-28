@@ -57,7 +57,6 @@ fn next_permutation<T: Ord>(array: &mut [T]) -> bool {
 
 // TODO: Move somewhere else
 
-
 #[derive(Debug, PartialEq)]
 struct GraphMatrix(Vec<Vec<f64>>);
 type GraphPath = Vec<usize>;
@@ -71,12 +70,16 @@ fn is_same_undirected_circle(seq1: &GraphPath, seq2: &GraphPath) -> bool {
     let n = seq1.len();
 
     // Generate all possible rotations of seq1 in both directions
-    let rotations = (0..n).map(
-        |i| seq1[i..].iter().chain(seq1[..i].iter()).copied().collect::<GraphPath>()
-    );
-    let reversed_rotations = rotations.clone().map(
-        |xs| xs.into_iter().rev().collect::<GraphPath>()
-    );
+    let rotations = (0..n).map(|i| {
+        seq1[i..]
+            .iter()
+            .chain(seq1[..i].iter())
+            .copied()
+            .collect::<GraphPath>()
+    });
+    let reversed_rotations = rotations
+        .clone()
+        .map(|xs| xs.into_iter().rev().collect::<GraphPath>());
 
     // Check if any rotation matches
     for rotation in rotations.chain(reversed_rotations) {
@@ -156,12 +159,18 @@ mod exact_solver {
 
     #[test]
     fn test_is_same_undirected_circle() {
-        assert!(is_same_undirected_circle(&vec![1,2,3,4,5,6], &vec![4,3,2,1,6,5]));
+        assert!(is_same_undirected_circle(
+            &vec![1, 2, 3, 4, 5, 6],
+            &vec![4, 3, 2, 1, 6, 5]
+        ));
     }
 
     #[test]
     fn test_not_same_undirected_circle() {
-        assert!(!is_same_undirected_circle(&vec![1,2,3,4,5,6], &vec![4,3,2,6,1,5]));
+        assert!(!is_same_undirected_circle(
+            &vec![1, 2, 3, 4, 5, 6],
+            &vec![4, 3, 2, 6, 1, 5]
+        ));
     }
 
     #[test]
@@ -272,7 +281,10 @@ mod exact_solver {
         };
         let (best_cost, best_permutation) = naive_solver(graph);
         assert!(relative_eq!(37.41646270666716, best_cost));
-        assert!(is_same_undirected_circle(&vec![0, 3, 4, 1, 2], &best_permutation));
+        assert!(is_same_undirected_circle(
+            &vec![0, 3, 4, 1, 2],
+            &best_permutation
+        ));
     }
 
     #[test]
@@ -607,7 +619,10 @@ mod exact_solver {
         };
         let (best_cost, best_permutation) = naive_solver(graph);
         assert!(relative_eq!(33.03008250868411, best_cost));
-        assert!(is_same_undirected_circle(&vec![0, 5, 3, 2, 8, 1, 7, 6, 4], &best_permutation));
+        assert!(is_same_undirected_circle(
+            &vec![0, 5, 3, 2, 8, 1, 7, 6, 4],
+            &best_permutation
+        ));
     }
 
     #[test]
@@ -646,7 +661,10 @@ mod exact_solver {
         };
         let (best_cost, best_permutation) = naive_solver(graph);
         assert!(relative_eq!(best_cost, 17.0));
-        assert!(is_same_undirected_circle(&best_permutation, &vec![0, 1, 3, 2]));
+        assert!(is_same_undirected_circle(
+            &best_permutation,
+            &vec![0, 1, 3, 2]
+        ));
     }
 
     #[test]
