@@ -1,8 +1,6 @@
 //! Exact methods to solve the TSP problem.
 
-use std::convert::From;
-use std::ops::{Deref, DerefMut};
-
+use crate::solvers::matrix::{GraphMatrix, GraphPath, Solution};
 use crate::parser::Graph;
 
 /// Simplest possible solution: just go through all the nodes in order.
@@ -22,8 +20,6 @@ pub fn naive_solver(graph: Graph) -> Solution {
     }
     (best_cost, best_permutation)
 }
-
-//////////////////////////////////////////
 
 /// Finding the next permutation given an array.
 /// Based on [Nayuki](https://www.nayuki.io/page/next-lexicographical-permutation-algorithm)
@@ -53,72 +49,6 @@ fn next_permutation<T: Ord>(array: &mut [T]) -> bool {
     // Reverse suffix
     array[i..].reverse();
     true
-}
-
-// TODO: Move somewhere else
-
-#[derive(Debug, PartialEq)]
-struct GraphMatrix(Vec<Vec<f64>>);
-type GraphPath = Vec<usize>;
-type Solution = (f64, Vec<usize>);
-
-impl From<Graph> for GraphMatrix {
-    fn from(graph: Graph) -> Self {
-        let n: usize = graph.num_vertices();
-        let mut matrix = vec![vec![f64::INFINITY; n]; n];
-        for i in 0..n {
-            let vi = &graph[i];
-            for edge in vi.iter() {
-                let j = edge.to;
-                matrix[i][j] = edge.cost;
-                matrix[j][i] = edge.cost;
-            }
-        }
-        matrix.into()
-    }
-}
-
-impl From<Vec<Vec<f64>>> for GraphMatrix {
-    fn from(matrix: Vec<Vec<f64>>) -> Self {
-        GraphMatrix(matrix)
-    }
-}
-
-impl Deref for GraphMatrix {
-    type Target = Vec<Vec<f64>>;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for GraphMatrix {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl GraphMatrix {
-    fn evaluate_path(&self, path: &GraphPath) -> f64 {
-        let n = path.len();
-        if n <= 1 {
-            return 0.0;
-        }
-        let mut acc = 0.0;
-        for from in 0..(n - 1) {
-            let to = from + 1;
-            let cost = self[path[from]][path[to]];
-            acc += cost;
-        }
-        acc
-    }
-    fn evaluate_circle(&self, path: &GraphPath) -> f64 {
-        if path.len() <= 1 {
-            return 0.0;
-        }
-        let last_edge = self[*path.last().unwrap()][*path.first().unwrap()];
-        let path_cost = self.evaluate_path(path);
-        path_cost + last_edge
-    }
 }
 
 #[cfg(test)]
