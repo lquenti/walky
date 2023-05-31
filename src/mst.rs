@@ -21,7 +21,7 @@ pub fn prim(graph: &Graph) -> Graph {
 /// If you have multiple calls to prims algorithm, use a single threaded version
 /// and make the calls in parallel.
 pub fn prim_with_excluded_node_multi_threaded(graph: &Graph, excluded_vertex: usize) -> Graph {
-    prim_with_excluded_node::<Vec<(Edge, bool)>>(graph, excluded_vertex)
+    prim_with_excluded_node::<MultiThreadedVecWrapper>(graph, excluded_vertex)
 }
 
 /// naive version using only vectors as data structures.
@@ -308,8 +308,6 @@ impl FindMinCostEdge for MultiThreadedVecWrapper {
 #[cfg(test)]
 mod test {
     use std::{assert_eq, default};
-
-    use quickcheck_macros::quickcheck;
 
     use super::*;
 
