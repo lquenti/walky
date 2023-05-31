@@ -4,7 +4,7 @@
 use serde::Serialize;
 
 use crate::{
-    mst::{prim_with_excluded_node, prim_with_excluded_node_single_threaded},
+    mst::prim_with_excluded_node_single_threaded,
     parser::{Edge, Graph},
 };
 
