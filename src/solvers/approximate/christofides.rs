@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use blossom::WeightedGraph;
 
 use crate::{mst::prim, parser::Graph};
