@@ -28,7 +28,7 @@ pub fn christofides(graph: &Graph) {
 
     // 4. union the perfect matching with the MST
     let matching_edges = matching.edges();
-    let graphMat: NAMatrix = graph.into();
+    //let graphMat: NAMatrix = graph.into();
 
     // 5. ??
 
