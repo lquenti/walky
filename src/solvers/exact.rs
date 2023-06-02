@@ -109,6 +109,481 @@ mod exact_solver {
     use crate::parser::{Edge, Graph, Vertex};
     use crate::datastructures::VecMatrix;
 
+    use lazy_static::lazy_static;
+
+lazy_static! {
+        static ref SMALL_FLOAT_GRAPH: Graph = Graph {
+            vertices: vec![
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 1,
+                            cost: 13.215648444670196,
+                        },
+                        Edge {
+                            to: 2,
+                            cost: 9.674413400408712,
+                        },
+                        Edge {
+                            to: 3,
+                            cost: 1.0970596862282833,
+                        },
+                        Edge {
+                            to: 4,
+                            cost: 16.098684067859647,
+                        },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 0,
+                            cost: 13.215648444670196,
+                        },
+                        Edge {
+                            to: 2,
+                            cost: 12.221639547131913,
+                        },
+                        Edge {
+                            to: 3,
+                            cost: 17.306826463341803,
+                        },
+                        Edge {
+                            to: 4,
+                            cost: 8.321138140452149,
+                        },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 0,
+                            cost: 9.674413400408712,
+                        },
+                        Edge {
+                            to: 1,
+                            cost: 12.221639547131913,
+                        },
+                        Edge {
+                            to: 3,
+                            cost: 4.6376150266768885,
+                        },
+                        Edge {
+                            to: 4,
+                            cost: 15.838066781407072,
+                        },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 0,
+                            cost: 1.0970596862282833,
+                        },
+                        Edge {
+                            to: 1,
+                            cost: 17.306826463341803,
+                        },
+                        Edge {
+                            to: 2,
+                            cost: 4.6376150266768885,
+                        },
+                        Edge {
+                            to: 4,
+                            cost: 6.102211932446107,
+                        },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 0,
+                            cost: 16.098684067859647,
+                        },
+                        Edge {
+                            to: 1,
+                            cost: 8.321138140452149,
+                        },
+                        Edge {
+                            to: 2,
+                            cost: 15.838066781407072,
+                        },
+                        Edge {
+                            to: 3,
+                            cost: 6.102211932446107,
+                        },
+                    ],
+                },
+            ],
+        };
+}
+
+lazy_static! {
+    static ref BIG_FLOAT_GRAPH: Graph = Graph {
+            vertices: vec![
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 1,
+                            cost: 5.357166694956081,
+                        },
+                        Edge {
+                            to: 2,
+                            cost: 12.673287166274285,
+                        },
+                        Edge {
+                            to: 3,
+                            cost: 15.392922519581575,
+                        },
+                        Edge {
+                            to: 4,
+                            cost: 1.8824165228898004,
+                        },
+                        Edge {
+                            to: 5,
+                            cost: 1.0673823908781577,
+                        },
+                        Edge {
+                            to: 6,
+                            cost: 8.668326879490138,
+                        },
+                        Edge {
+                            to: 7,
+                            cost: 18.956348946357103,
+                        },
+                        Edge {
+                            to: 8,
+                            cost: 5.399642479870355,
+                        },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 0,
+                            cost: 5.357166694956081,
+                        },
+                        Edge {
+                            to: 2,
+                            cost: 11.139733539749999,
+                        },
+                        Edge {
+                            to: 3,
+                            cost: 1.661032458795486,
+                        },
+                        Edge {
+                            to: 4,
+                            cost: 18.702631945210115,
+                        },
+                        Edge {
+                            to: 5,
+                            cost: 3.847655828276122,
+                        },
+                        Edge {
+                            to: 6,
+                            cost: 15.73510598766653,
+                        },
+                        Edge {
+                            to: 7,
+                            cost: 0.24655608854276645,
+                        },
+                        Edge {
+                            to: 8,
+                            cost: 4.321598762165737,
+                        },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 0,
+                            cost: 12.673287166274285,
+                        },
+                        Edge {
+                            to: 1,
+                            cost: 11.139733539749999,
+                        },
+                        Edge {
+                            to: 3,
+                            cost: 2.1803729313885345,
+                        },
+                        Edge {
+                            to: 4,
+                            cost: 16.313099247004377,
+                        },
+                        Edge {
+                            to: 5,
+                            cost: 5.585527987185975,
+                        },
+                        Edge {
+                            to: 6,
+                            cost: 8.932741722100753,
+                        },
+                        Edge {
+                            to: 7,
+                            cost: 12.6998544424725,
+                        },
+                        Edge {
+                            to: 8,
+                            cost: 9.05733402266841,
+                        },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 0,
+                            cost: 15.392922519581575,
+                        },
+                        Edge {
+                            to: 1,
+                            cost: 1.661032458795486,
+                        },
+                        Edge {
+                            to: 2,
+                            cost: 2.1803729313885345,
+                        },
+                        Edge {
+                            to: 4,
+                            cost: 3.340513012587236,
+                        },
+                        Edge {
+                            to: 5,
+                            cost: 1.46551068868777,
+                        },
+                        Edge {
+                            to: 6,
+                            cost: 2.6426709551798355,
+                        },
+                        Edge {
+                            to: 7,
+                            cost: 4.492948831722041,
+                        },
+                        Edge {
+                            to: 8,
+                            cost: 13.41757522658849,
+                        },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 0,
+                            cost: 1.8824165228898004,
+                        },
+                        Edge {
+                            to: 1,
+                            cost: 18.702631945210115,
+                        },
+                        Edge {
+                            to: 2,
+                            cost: 16.313099247004377,
+                        },
+                        Edge {
+                            to: 3,
+                            cost: 3.340513012587236,
+                        },
+                        Edge {
+                            to: 5,
+                            cost: 9.568614854660245,
+                        },
+                        Edge {
+                            to: 6,
+                            cost: 6.849461885327388,
+                        },
+                        Edge {
+                            to: 7,
+                            cost: 7.455992424446736,
+                        },
+                        Edge {
+                            to: 8,
+                            cost: 19.61866966591363,
+                        },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 0,
+                            cost: 1.0673823908781577,
+                        },
+                        Edge {
+                            to: 1,
+                            cost: 3.847655828276122,
+                        },
+                        Edge {
+                            to: 2,
+                            cost: 5.585527987185975,
+                        },
+                        Edge {
+                            to: 3,
+                            cost: 1.46551068868777,
+                        },
+                        Edge {
+                            to: 4,
+                            cost: 9.568614854660245,
+                        },
+                        Edge {
+                            to: 6,
+                            cost: 7.516298524772413,
+                        },
+                        Edge {
+                            to: 7,
+                            cost: 17.155030102652216,
+                        },
+                        Edge {
+                            to: 8,
+                            cost: 17.46182408314527,
+                        },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 0,
+                            cost: 8.668326879490138,
+                        },
+                        Edge {
+                            to: 1,
+                            cost: 15.73510598766653,
+                        },
+                        Edge {
+                            to: 2,
+                            cost: 8.932741722100753,
+                        },
+                        Edge {
+                            to: 3,
+                            cost: 2.6426709551798355,
+                        },
+                        Edge {
+                            to: 4,
+                            cost: 6.849461885327388,
+                        },
+                        Edge {
+                            to: 5,
+                            cost: 7.516298524772413,
+                        },
+                        Edge {
+                            to: 7,
+                            cost: 5.959449216135542,
+                        },
+                        Edge {
+                            to: 8,
+                            cost: 11.172366336098495,
+                        },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 0,
+                            cost: 18.956348946357103,
+                        },
+                        Edge {
+                            to: 1,
+                            cost: 0.24655608854276645,
+                        },
+                        Edge {
+                            to: 2,
+                            cost: 12.6998544424725,
+                        },
+                        Edge {
+                            to: 3,
+                            cost: 4.492948831722041,
+                        },
+                        Edge {
+                            to: 4,
+                            cost: 7.455992424446736,
+                        },
+                        Edge {
+                            to: 5,
+                            cost: 17.155030102652216,
+                        },
+                        Edge {
+                            to: 6,
+                            cost: 5.959449216135542,
+                        },
+                        Edge {
+                            to: 8,
+                            cost: 8.168048838216963,
+                        },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge {
+                            to: 0,
+                            cost: 5.399642479870355,
+                        },
+                        Edge {
+                            to: 1,
+                            cost: 4.321598762165737,
+                        },
+                        Edge {
+                            to: 2,
+                            cost: 9.05733402266841,
+                        },
+                        Edge {
+                            to: 3,
+                            cost: 13.41757522658849,
+                        },
+                        Edge {
+                            to: 4,
+                            cost: 19.61866966591363,
+                        },
+                        Edge {
+                            to: 5,
+                            cost: 17.46182408314527,
+                        },
+                        Edge {
+                            to: 6,
+                            cost: 11.172366336098495,
+                        },
+                        Edge {
+                            to: 7,
+                            cost: 8.168048838216963,
+                        },
+                    ],
+                },
+            ],
+        };
+}
+
+lazy_static! {
+        static ref SMALL_INT_GRAPH: Graph = Graph {
+            vertices: vec![
+                Vertex {
+                    edges: vec![
+                        Edge { to: 1, cost: 5.0 },
+                        Edge { to: 2, cost: 4.0 },
+                        Edge { to: 3, cost: 10.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 5.0 },
+                        Edge { to: 2, cost: 8.0 },
+                        Edge { to: 3, cost: 5.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 4.0 },
+                        Edge { to: 1, cost: 8.0 },
+                        Edge { to: 3, cost: 3.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 10.0 },
+                        Edge { to: 1, cost: 5.0 },
+                        Edge { to: 2, cost: 3.0 },
+                    ],
+                },
+            ],
+        };
+}
+
     /// Checks whether two paths describe the same undirected circle.
     /// This means that it is agnostic of
     /// - starting Vertex
@@ -160,112 +635,8 @@ mod exact_solver {
 
     #[test]
     fn test_float_tsp() {
-        let graph = Graph {
-            vertices: vec![
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 1,
-                            cost: 13.215648444670196,
-                        },
-                        Edge {
-                            to: 2,
-                            cost: 9.674413400408712,
-                        },
-                        Edge {
-                            to: 3,
-                            cost: 1.0970596862282833,
-                        },
-                        Edge {
-                            to: 4,
-                            cost: 16.098684067859647,
-                        },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 0,
-                            cost: 13.215648444670196,
-                        },
-                        Edge {
-                            to: 2,
-                            cost: 12.221639547131913,
-                        },
-                        Edge {
-                            to: 3,
-                            cost: 17.306826463341803,
-                        },
-                        Edge {
-                            to: 4,
-                            cost: 8.321138140452149,
-                        },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 0,
-                            cost: 9.674413400408712,
-                        },
-                        Edge {
-                            to: 1,
-                            cost: 12.221639547131913,
-                        },
-                        Edge {
-                            to: 3,
-                            cost: 4.6376150266768885,
-                        },
-                        Edge {
-                            to: 4,
-                            cost: 15.838066781407072,
-                        },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 0,
-                            cost: 1.0970596862282833,
-                        },
-                        Edge {
-                            to: 1,
-                            cost: 17.306826463341803,
-                        },
-                        Edge {
-                            to: 2,
-                            cost: 4.6376150266768885,
-                        },
-                        Edge {
-                            to: 4,
-                            cost: 6.102211932446107,
-                        },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 0,
-                            cost: 16.098684067859647,
-                        },
-                        Edge {
-                            to: 1,
-                            cost: 8.321138140452149,
-                        },
-                        Edge {
-                            to: 2,
-                            cost: 15.838066781407072,
-                        },
-                        Edge {
-                            to: 3,
-                            cost: 6.102211932446107,
-                        },
-                    ],
-                },
-            ],
-        };
         // Test each solution
-        let gm: VecMatrix = graph.into();
+        let gm: VecMatrix = SMALL_FLOAT_GRAPH.clone().into();
         for f in [naive_solver, first_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(37.41646270666716, best_cost));
@@ -278,335 +649,7 @@ mod exact_solver {
 
     #[test]
     fn test_big_floating_tsp() {
-        let graph = Graph {
-            vertices: vec![
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 1,
-                            cost: 5.357166694956081,
-                        },
-                        Edge {
-                            to: 2,
-                            cost: 12.673287166274285,
-                        },
-                        Edge {
-                            to: 3,
-                            cost: 15.392922519581575,
-                        },
-                        Edge {
-                            to: 4,
-                            cost: 1.8824165228898004,
-                        },
-                        Edge {
-                            to: 5,
-                            cost: 1.0673823908781577,
-                        },
-                        Edge {
-                            to: 6,
-                            cost: 8.668326879490138,
-                        },
-                        Edge {
-                            to: 7,
-                            cost: 18.956348946357103,
-                        },
-                        Edge {
-                            to: 8,
-                            cost: 5.399642479870355,
-                        },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 0,
-                            cost: 5.357166694956081,
-                        },
-                        Edge {
-                            to: 2,
-                            cost: 11.139733539749999,
-                        },
-                        Edge {
-                            to: 3,
-                            cost: 1.661032458795486,
-                        },
-                        Edge {
-                            to: 4,
-                            cost: 18.702631945210115,
-                        },
-                        Edge {
-                            to: 5,
-                            cost: 3.847655828276122,
-                        },
-                        Edge {
-                            to: 6,
-                            cost: 15.73510598766653,
-                        },
-                        Edge {
-                            to: 7,
-                            cost: 0.24655608854276645,
-                        },
-                        Edge {
-                            to: 8,
-                            cost: 4.321598762165737,
-                        },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 0,
-                            cost: 12.673287166274285,
-                        },
-                        Edge {
-                            to: 1,
-                            cost: 11.139733539749999,
-                        },
-                        Edge {
-                            to: 3,
-                            cost: 2.1803729313885345,
-                        },
-                        Edge {
-                            to: 4,
-                            cost: 16.313099247004377,
-                        },
-                        Edge {
-                            to: 5,
-                            cost: 5.585527987185975,
-                        },
-                        Edge {
-                            to: 6,
-                            cost: 8.932741722100753,
-                        },
-                        Edge {
-                            to: 7,
-                            cost: 12.6998544424725,
-                        },
-                        Edge {
-                            to: 8,
-                            cost: 9.05733402266841,
-                        },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 0,
-                            cost: 15.392922519581575,
-                        },
-                        Edge {
-                            to: 1,
-                            cost: 1.661032458795486,
-                        },
-                        Edge {
-                            to: 2,
-                            cost: 2.1803729313885345,
-                        },
-                        Edge {
-                            to: 4,
-                            cost: 3.340513012587236,
-                        },
-                        Edge {
-                            to: 5,
-                            cost: 1.46551068868777,
-                        },
-                        Edge {
-                            to: 6,
-                            cost: 2.6426709551798355,
-                        },
-                        Edge {
-                            to: 7,
-                            cost: 4.492948831722041,
-                        },
-                        Edge {
-                            to: 8,
-                            cost: 13.41757522658849,
-                        },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 0,
-                            cost: 1.8824165228898004,
-                        },
-                        Edge {
-                            to: 1,
-                            cost: 18.702631945210115,
-                        },
-                        Edge {
-                            to: 2,
-                            cost: 16.313099247004377,
-                        },
-                        Edge {
-                            to: 3,
-                            cost: 3.340513012587236,
-                        },
-                        Edge {
-                            to: 5,
-                            cost: 9.568614854660245,
-                        },
-                        Edge {
-                            to: 6,
-                            cost: 6.849461885327388,
-                        },
-                        Edge {
-                            to: 7,
-                            cost: 7.455992424446736,
-                        },
-                        Edge {
-                            to: 8,
-                            cost: 19.61866966591363,
-                        },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 0,
-                            cost: 1.0673823908781577,
-                        },
-                        Edge {
-                            to: 1,
-                            cost: 3.847655828276122,
-                        },
-                        Edge {
-                            to: 2,
-                            cost: 5.585527987185975,
-                        },
-                        Edge {
-                            to: 3,
-                            cost: 1.46551068868777,
-                        },
-                        Edge {
-                            to: 4,
-                            cost: 9.568614854660245,
-                        },
-                        Edge {
-                            to: 6,
-                            cost: 7.516298524772413,
-                        },
-                        Edge {
-                            to: 7,
-                            cost: 17.155030102652216,
-                        },
-                        Edge {
-                            to: 8,
-                            cost: 17.46182408314527,
-                        },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 0,
-                            cost: 8.668326879490138,
-                        },
-                        Edge {
-                            to: 1,
-                            cost: 15.73510598766653,
-                        },
-                        Edge {
-                            to: 2,
-                            cost: 8.932741722100753,
-                        },
-                        Edge {
-                            to: 3,
-                            cost: 2.6426709551798355,
-                        },
-                        Edge {
-                            to: 4,
-                            cost: 6.849461885327388,
-                        },
-                        Edge {
-                            to: 5,
-                            cost: 7.516298524772413,
-                        },
-                        Edge {
-                            to: 7,
-                            cost: 5.959449216135542,
-                        },
-                        Edge {
-                            to: 8,
-                            cost: 11.172366336098495,
-                        },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 0,
-                            cost: 18.956348946357103,
-                        },
-                        Edge {
-                            to: 1,
-                            cost: 0.24655608854276645,
-                        },
-                        Edge {
-                            to: 2,
-                            cost: 12.6998544424725,
-                        },
-                        Edge {
-                            to: 3,
-                            cost: 4.492948831722041,
-                        },
-                        Edge {
-                            to: 4,
-                            cost: 7.455992424446736,
-                        },
-                        Edge {
-                            to: 5,
-                            cost: 17.155030102652216,
-                        },
-                        Edge {
-                            to: 6,
-                            cost: 5.959449216135542,
-                        },
-                        Edge {
-                            to: 8,
-                            cost: 8.168048838216963,
-                        },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge {
-                            to: 0,
-                            cost: 5.399642479870355,
-                        },
-                        Edge {
-                            to: 1,
-                            cost: 4.321598762165737,
-                        },
-                        Edge {
-                            to: 2,
-                            cost: 9.05733402266841,
-                        },
-                        Edge {
-                            to: 3,
-                            cost: 13.41757522658849,
-                        },
-                        Edge {
-                            to: 4,
-                            cost: 19.61866966591363,
-                        },
-                        Edge {
-                            to: 5,
-                            cost: 17.46182408314527,
-                        },
-                        Edge {
-                            to: 6,
-                            cost: 11.172366336098495,
-                        },
-                        Edge {
-                            to: 7,
-                            cost: 8.168048838216963,
-                        },
-                    ],
-                },
-            ],
-        };
-        let gm: VecMatrix = graph.into();
+        let gm: VecMatrix = BIG_FLOAT_GRAPH.clone().into();
         for f in [naive_solver, first_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(33.03008250868411, best_cost));
@@ -619,39 +662,7 @@ mod exact_solver {
 
     #[test]
     fn test_integer_tsp() {
-        let graph = Graph {
-            vertices: vec![
-                Vertex {
-                    edges: vec![
-                        Edge { to: 1, cost: 5.0 },
-                        Edge { to: 2, cost: 4.0 },
-                        Edge { to: 3, cost: 10.0 },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge { to: 0, cost: 5.0 },
-                        Edge { to: 2, cost: 8.0 },
-                        Edge { to: 3, cost: 5.0 },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge { to: 0, cost: 4.0 },
-                        Edge { to: 1, cost: 8.0 },
-                        Edge { to: 3, cost: 3.0 },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge { to: 0, cost: 10.0 },
-                        Edge { to: 1, cost: 5.0 },
-                        Edge { to: 2, cost: 3.0 },
-                    ],
-                },
-            ],
-        };
-        let gm: VecMatrix = graph.into();
+        let gm: VecMatrix = SMALL_INT_GRAPH.clone().into();
         for f in [naive_solver, first_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(best_cost, 17.0));
