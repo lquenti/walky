@@ -37,10 +37,10 @@ impl TravellingSalesmanProblemInstance {
 }
 
 /// This represents a graph, with the collection of all its edges and vertices.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Graph {
     #[serde(rename = "$value")]
-    vertices: Vec<Vertex>,
+    pub vertices: Vec<Vertex>,
 }
 
 impl Graph {
@@ -144,10 +144,10 @@ impl From<&Graph> for WeightedGraph {
 
 /// This representes a vertex and contains the collection of edges from this vertex
 /// to all adjacent vertices.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Vertex {
     #[serde(rename = "$value")]
-    edges: Vec<Edge>,
+    pub edges: Vec<Edge>,
 }
 
 impl Vertex {
