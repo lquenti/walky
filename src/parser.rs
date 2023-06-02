@@ -1,5 +1,6 @@
 use std::{ops::Index, slice::SliceIndex};
 
+use blossom::WeightedGraph;
 use delegate::delegate;
 use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
@@ -36,10 +37,10 @@ impl TravellingSalesmanProblemInstance {
 }
 
 /// This represents a graph, with the collection of all its edges and vertices.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Graph {
     #[serde(rename = "$value")]
-    vertices: Vec<Vertex>,
+    pub vertices: Vec<Vertex>,
 }
 
 impl Graph {
@@ -73,6 +74,35 @@ impl Graph {
     pub fn undirected_edge_weight(&self) -> f64 {
         self.directed_edge_weight() * 0.5
     }
+
+    /// adds an undirected edge to the graph.
+    /// There is no check, whether the edge might already exist in the graph.
+    pub fn add_undirected_edge(&mut self, from: usize, to: usize, cost: f64) {
+        debug_assert!(
+            from < self.num_vertices(),
+            "The vertex 'from' has to be a valid vertex in the graph"
+        );
+        debug_assert!(
+            to < self.num_vertices(),
+            "The vertex 'to' has to be a valid vertex in the graph"
+        );
+
+        let edge = Edge { to, cost };
+        let edge_reverse = Edge { to: from, cost };
+        self.vertices[from].add_edge(edge);
+        self.vertices[to].add_edge(edge_reverse);
+    }
+
+    /// returns the degree of the specified vertex
+    pub fn vertex_degree(&self, vertex: usize) -> usize {
+        debug_assert!(
+            vertex < self.vertices.len(),
+            "The vertex {} is out of bounds, the Graph contains only the vertices 0, ..., {}",
+            vertex,
+            self.vertices.len() - 1
+        );
+        self.vertices[vertex].degree()
+    }
 }
 
 impl<I> Index<I> for Graph
@@ -94,12 +124,30 @@ impl From<Vec<Vec<Edge>>> for Graph {
     }
 }
 
+impl From<&Graph> for WeightedGraph {
+    /// conversion from the [`Graph`] type of this crate, to the [`WeightedGraph`] type of the
+    /// crate [`blossom`]
+    fn from(value: &Graph) -> Self {
+        WeightedGraph::new(
+            value
+                .iter()
+                .enumerate()
+                .map(|(from, vertices)| {
+                    let adjacent_vertices: Vec<usize> = vertices.iter().map(|e| e.to).collect();
+                    let edge_cost: Vec<f64> = vertices.iter().map(|e| e.cost).collect();
+                    (from, (adjacent_vertices, edge_cost))
+                })
+                .collect(),
+        )
+    }
+}
+
 /// This representes a vertex and contains the collection of edges from this vertex
 /// to all adjacent vertices.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Vertex {
     #[serde(rename = "$value")]
-    edges: Vec<Edge>,
+    pub edges: Vec<Edge>,
 }
 
 impl Vertex {
@@ -107,21 +155,27 @@ impl Vertex {
         to self.edges {
             /// Yields an Iterator over all edges from this vertex to the adjacent edges.
             pub fn iter(&self) -> std::slice::Iter<Edge>;
+
+            /// Adds an edge to the vertex
+            #[call(push)]
+            pub fn add_edge(&mut self, edge: Edge);
+
+            /// returns the degree of the vertex
+            #[call(len)]
+            pub fn degree(&self) -> usize;
         }
     }
 }
 
 impl From<Vec<Edge>> for Vertex {
     fn from(value: Vec<Edge>) -> Self {
-        Vertex {
-            edges: Vec::from(value),
-        }
+        Vertex { edges: value }
     }
 }
 
 /// Represents a directed edge from a known node to the node `to`,
 /// the edge has cost/weight/distance `cost`.
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Copy, Clone)]
 pub struct Edge {
     #[serde(rename = "$text")]
     pub to: usize,
