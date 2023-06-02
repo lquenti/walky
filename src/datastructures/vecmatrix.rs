@@ -1,7 +1,7 @@
-pub use crate::parser::{Edge, Graph, Vertex};
-
 use std::convert::From;
 use std::ops::{Deref, DerefMut};
+
+use crate::datastructures::Graph;
 
 #[derive(Debug, PartialEq)]
 pub struct GraphMatrix(Vec<Vec<f64>>);
