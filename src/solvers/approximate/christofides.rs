@@ -19,7 +19,7 @@ pub fn christofides(graph: &Graph) {
 
     // 3. compute a minimum-weight maximum matching for the graph
     // note: the maximal matching is perfect
-    let matching = subgraph
+    let _matching = subgraph
         .maximin_matching()
         .expect("Something went wrong: could not compute the maximal minimum weight matching");
 

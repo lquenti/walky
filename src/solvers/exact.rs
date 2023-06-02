@@ -50,7 +50,7 @@ pub fn first_improved_solver(graph: Graph) -> Solution {
 ///
 /// The complexity analysis gets tedious here, so we basically still have
 /// Runtime: O(n!)
-pub fn second_improved_solver(graph: Graph) -> Solution {
+pub fn second_improved_solver(_graph: Graph) -> Solution {
     todo!() // Hard, we need a new enumeration algorithm that is easier to prefix sum
             // We should probably also inline it
             // Not? recursive search
@@ -60,7 +60,7 @@ pub fn second_improved_solver(graph: Graph) -> Solution {
 /// Prune a lot whenever the partial sum is already bigger than the previous optimum
 ///
 /// Runtime: TODO
-pub fn third_improved_solver(graph: Graph) -> Solution {
+pub fn third_improved_solver(_graph: Graph) -> Solution {
     todo!()
 }
 
