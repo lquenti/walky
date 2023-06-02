@@ -43,7 +43,11 @@ impl DerefMut for VecMatrix {
 
 impl AdjacencyMatrix for VecMatrix {
     fn from_dim(dim: usize) -> Self {
-        VecMatrix(vec![vec![f64::INFINITY; dim]; dim])
+        let mut vector = vec![vec![f64::INFINITY; dim]; dim];
+        for (i, neighbours) in vector.iter_mut().enumerate() {
+            neighbours[i] = 0.;
+        }
+        VecMatrix(vector)
     }
 
     fn dim(&self) -> usize {

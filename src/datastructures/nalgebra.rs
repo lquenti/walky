@@ -1,5 +1,5 @@
 use crate::datastructures::{Graph, VecMatrix};
-use nalgebra::DMatrix;
+use nalgebra::{DMatrix, DVector};
 use std::ops::{Deref, DerefMut};
 
 use super::AdjacencyMatrix;
@@ -42,7 +42,9 @@ impl From<Graph> for NAMatrix {
 
 impl AdjacencyMatrix for NAMatrix {
     fn from_dim(dim: usize) -> Self {
-        NAMatrix(DMatrix::from_element(dim, dim, f64::INFINITY))
+        let mut matrix = DMatrix::from_element(dim, dim, f64::INFINITY);
+        matrix.set_diagonal(&DVector::repeat(dim, 0.));
+        NAMatrix(matrix)
     }
     fn dim(&self) -> usize {
         self.shape().0
