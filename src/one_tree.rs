@@ -3,7 +3,7 @@
 
 use crate::{
     mst::prim_with_excluded_node_single_threaded,
-    parser::{Edge, Graph},
+    datastructures::{Edge, Graph},
 };
 
 /// Creates a 1-tree from a given graph.

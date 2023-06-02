@@ -3,7 +3,7 @@
 use core::panic;
 use std::cmp::Reverse;
 
-use crate::parser::{Edge, Graph};
+use crate::datastructures::{Edge, Graph};
 
 use delegate::delegate;
 use ordered_float::OrderedFloat;
