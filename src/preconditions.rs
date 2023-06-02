@@ -6,7 +6,7 @@ use crate::parser::Graph;
 /// This is a prerequisite for the TSP.
 pub fn is_fully_connected(g: &Graph) -> bool {
     let n = g.num_vertices();
-    g.iter().all(|v| v.num_edges() == n - 1)
+    g.iter().all(|v| v.degree() == n - 1)
 }
 
 /// This function checks that whether the graph has multiple edges from one vertex to another
