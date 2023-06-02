@@ -1,13 +1,13 @@
 use std::convert::From;
 use std::ops::{Deref, DerefMut};
 
-use crate::datastructures::{AdjacencyMatrix, Graph, GraphPath};
+use crate::datastructures::{AdjacencyMatrix, Graph, Path};
 
 
 #[derive(Debug, PartialEq)]
-pub struct GraphMatrix(Vec<Vec<f64>>);
+pub struct VecMatrix(Vec<Vec<f64>>);
 
-impl From<Graph> for GraphMatrix {
+impl From<Graph> for VecMatrix {
     fn from(graph: Graph) -> Self {
         let n: usize = graph.num_vertices();
         let mut matrix = vec![vec![f64::INFINITY; n]; n];
@@ -23,26 +23,26 @@ impl From<Graph> for GraphMatrix {
     }
 }
 
-impl From<Vec<Vec<f64>>> for GraphMatrix {
+impl From<Vec<Vec<f64>>> for VecMatrix {
     fn from(matrix: Vec<Vec<f64>>) -> Self {
-        GraphMatrix(matrix)
+        VecMatrix(matrix)
     }
 }
 
-impl Deref for GraphMatrix {
+impl Deref for VecMatrix {
     type Target = Vec<Vec<f64>>;
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl DerefMut for GraphMatrix {
+impl DerefMut for VecMatrix {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl AdjacencyMatrix for GraphMatrix {
+impl AdjacencyMatrix for VecMatrix {
     fn dim(&self) -> usize {
         self.len()
     }

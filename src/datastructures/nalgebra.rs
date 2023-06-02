@@ -1,5 +1,5 @@
 use nalgebra::DMatrix;
-use crate::datastructures::{Graph, GraphMatrix, GraphPath};
+use crate::datastructures::{Graph, VecMatrix, Path};
 
 use super::AdjacencyMatrix;
 
@@ -7,7 +7,7 @@ pub type NAMatrix = DMatrix<f64>;
 
 impl From<Graph> for NAMatrix {
     fn from(graph: Graph) -> Self {
-        let vss: GraphMatrix = graph.into();
+        let vss: VecMatrix = graph.into();
         let rows = vss.len();
         let cols = if let Some(row) = vss.first() {
             row.len()

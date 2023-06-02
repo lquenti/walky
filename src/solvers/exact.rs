@@ -1,6 +1,6 @@
 //! Exact methods to solve the TSP problem.
 
-use crate::datastructures::{AdjacencyMatrix, Graph, GraphPath, Solution};
+use crate::datastructures::{AdjacencyMatrix, Graph, Path, Solution};
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
@@ -10,7 +10,7 @@ pub fn naive_solver<T>(graph_matrix: &T) -> Solution
     where T: AdjacencyMatrix
 {
     let n = graph_matrix.dim();
-    let mut best_permutation: GraphPath = (0..n).collect();
+    let mut best_permutation: Path = (0..n).collect();
     let mut best_cost = f64::INFINITY;
 
     let mut current_permutation = best_permutation.clone();
@@ -33,7 +33,7 @@ pub fn first_improved_solver<T>(graph_matrix: &T) -> Solution
     where T: AdjacencyMatrix
 {
     let n = graph_matrix.dim();
-    let mut best_permutation: GraphPath = (0..n).collect();
+    let mut best_permutation: Path = (0..n).collect();
     let mut best_cost = f64::INFINITY;
 
     let mut current_permutation = best_permutation.clone();
@@ -107,13 +107,13 @@ mod exact_solver {
 
     use super::*;
     use crate::parser::{Edge, Graph, Vertex};
-    use crate::datastructures::GraphMatrix;
+    use crate::datastructures::VecMatrix;
 
     /// Checks whether two paths describe the same undirected circle.
     /// This means that it is agnostic of
     /// - starting Vertex
     /// - direction
-    fn is_same_undirected_circle(seq1: &GraphPath, seq2: &GraphPath) -> bool {
+    fn is_same_undirected_circle(seq1: &Path, seq2: &Path) -> bool {
         if seq1.len() != seq2.len() {
             return false;
         }
@@ -126,11 +126,11 @@ mod exact_solver {
                 .iter()
                 .chain(seq1[..i].iter())
                 .copied()
-                .collect::<GraphPath>()
+                .collect::<Path>()
         });
         let reversed_rotations = rotations
             .clone()
-            .map(|xs| xs.into_iter().rev().collect::<GraphPath>());
+            .map(|xs| xs.into_iter().rev().collect::<Path>());
 
         // Check if any rotation matches
         for rotation in rotations.chain(reversed_rotations) {
@@ -265,7 +265,7 @@ mod exact_solver {
             ],
         };
         // Test each solution
-        let gm: GraphMatrix = graph.into();
+        let gm: VecMatrix = graph.into();
         for f in [naive_solver, first_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(37.41646270666716, best_cost));
@@ -606,7 +606,7 @@ mod exact_solver {
                 },
             ],
         };
-        let gm: GraphMatrix = graph.into();
+        let gm: VecMatrix = graph.into();
         for f in [naive_solver, first_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(33.03008250868411, best_cost));
@@ -651,7 +651,7 @@ mod exact_solver {
                 },
             ],
         };
-        let gm: GraphMatrix = graph.into();
+        let gm: VecMatrix = graph.into();
         for f in [naive_solver, first_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(best_cost, 17.0));
