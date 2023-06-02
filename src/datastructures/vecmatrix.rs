@@ -42,11 +42,19 @@ impl DerefMut for VecMatrix {
 }
 
 impl AdjacencyMatrix for VecMatrix {
+    fn from_dim(dim: usize) -> Self {
+        VecMatrix(vec![vec![f64::INFINITY; dim]; dim])
+    }
+
     fn dim(&self) -> usize {
         self.len()
     }
 
     fn get(&self, row: usize, col: usize) -> f64 {
         self[row][col]
+    }
+
+    fn set(&mut self, row: usize, col: usize, cost: f64) {
+        self[row][col] = cost;
     }
 }

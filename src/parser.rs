@@ -5,6 +5,8 @@ use delegate::delegate;
 use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
 
+use crate::datastructures::{AdjacencyMatrix, VecMatrix};
+
 /// Can be parsed from an xml document with the
 /// [XML-TSPLIB](http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf)
 /// format.
@@ -139,6 +141,28 @@ impl From<&Graph> for WeightedGraph {
                 })
                 .collect(),
         )
+    }
+}
+
+impl AdjacencyMatrix for Graph {
+    fn from_dim(dim: usize) -> Self {
+        VecMatrix::from_dim(dim).into()
+    }
+
+    fn dim(&self) -> usize {
+        self.num_vertices()
+    }
+
+    fn get(&self, row: usize, col: usize) -> f64 {
+        self[row]
+            .iter()
+            .find(|e| e.to == col)
+            .map(|e| e.cost)
+            .unwrap_or(f64::INFINITY)
+    }
+
+    fn set(&mut self, row: usize, col: usize, cost: f64) {
+        todo!()
     }
 }
 
