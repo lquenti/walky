@@ -28,7 +28,7 @@ pub fn naive_solver(graph: Graph) -> Solution {
 /// We fixate the first element to be at the start.
 /// Since it is a cycle, we do not care where it starts.
 ///
-/// Runtime: Theta(n * (n-1)!)
+/// Runtime: Theta(n * (n-1)!) = Theta(n!)
 pub fn first_improved_solver(graph: Graph) -> Solution {
     let graph_matrix: GraphMatrix = graph.into();
     let n = graph_matrix.len();
@@ -45,6 +45,30 @@ pub fn first_improved_solver(graph: Graph) -> Solution {
     }
     (best_cost, best_permutation)
 }
+
+/// Second improvement of [`naive_solver`]:
+/// We carry along a partial sum whenever we change an element.
+///
+/// The complexity analysis gets tedious here, so we basically still have
+/// Runtime: O(n!)
+pub fn second_improved_solver(graph: Graph) -> Solution {
+    todo!() // Hard, we need a new enumeration algorithm that is easier to prefix sum
+            // We should probably also inline it
+            // Not? recursive search
+}
+
+/// Third improvement of [`naive_solver`]:
+/// Prune a lot whenever the partial sum is already bigger than the previous optimum
+///
+/// Runtime: TODO
+pub fn third_improved_solver(graph: Graph) -> Solution {
+    todo!()
+}
+
+/// Fourth improvement of [`naive_solver`]:
+/// prune if currently known + NN is bigger than current optimum (greedy)
+/// Sixth improvement:
+/// Use MST as lower bound (should I precompute them?)
 
 /// Finding the next permutation given an array.
 /// Based on [Nayuki](https://www.nayuki.io/page/next-lexicographical-permutation-algorithm)
