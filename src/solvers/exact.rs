@@ -107,7 +107,7 @@ mod exact_solver {
 
     use super::*;
     use crate::parser::{Edge, Graph, Vertex};
-    use crate::datastructures::VecMatrix;
+    use crate::datastructures::{VecMatrix, NAMatrix};
 
     use lazy_static::lazy_static;
 
@@ -634,7 +634,7 @@ lazy_static! {
     }
 
     #[test]
-    fn test_float_tsp() {
+    fn test_float_tsp_vecmatrix() {
         // Test each solution
         let gm: VecMatrix = SMALL_FLOAT_GRAPH.clone().into();
         for f in [naive_solver, first_improved_solver].iter() {
@@ -648,7 +648,21 @@ lazy_static! {
     }
 
     #[test]
-    fn test_big_floating_tsp() {
+    fn test_float_tsp_namatrix() {
+        // Test each solution
+        let gm: NAMatrix = SMALL_FLOAT_GRAPH.clone().into();
+        for f in [naive_solver, first_improved_solver].iter() {
+            let (best_cost, best_permutation) = f(&gm);
+            assert!(relative_eq!(37.41646270666716, best_cost));
+            assert!(is_same_undirected_circle(
+                &vec![0, 3, 4, 1, 2],
+                &best_permutation
+            ));
+        }
+    }
+
+    #[test]
+    fn test_big_floating_tsp_vecmatrix() {
         let gm: VecMatrix = BIG_FLOAT_GRAPH.clone().into();
         for f in [naive_solver, first_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
@@ -661,8 +675,34 @@ lazy_static! {
     }
 
     #[test]
-    fn test_integer_tsp() {
+    fn test_big_floating_tsp_namatrix() {
+        let gm: NAMatrix = BIG_FLOAT_GRAPH.clone().into();
+        for f in [naive_solver, first_improved_solver].iter() {
+            let (best_cost, best_permutation) = f(&gm);
+            assert!(relative_eq!(33.03008250868411, best_cost));
+            assert!(is_same_undirected_circle(
+                &vec![0, 5, 3, 2, 8, 1, 7, 6, 4],
+                &best_permutation
+            ));
+        }
+    }
+
+    #[test]
+    fn test_integer_tsp_vecmatrix() {
         let gm: VecMatrix = SMALL_INT_GRAPH.clone().into();
+        for f in [naive_solver, first_improved_solver].iter() {
+            let (best_cost, best_permutation) = f(&gm);
+            assert!(relative_eq!(best_cost, 17.0));
+            assert!(is_same_undirected_circle(
+                &best_permutation,
+                &vec![0, 1, 3, 2]
+            ));
+        }
+    }
+
+    #[test]
+    fn test_integer_tsp_namatrix() {
+        let gm: NAMatrix = SMALL_INT_GRAPH.clone().into();
         for f in [naive_solver, first_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(best_cost, 17.0));
