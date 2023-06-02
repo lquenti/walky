@@ -1,4 +1,4 @@
-use crate::{parser::TravellingSalesmanProblemInstance, datastructures::VecMatrix};
+use crate::{datastructures::VecMatrix, parser::TravellingSalesmanProblemInstance};
 use std::{error::Error, fs::File, io::Read, path::PathBuf};
 
 use crate::solvers::exact;

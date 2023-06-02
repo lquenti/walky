@@ -1,5 +1,5 @@
+use crate::datastructures::{Graph, VecMatrix};
 use nalgebra::DMatrix;
-use crate::datastructures::{Graph, VecMatrix, Path};
 
 use super::AdjacencyMatrix;
 
@@ -17,12 +17,11 @@ impl From<Graph> for NAMatrix {
         let mut res = DMatrix::from_element(rows, cols, 0.0);
         for (i, row) in vss.iter().enumerate() {
             for (j, &x) in row.iter().enumerate() {
-                res[(i,j)] = x;
+                res[(i, j)] = x;
             }
         }
         res
     }
-
 }
 
 impl AdjacencyMatrix for NAMatrix {

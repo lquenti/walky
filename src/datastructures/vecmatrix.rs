@@ -1,8 +1,7 @@
 use std::convert::From;
 use std::ops::{Deref, DerefMut};
 
-use crate::datastructures::{AdjacencyMatrix, Graph, Path};
-
+use crate::datastructures::{AdjacencyMatrix, Graph};
 
 #[derive(Debug, PartialEq)]
 pub struct VecMatrix(Vec<Vec<f64>>);
@@ -50,5 +49,4 @@ impl AdjacencyMatrix for VecMatrix {
     fn get(&self, row: usize, col: usize) -> f64 {
         self[row][col]
     }
-
 }

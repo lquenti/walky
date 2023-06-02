@@ -1,5 +1,5 @@
-mod vecmatrix;
 mod nalgebra;
+mod vecmatrix;
 
 /// Adjacency list based on TSPLIB-XML
 pub use crate::parser::{Edge, Graph, Vertex};
@@ -32,7 +32,7 @@ pub trait AdjacencyMatrix {
         if path.len() <= 1 {
             return 0.0;
         }
-        let last_edge = self.get(*path.last().unwrap(),*path.first().unwrap());
+        let last_edge = self.get(*path.last().unwrap(), *path.first().unwrap());
         let path_cost = self.evaluate_path(path);
         path_cost + last_edge
     }

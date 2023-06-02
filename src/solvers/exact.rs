@@ -7,7 +7,8 @@ use crate::datastructures::{AdjacencyMatrix, Graph, Path, Solution};
 ///
 /// Runtime: Theta(n * n!)
 pub fn naive_solver<T>(graph_matrix: &T) -> Solution
-    where T: AdjacencyMatrix
+where
+    T: AdjacencyMatrix,
 {
     let n = graph_matrix.dim();
     let mut best_permutation: Path = (0..n).collect();
@@ -30,7 +31,8 @@ pub fn naive_solver<T>(graph_matrix: &T) -> Solution
 ///
 /// Runtime: Theta(n * (n-1)!) = Theta(n!)
 pub fn first_improved_solver<T>(graph_matrix: &T) -> Solution
-    where T: AdjacencyMatrix
+where
+    T: AdjacencyMatrix,
 {
     let n = graph_matrix.dim();
     let mut best_permutation: Path = (0..n).collect();
@@ -106,12 +108,12 @@ mod exact_solver {
     use approx::relative_eq;
 
     use super::*;
+    use crate::datastructures::{NAMatrix, VecMatrix};
     use crate::parser::{Edge, Graph, Vertex};
-    use crate::datastructures::{VecMatrix, NAMatrix};
 
     use lazy_static::lazy_static;
 
-lazy_static! {
+    lazy_static! {
         static ref SMALL_FLOAT_GRAPH: Graph = Graph {
             vertices: vec![
                 Vertex {
@@ -216,10 +218,10 @@ lazy_static! {
                 },
             ],
         };
-}
+    }
 
-lazy_static! {
-    static ref BIG_FLOAT_GRAPH: Graph = Graph {
+    lazy_static! {
+        static ref BIG_FLOAT_GRAPH: Graph = Graph {
             vertices: vec![
                 Vertex {
                     edges: vec![
@@ -547,9 +549,9 @@ lazy_static! {
                 },
             ],
         };
-}
+    }
 
-lazy_static! {
+    lazy_static! {
         static ref SMALL_INT_GRAPH: Graph = Graph {
             vertices: vec![
                 Vertex {
@@ -582,7 +584,7 @@ lazy_static! {
                 },
             ],
         };
-}
+    }
 
     /// Checks whether two paths describe the same undirected circle.
     /// This means that it is agnostic of
