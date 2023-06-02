@@ -1,4 +1,4 @@
-use crate::parser::TravellingSalesmanProblemInstance;
+use crate::{parser::TravellingSalesmanProblemInstance, datastructures::GraphMatrix};
 use std::{error::Error, fs::File, io::Read, path::PathBuf};
 
 use crate::solvers::exact;
@@ -25,7 +25,8 @@ pub fn run(args: Args) -> Result<(), Box<dyn Error>> {
     let mut xml = String::new();
     file.read_to_string(&mut xml)?;
     let tsp_instance = TravellingSalesmanProblemInstance::parse_from_xml(&xml[..])?;
-    let (best_cost, best_path) = exact::naive_solver(tsp_instance.graph.clone());
+    let m: GraphMatrix = tsp_instance.graph.clone().into();
+    let (best_cost, best_path) = exact::naive_solver(&m);
     let lower_bound = one_tree_lower_bound(&tsp_instance.graph);
     println!("Best Path: {:?}", best_path);
     println!("Best Cost: {}", best_cost);

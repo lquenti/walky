@@ -1,12 +1,11 @@
 use std::convert::From;
 use std::ops::{Deref, DerefMut};
 
-use crate::datastructures::Graph;
+use crate::datastructures::{AdjacencyMatrix, Graph, GraphPath};
+
 
 #[derive(Debug, PartialEq)]
 pub struct GraphMatrix(Vec<Vec<f64>>);
-pub type GraphPath = Vec<usize>;
-pub type Solution = (f64, Vec<usize>);
 
 impl From<Graph> for GraphMatrix {
     fn from(graph: Graph) -> Self {
@@ -43,30 +42,13 @@ impl DerefMut for GraphMatrix {
     }
 }
 
-impl GraphMatrix {
-    /// Evaluates the accumulative path cost given the current underlying graph
-    fn evaluate_path(&self, path: &GraphPath) -> f64 {
-        let n = path.len();
-        if n <= 1 {
-            return 0.0;
-        }
-        let mut acc = 0.0;
-        for from in 0..(n - 1) {
-            let to = from + 1;
-            let cost = self[path[from]][path[to]];
-            acc += cost;
-        }
-        acc
+impl AdjacencyMatrix for GraphMatrix {
+    fn dim(&self) -> usize {
+        self.len()
     }
 
-    /// Evaluates the accumulative circle path cost given the current underlying graph
-    /// This is equivalent to `GraphMatrix.evaluate_path` + returning to the initial vertex
-    pub fn evaluate_circle(&self, path: &GraphPath) -> f64 {
-        if path.len() <= 1 {
-            return 0.0;
-        }
-        let last_edge = self[*path.last().unwrap()][*path.first().unwrap()];
-        let path_cost = self.evaluate_path(path);
-        path_cost + last_edge
+    fn get(&self, row: usize, col: usize) -> f64 {
+        self[row][col]
     }
+
 }

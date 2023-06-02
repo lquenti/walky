@@ -1,14 +1,15 @@
 //! Exact methods to solve the TSP problem.
 
-use crate::datastructures::{Graph, GraphMatrix, GraphPath, Solution};
+use crate::datastructures::{AdjacencyMatrix, Graph, GraphPath, Solution};
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
 ///
 /// Runtime: Theta(n * n!)
-pub fn naive_solver(graph: Graph) -> Solution {
-    let graph_matrix: GraphMatrix = graph.into();
-    let n = graph_matrix.len();
+pub fn naive_solver<T>(graph_matrix: &T) -> Solution
+    where T: AdjacencyMatrix
+{
+    let n = graph_matrix.dim();
     let mut best_permutation: GraphPath = (0..n).collect();
     let mut best_cost = f64::INFINITY;
 
@@ -28,9 +29,10 @@ pub fn naive_solver(graph: Graph) -> Solution {
 /// Since it is a cycle, we do not care where it starts.
 ///
 /// Runtime: Theta(n * (n-1)!) = Theta(n!)
-pub fn first_improved_solver(graph: Graph) -> Solution {
-    let graph_matrix: GraphMatrix = graph.into();
-    let n = graph_matrix.len();
+pub fn first_improved_solver<T>(graph_matrix: &T) -> Solution
+    where T: AdjacencyMatrix
+{
+    let n = graph_matrix.dim();
     let mut best_permutation: GraphPath = (0..n).collect();
     let mut best_cost = f64::INFINITY;
 
@@ -105,6 +107,7 @@ mod exact_solver {
 
     use super::*;
     use crate::parser::{Edge, Graph, Vertex};
+    use crate::datastructures::GraphMatrix;
 
     /// Checks whether two paths describe the same undirected circle.
     /// This means that it is agnostic of
@@ -262,8 +265,9 @@ mod exact_solver {
             ],
         };
         // Test each solution
+        let gm: GraphMatrix = graph.into();
         for f in [naive_solver, first_improved_solver].iter() {
-            let (best_cost, best_permutation) = f(graph.clone());
+            let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(37.41646270666716, best_cost));
             assert!(is_same_undirected_circle(
                 &vec![0, 3, 4, 1, 2],
@@ -602,8 +606,9 @@ mod exact_solver {
                 },
             ],
         };
+        let gm: GraphMatrix = graph.into();
         for f in [naive_solver, first_improved_solver].iter() {
-            let (best_cost, best_permutation) = f(graph.clone());
+            let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(33.03008250868411, best_cost));
             assert!(is_same_undirected_circle(
                 &vec![0, 5, 3, 2, 8, 1, 7, 6, 4],
@@ -646,8 +651,9 @@ mod exact_solver {
                 },
             ],
         };
+        let gm: GraphMatrix = graph.into();
         for f in [naive_solver, first_improved_solver].iter() {
-            let (best_cost, best_permutation) = f(graph.clone());
+            let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(best_cost, 17.0));
             assert!(is_same_undirected_circle(
                 &best_permutation,
