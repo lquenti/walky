@@ -1,11 +1,14 @@
-use std::{ops::Index, slice::SliceIndex};
+use std::{
+    ops::{Index, IndexMut},
+    slice::SliceIndex,
+};
 
 use blossom::WeightedGraph;
 use delegate::delegate;
 use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
 
-use crate::datastructures::{AdjacencyMatrix, VecMatrix};
+use crate::datastructures::AdjacencyMatrix;
 
 /// Can be parsed from an xml document with the
 /// [XML-TSPLIB](http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf)
@@ -119,6 +122,15 @@ where
     }
 }
 
+impl<I> IndexMut<I> for Graph
+where
+    I: SliceIndex<[Vertex]>,
+{
+    fn index_mut(&mut self, index: I) -> &mut Self::Output {
+        self.vertices.index_mut(index)
+    }
+}
+
 impl From<Vec<Vec<Edge>>> for Graph {
     fn from(value: Vec<Vec<Edge>>) -> Self {
         let vec = value.into_iter().map(Vertex::from).collect();
@@ -146,7 +158,13 @@ impl From<&Graph> for WeightedGraph {
 
 impl AdjacencyMatrix for Graph {
     fn from_dim(dim: usize) -> Self {
-        VecMatrix::from_dim(dim).into()
+        let edge_list = (0..dim)
+            .map(|to| Edge {
+                to,
+                cost: f64::INFINITY,
+            })
+            .collect();
+        vec![edge_list; dim].into()
     }
 
     fn dim(&self) -> usize {
@@ -161,8 +179,19 @@ impl AdjacencyMatrix for Graph {
             .unwrap_or(f64::INFINITY)
     }
 
+    /// inefficient: uses linear seach to find the correct edge in the underlying Vector
     fn set(&mut self, row: usize, col: usize, cost: f64) {
-        todo!()
+        // set the first direction of the edge
+        if let Some(edg) = self[row].iter_mut().find(|e| e.to == col) {
+            edg.cost = cost;
+        } else {
+            self.add_undirected_edge(row, col, cost);
+        }
+
+        // set the reverse edge
+        self[col].iter_mut().find(|e| e.to == row)
+            .expect("This edge should already exist, or should have been added by the previous call to add_undirected_edge")
+            .cost = cost;
     }
 }
 
@@ -179,6 +208,9 @@ impl Vertex {
         to self.edges {
             /// Yields an Iterator over all edges from this vertex to the adjacent edges.
             pub fn iter(&self) -> std::slice::Iter<Edge>;
+
+            /// Yields a mutable Iterator over all edges from this vertex to the adjacent edges.
+            pub fn iter_mut(&mut self) -> std::slice::IterMut<Edge>;
 
             /// Adds an edge to the vertex
             #[call(push)]
