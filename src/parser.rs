@@ -1,5 +1,6 @@
 use std::{ops::Index, slice::SliceIndex};
 
+use blossom::WeightedGraph;
 use delegate::delegate;
 use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
@@ -91,6 +92,17 @@ impl Graph {
         self.vertices[from].add_edge(edge);
         self.vertices[to].add_edge(edge_reverse);
     }
+
+    /// returns the degree of the specified vertex
+    pub fn vertex_degree(&self, vertex: usize) -> usize {
+        debug_assert!(
+            vertex < self.vertices.len(),
+            "The vertex {} is out of bounds, the Graph contains only the vertices 0, ..., {}",
+            vertex,
+            self.vertices.len() - 1
+        );
+        self.vertices[vertex].degree()
+    }
 }
 
 impl<I> Index<I> for Graph
@@ -112,6 +124,24 @@ impl From<Vec<Vec<Edge>>> for Graph {
     }
 }
 
+impl From<&Graph> for WeightedGraph {
+    /// conversion from the [`Graph`] type of this crate, to the [`WeightedGraph`] type of the
+    /// crate [`blossom`]
+    fn from(value: &Graph) -> Self {
+        WeightedGraph::new(
+            value
+                .iter()
+                .enumerate()
+                .map(|(from, vertices)| {
+                    let adjacent_vertices: Vec<usize> = vertices.iter().map(|e| e.to).collect();
+                    let edge_cost: Vec<f64> = vertices.iter().map(|e| e.cost).collect();
+                    (from, (adjacent_vertices, edge_cost))
+                })
+                .collect(),
+        )
+    }
+}
+
 /// This representes a vertex and contains the collection of edges from this vertex
 /// to all adjacent vertices.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
@@ -130,9 +160,9 @@ impl Vertex {
             #[call(push)]
             pub fn add_edge(&mut self, edge: Edge);
 
-            /// return the number of edges connected to the vertex
+            /// returns the degree of the vertex
             #[call(len)]
-            pub fn num_edges(&self) -> usize;
+            pub fn degree(&self) -> usize;
         }
     }
 }

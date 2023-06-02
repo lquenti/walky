@@ -21,7 +21,7 @@ pub fn prim(graph: &Graph) -> Graph {
 /// If you have multiple calls to prims algorithm, use a single threaded version
 /// and make the calls in parallel.
 pub fn prim_with_excluded_node_multi_threaded(graph: &Graph, excluded_vertex: usize) -> Graph {
-    prim_with_excluded_node::<Vec<(Edge, bool)>>(graph, excluded_vertex)
+    prim_with_excluded_node::<MultiThreadedVecWrapper>(graph, excluded_vertex)
 }
 
 /// naive version using only vectors as data structures.
@@ -50,7 +50,7 @@ pub fn prim_with_excluded_node_priority_queue(graph: &Graph, excluded_vertex: us
 /// todo: add source for the algorithm
 ///
 /// todo: make the implementation more pretty and more rust ideomatic
-pub fn prim_with_excluded_node<D: FindMinCostEdge>(graph: &Graph, excluded_vertex: usize) -> Graph {
+fn prim_with_excluded_node<D: FindMinCostEdge>(graph: &Graph, excluded_vertex: usize) -> Graph {
     let num_vertices = graph.num_vertices();
     let unconnected_node = num_vertices;
 
@@ -85,10 +85,7 @@ pub fn prim_with_excluded_node<D: FindMinCostEdge>(graph: &Graph, excluded_verte
 
     // iterate over maximally `num_vertices` many iterations (for every vertex one)
     for _ in 0..=num_vertices {
-        let (next_vertex, next_edge) = dist_from_mst.find_edge_with_minimal_cost(Edge {
-            to: num_vertices,
-            cost: f64::INFINITY,
-        });
+        let (next_vertex, next_edge) = dist_from_mst.find_edge_with_minimal_cost();
 
         // when we reach an unreachable vertex (like index num_vertices),
         // we are finished
@@ -124,13 +121,13 @@ pub fn prim_with_excluded_node<D: FindMinCostEdge>(graph: &Graph, excluded_verte
 /// This trait reflects a datastructure,
 /// that holds Edges and can give back the edge with minimal cost,
 /// as well as update the cost of edges.
-pub trait FindMinCostEdge {
+trait FindMinCostEdge {
     fn from_default_value(default_val: Edge, size: usize) -> Self;
 
     /// Get the index of the vertex that is currently not in the MST
     /// and has minimal cost to connect to the mst, as well as the
     /// corresponding connecting edge to the MST.
-    fn find_edge_with_minimal_cost(&self, base_case: Edge) -> (usize, Edge);
+    fn find_edge_with_minimal_cost(&self) -> (usize, Edge);
     /// update the connection cost of `edge_to.to`.
     /// If `edge_to.cost` is less than the current cost, the cost decreases to
     /// `edge_to.cost` and `from` gets saved as the connecting vertex.
@@ -173,7 +170,11 @@ impl FindMinCostEdge for VerticesInPriorityQueue {
         }
     }
 
-    fn find_edge_with_minimal_cost(&self, base_case: Edge) -> (usize, Edge) {
+    fn find_edge_with_minimal_cost(&self) -> (usize, Edge) {
+        let base_case = Edge {
+            to: self.connection_to_mst.len(),
+            cost: f64::INFINITY,
+        };
         let (&next_vertex, &Reverse(OrderedFloat(cost))) = self
             .cost_queue
             .peek()
@@ -221,7 +222,11 @@ impl FindMinCostEdge for Vec<(Edge, bool)> {
         vec![(default_val, false); size]
     }
 
-    fn find_edge_with_minimal_cost(&self, base_case: Edge) -> (usize, Edge) {
+    fn find_edge_with_minimal_cost(&self) -> (usize, Edge) {
+        let base_case = Edge {
+            to: self.len(),
+            cost: f64::INFINITY,
+        };
         let (next_vertex, reverse_edge) = self
             //.par_iter()
             .iter()
@@ -277,7 +282,11 @@ impl FindMinCostEdge for MultiThreadedVecWrapper {
             fn mark_vertex_as_used(&mut self, used_vertex: usize);
         }
     }
-    fn find_edge_with_minimal_cost(&self, base_case: Edge) -> (usize, Edge) {
+    fn find_edge_with_minimal_cost(&self) -> (usize, Edge) {
+        let base_case = Edge {
+            to: self.0.len(),
+            cost: f64::INFINITY,
+        };
         let (next_vertex, reverse_edge) = self
             .0
             .par_iter()
@@ -299,8 +308,6 @@ impl FindMinCostEdge for MultiThreadedVecWrapper {
 #[cfg(test)]
 mod test {
     use std::{assert_eq, default};
-
-    use quickcheck_macros::quickcheck;
 
     use super::*;
 
