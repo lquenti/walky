@@ -2,8 +2,8 @@
 //! See [this article](https://doi.org/10.1287/opre.18.6.1138) for further information.
 
 use crate::{
-    mst::prim_with_excluded_node_single_threaded,
     datastructures::{Edge, Graph},
+    mst::prim_with_excluded_node_single_threaded,
 };
 
 /// Creates a 1-tree from a given graph.

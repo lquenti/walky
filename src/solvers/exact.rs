@@ -1,6 +1,6 @@
 //! Exact methods to solve the TSP problem.
 
-use crate::datastructures::{Graph,GraphMatrix, GraphPath, Solution};
+use crate::datastructures::{Graph, GraphMatrix, GraphPath, Solution};
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.

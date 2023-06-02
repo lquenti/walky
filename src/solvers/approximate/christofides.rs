@@ -1,6 +1,6 @@
 use blossom::WeightedGraph;
 
-use crate::{mst::prim, datastructures::Graph};
+use crate::{datastructures::Graph, mst::prim};
 
 /// See [the original paper from
 /// Christofides](https://apps.dtic.mil/dtic/tr/fulltext/u2/a025602.pdf)
