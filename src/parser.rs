@@ -8,8 +8,6 @@ use delegate::delegate;
 use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
 
-use crate::datastructures::AdjacencyMatrix;
-
 /// Can be parsed from an xml document with the
 /// [XML-TSPLIB](http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf)
 /// format.
@@ -153,45 +151,6 @@ impl From<&Graph> for WeightedGraph {
                 })
                 .collect(),
         )
-    }
-}
-
-impl AdjacencyMatrix for Graph {
-    fn from_dim(dim: usize) -> Self {
-        let edge_list = (0..dim)
-            .map(|to| Edge {
-                to,
-                cost: f64::INFINITY,
-            })
-            .collect();
-        vec![edge_list; dim].into()
-    }
-
-    fn dim(&self) -> usize {
-        self.num_vertices()
-    }
-
-    fn get(&self, row: usize, col: usize) -> f64 {
-        self[row]
-            .iter()
-            .find(|e| e.to == col)
-            .map(|e| e.cost)
-            .unwrap_or(f64::INFINITY)
-    }
-
-    /// inefficient: uses linear seach to find the correct edge in the underlying Vector
-    fn set(&mut self, row: usize, col: usize, cost: f64) {
-        // set the first direction of the edge
-        if let Some(edg) = self[row].iter_mut().find(|e| e.to == col) {
-            edg.cost = cost;
-        } else {
-            self.add_undirected_edge(row, col, cost);
-        }
-
-        // set the reverse edge
-        self[col].iter_mut().find(|e| e.to == row)
-            .expect("This edge should already exist, or should have been added by the previous call to add_undirected_edge")
-            .cost = cost;
     }
 }
 
