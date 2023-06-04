@@ -1,6 +1,9 @@
 use blossom::WeightedGraph;
 
-use crate::{datastructures::Graph, mst::prim};
+use crate::{
+    datastructures::{Graph, NAMatrix},
+    mst::prim,
+};
 
 /// See [the original paper from
 /// Christofides](https://apps.dtic.mil/dtic/tr/fulltext/u2/a025602.pdf)
@@ -11,7 +14,8 @@ pub fn christofides(graph: &Graph) {
     // requires the triangle inequality");
 
     // 1. find MST
-    let mst = prim(graph);
+    let graph_matr: NAMatrix = graph.into();
+    let mst = prim(&graph_matr);
 
     // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST
     let subgraph: WeightedGraph = Into::<WeightedGraph>::into(graph)

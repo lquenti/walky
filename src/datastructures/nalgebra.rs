@@ -1,4 +1,4 @@
-use crate::datastructures::{Graph, VecMatrix};
+use crate::datastructures::Graph;
 use nalgebra::{DMatrix, DVector};
 use std::ops::{Deref, DerefMut};
 
