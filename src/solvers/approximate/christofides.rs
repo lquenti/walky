@@ -9,6 +9,10 @@ use crate::{
 /// See [the original paper from
 /// Christofides](https://apps.dtic.mil/dtic/tr/fulltext/u2/a025602.pdf)
 /// for a good overview of the algorithm
+///
+/// should be performant, therefore instead of the generic [`datastructures::AdjacencyMatrix`]
+/// trait,
+/// the type [`datastructures::NAMatrix`] is used.
 pub fn christofides(graph: &Graph) {
     // #TODO: validate that the triangle ineq. holds
     // assert!(graph.is_euclidean(), "The given Graph is not euclidean, but Christofides Algorithm
