@@ -6,7 +6,6 @@ use std::cmp::Reverse;
 use crate::datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix};
 
 use delegate::delegate;
-use nalgebra::DMatrix;
 use ordered_float::OrderedFloat;
 use priority_queue::PriorityQueue;
 use rayon::prelude::*;
