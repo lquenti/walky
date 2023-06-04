@@ -32,6 +32,13 @@ pub fn one_tree(graph: &NAMatrix, special_vertex: usize) -> Graph {
     // find the two edges with minimal cost in the graph, that connect
     // `special_vertex` to the rest of the graph
     for (to, &cost) in graph.row(special_vertex).iter().enumerate() {
+        // skip this case:
+        // the algorithm should not consider a vertex its nearest neighbour,
+        // it should only consider proper neighbours
+        if to == special_vertex {
+            continue;
+        }
+
         let edge = Edge { to, cost };
         if edge.cost < fst_min_edg.cost {
             // edge is the best edge
@@ -144,7 +151,7 @@ mod test {
             vec![Edge { to: 1, cost: 0.1 }, Edge { to: 2, cost: 0.1 }],
         ]);
         let special_vertex = 0;
-        assert_eq!(expected, one_tree(&graph, special_vertex));
+        assert_eq!(expected, one_tree(&(&graph).into(), special_vertex));
     }
 
     /// graph:
@@ -213,10 +220,10 @@ mod test {
             println!(
                 "special vertex: {}, resulting sum: {}",
                 i,
-                one_tree(&graph, i).undirected_edge_weight()
+                one_tree(&(&graph).into(), i).undirected_edge_weight()
             );
         }
 
-        assert_abs_diff_eq!(0.31, one_tree_lower_bound(&graph));
+        assert_abs_diff_eq!(0.31, one_tree_lower_bound(&(&graph).into()));
     }
 }

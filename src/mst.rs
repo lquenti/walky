@@ -6,6 +6,7 @@ use std::cmp::Reverse;
 use crate::datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix};
 
 use delegate::delegate;
+use nalgebra::DMatrix;
 use ordered_float::OrderedFloat;
 use priority_queue::PriorityQueue;
 use rayon::prelude::*;
@@ -308,7 +309,7 @@ impl FindMinCostEdge for MultiThreadedVecWrapper {
 
 #[cfg(test)]
 mod test {
-    use std::{assert_eq, default};
+    use std::assert_eq;
 
     use super::*;
 
@@ -319,7 +320,7 @@ mod test {
             vec![Edge { to: 0, cost: 1.0 }],
         ]);
 
-        let mst = prim(&graph);
+        let mst = prim(&(&graph).into());
         assert_eq!(graph, mst);
     }
 
@@ -384,7 +385,7 @@ mod test {
             vec![Edge { to: 2, cost: 0.1 }, Edge { to: 1, cost: 0.1 }],
         ]);
 
-        assert_eq!(expected, prim(&graph));
+        assert_eq!(expected, prim(&(&graph).into()));
     }
 
     /// graph:
@@ -450,7 +451,10 @@ mod test {
             vec![Edge { to: 1, cost: 0.1 }, Edge { to: 2, cost: 0.1 }],
         ]);
 
-        assert_eq!(expected, prim_with_excluded_node_multi_threaded(&graph, 0));
+        assert_eq!(
+            expected,
+            prim_with_excluded_node_multi_threaded(&(&graph).into(), 0)
+        );
     }
 
     #[test]
@@ -482,9 +486,9 @@ mod test {
             ],
         ]);
         let excluded_vertex = 0;
-        let res_st = prim_with_excluded_node_single_threaded(&graph, excluded_vertex);
-        let res_mt = prim_with_excluded_node_multi_threaded(&graph, excluded_vertex);
-        let res_prio = prim_with_excluded_node_priority_queue(&graph, excluded_vertex);
+        let res_st = prim_with_excluded_node_single_threaded(&(&graph).into(), excluded_vertex);
+        let res_mt = prim_with_excluded_node_multi_threaded(&(&graph).into(), excluded_vertex);
+        let res_prio = prim_with_excluded_node_priority_queue(&(&graph).into(), excluded_vertex);
         assert_eq!(res_st, res_mt);
         assert_eq!(res_st, res_prio);
     }

@@ -6,7 +6,7 @@ use super::{AdjacencyMatrix, Edge};
 
 /// Wrapper/Smart Pointer around a nalgebra [`DMatrix`]
 #[derive(Debug, PartialEq)]
-pub struct NAMatrix(DMatrix<f64>);
+pub struct NAMatrix(pub DMatrix<f64>);
 
 impl Deref for NAMatrix {
     type Target = DMatrix<f64>;
@@ -35,11 +35,11 @@ impl From<&Graph> for NAMatrix {
     }
 }
 
-impl From<Graph> for NAMatrix {
-    fn from(value: Graph) -> Self {
-        <NAMatrix as From<&Graph>>::from(&value)
-    }
-}
+//impl From<Graph> for NAMatrix {
+//    fn from(value: Graph) -> Self {
+//        <NAMatrix as From<&Graph>>::from(&value)
+//    }
+//}
 
 impl AdjacencyMatrix for NAMatrix {
     fn from_dim(dim: usize) -> Self {
@@ -79,8 +79,6 @@ where
 
 #[cfg(test)]
 mod test {
-    use approx::assert_abs_diff_eq;
-
     use super::*;
     #[test]
     fn test_namatrix_from_graph() {
@@ -90,8 +88,8 @@ mod test {
         ]
         .into();
 
-        let expected: NAMatrix = NAMatrix(DMatrix::from_row_slice(2, 2, &[0., 2.5, 0., 2.5]));
+        let expected: NAMatrix = NAMatrix(DMatrix::from_row_slice(2, 2, &[0., 2.5, 2.5, 0.]));
 
-        assert_eq!(expected, graph.into());
+        assert_eq!(expected, (&graph).into());
     }
 }

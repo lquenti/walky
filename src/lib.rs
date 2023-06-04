@@ -33,7 +33,7 @@ pub fn run(args: Args) -> Result<(), Box<dyn Error>> {
     let m: VecMatrix = tsp_instance.graph.clone().into();
     let (best_cost, best_path) = exact::naive_solver(&m);
 
-    let na_matrix: NAMatrix = tsp_instance.graph.into();
+    let na_matrix: NAMatrix = (&tsp_instance.graph).into();
     let lower_bound = one_tree_lower_bound(&na_matrix);
 
     println!("Best Path: {:?}", best_path);
