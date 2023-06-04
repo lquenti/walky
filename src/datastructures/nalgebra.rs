@@ -2,10 +2,10 @@ use crate::datastructures::{Graph, VecMatrix};
 use nalgebra::{DMatrix, DVector};
 use std::ops::{Deref, DerefMut};
 
-use super::AdjacencyMatrix;
+use super::{AdjacencyMatrix, Edge};
 
 /// Wrapper/Smart Pointer around a nalgebra [`DMatrix`]
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct NAMatrix(DMatrix<f64>);
 
 impl Deref for NAMatrix {
@@ -21,22 +21,23 @@ impl DerefMut for NAMatrix {
     }
 }
 
-impl From<Graph> for NAMatrix {
-    fn from(graph: Graph) -> Self {
-        let vss: VecMatrix = graph.into();
-        let rows = vss.len();
-        let cols = if let Some(row) = vss.first() {
-            row.len()
-        } else {
-            0
-        };
-        let mut res = DMatrix::from_element(rows, cols, 0.0);
-        for (i, row) in vss.iter().enumerate() {
-            for (j, &x) in row.iter().enumerate() {
-                res[(i, j)] = x;
+impl From<&Graph> for NAMatrix {
+    fn from(graph: &Graph) -> Self {
+        //let vss: VecMatrix = graph.into();
+        let dim = graph.num_vertices();
+        let mut res = NAMatrix::from_dim(dim);
+        for (i, neighbours) in graph.iter().enumerate() {
+            for &Edge { to: j, cost } in neighbours.iter() {
+                res[(i, j)] = cost;
             }
         }
-        NAMatrix(res)
+        res
+    }
+}
+
+impl From<Graph> for NAMatrix {
+    fn from(value: Graph) -> Self {
+        <NAMatrix as From<&Graph>>::from(&value)
     }
 }
 
@@ -73,5 +74,24 @@ where
             }
         }
         adj_matr
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use approx::assert_abs_diff_eq;
+
+    use super::*;
+    #[test]
+    fn test_namatrix_from_graph() {
+        let graph: Graph = vec![
+            vec![Edge { to: 1, cost: 2.5 }],
+            vec![Edge { to: 0, cost: 2.5 }],
+        ]
+        .into();
+
+        let expected: NAMatrix = NAMatrix(DMatrix::from_row_slice(2, 2, &[0., 2.5, 0., 2.5]));
+
+        assert_eq!(expected, graph.into());
     }
 }
