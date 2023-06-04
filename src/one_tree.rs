@@ -2,7 +2,7 @@
 //! See [this article](https://doi.org/10.1287/opre.18.6.1138) for further information.
 
 use crate::{
-    datastructures::{Edge, Graph},
+    datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix},
     mst::prim_with_excluded_node_single_threaded,
 };
 
@@ -13,9 +13,9 @@ use crate::{
 /// # Panics
 /// **in debug mode**: if `special_vertex >= graph.num_vertices()`, since then the vertex is not
 /// valid.
-pub fn one_tree(graph: &Graph, special_vertex: usize) -> Graph {
+pub fn one_tree(graph: &NAMatrix, special_vertex: usize) -> Graph {
     debug_assert!(
-        special_vertex < graph.num_vertices(),
+        special_vertex < graph.dim(),
         "The special vertex has to be a valid vertex in the graph."
     );
 
@@ -31,14 +31,15 @@ pub fn one_tree(graph: &Graph, special_vertex: usize) -> Graph {
 
     // find the two edges with minimal cost in the graph, that connect
     // `special_vertex` to the rest of the graph
-    for edge in graph[special_vertex].iter() {
+    for (to, &cost) in graph.row(special_vertex).iter().enumerate() {
+        let edge = Edge { to, cost };
         if edge.cost < fst_min_edg.cost {
             // edge is the best edge
             snd_min_edg = fst_min_edg;
-            fst_min_edg = *edge;
+            fst_min_edg = edge;
         } else if edge.cost < snd_min_edg.cost {
             // edge is worse than fst_min_edg, but better than snd_min_edg
-            snd_min_edg = *edge;
+            snd_min_edg = edge;
         }
     }
 
@@ -53,8 +54,8 @@ pub fn one_tree(graph: &Graph, special_vertex: usize) -> Graph {
 ///
 /// # Panics
 /// if the graph is empty.
-pub fn one_tree_lower_bound(graph: &Graph) -> f64 {
-    (0..graph.num_vertices())
+pub fn one_tree_lower_bound(graph: &NAMatrix) -> f64 {
+    (0..graph.dim())
         .map(|special_vertex| one_tree(graph, special_vertex).undirected_edge_weight())
         .min_by(|x, y| {
             x.partial_cmp(y)
