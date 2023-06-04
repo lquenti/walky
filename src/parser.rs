@@ -1,4 +1,7 @@
-use std::{ops::Index, slice::SliceIndex};
+use std::{
+    ops::{Index, IndexMut},
+    slice::SliceIndex,
+};
 
 use blossom::WeightedGraph;
 use delegate::delegate;
@@ -117,6 +120,15 @@ where
     }
 }
 
+impl<I> IndexMut<I> for Graph
+where
+    I: SliceIndex<[Vertex]>,
+{
+    fn index_mut(&mut self, index: I) -> &mut Self::Output {
+        self.vertices.index_mut(index)
+    }
+}
+
 impl From<Vec<Vec<Edge>>> for Graph {
     fn from(value: Vec<Vec<Edge>>) -> Self {
         let vec = value.into_iter().map(Vertex::from).collect();
@@ -155,6 +167,9 @@ impl Vertex {
         to self.edges {
             /// Yields an Iterator over all edges from this vertex to the adjacent edges.
             pub fn iter(&self) -> std::slice::Iter<Edge>;
+
+            /// Yields a mutable Iterator over all edges from this vertex to the adjacent edges.
+            pub fn iter_mut(&mut self) -> std::slice::IterMut<Edge>;
 
             /// Adds an edge to the vertex
             #[call(push)]

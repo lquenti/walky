@@ -5,11 +5,17 @@ mod vecmatrix;
 pub use crate::parser::{Edge, Graph, Vertex};
 
 pub trait AdjacencyMatrix {
+    /// Creates an unconnected graph with `dim` many vertices
+    fn from_dim(dim: usize) -> Self;
+
     /// The dimension of the matrix
     fn dim(&self) -> usize;
 
     /// Value extraction
     fn get(&self, row: usize, col: usize) -> f64;
+
+    /// Set the cost of an edge `row <-> col`.
+    fn set(&mut self, row: usize, col: usize, cost: f64);
 
     /// Evaluates the accumulative path cost given the current underlying graph
     fn evaluate_path(&self, path: &Path) -> f64 {
