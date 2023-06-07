@@ -652,7 +652,7 @@ mod exact_solver {
     #[test]
     fn test_float_tsp_namatrix() {
         // Test each solution
-        let gm: NAMatrix = SMALL_FLOAT_GRAPH.clone().into();
+        let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&SMALL_FLOAT_GRAPH);
         for f in [naive_solver, first_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(37.41646270666716, best_cost));
@@ -678,7 +678,7 @@ mod exact_solver {
 
     #[test]
     fn test_big_floating_tsp_namatrix() {
-        let gm: NAMatrix = BIG_FLOAT_GRAPH.clone().into();
+        let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&BIG_FLOAT_GRAPH);
         for f in [naive_solver, first_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(33.03008250868411, best_cost));
@@ -704,7 +704,7 @@ mod exact_solver {
 
     #[test]
     fn test_integer_tsp_namatrix() {
-        let gm: NAMatrix = SMALL_INT_GRAPH.clone().into();
+        let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&SMALL_INT_GRAPH);
         for f in [naive_solver, first_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(best_cost, 17.0));

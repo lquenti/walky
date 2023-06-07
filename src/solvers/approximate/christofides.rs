@@ -14,7 +14,8 @@ pub fn christofides(graph: &Graph) {
     // requires the triangle inequality");
 
     // 1. find MST
-    let mut mst = prim(graph);
+    let graph_matr: NAMatrix = graph.into();
+    let mst = prim(&graph_matr);
 
     // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST
     let subgraph: WeightedGraph = Into::<WeightedGraph>::into(graph)
