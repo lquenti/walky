@@ -2,7 +2,7 @@ use blossom::WeightedGraph;
 use nalgebra::DMatrix;
 
 use crate::{
-    datastructures::{Edge, Graph, NAMatrix},
+    datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix, Solution},
     mst::prim,
 };
 
@@ -13,7 +13,7 @@ use crate::{
 /// should be performant, therefore instead of the generic [`datastructures::AdjacencyMatrix`]
 /// trait,
 /// the type [`datastructures::NAMatrix`] is used.
-pub fn christofides(graph: &Graph) {
+pub fn christofides(graph: &Graph) -> Solution {
     // #TODO: validate that the triangle ineq. holds
     // assert!(graph.is_euclidean(), "The given Graph is not euclidean, but Christofides Algorithm
     // requires the triangle inequality");
@@ -39,9 +39,45 @@ pub fn christofides(graph: &Graph) {
     //let graphMat: NAMatrix = graph.into();
 
     // 5. compute a eulerian cycle through the multigraph
+    let mut euler_cycle = eulerian_cycle_from_multigraph(multigraph);
 
     // 6. compute a hamiltonian cylce from the eulerian cycle -- the approximate TSP solution
+    hamiltonian_from_eulerian_cycle(&graph_matr, &mut euler_cycle);
+    let hamilton_cycle = euler_cycle;
+    let sum_cost: f64 = hamilton_cycle
+        .windows(2)
+        .map(|window| graph_matr[(window[0], window[1])])
+        .sum();
     todo!()
+}
+
+fn eulerian_cycle_from_multigraph(multigraph: DMatrix<(f64, usize)>) -> Vec<usize> {
+    todo!()
+}
+
+/// assumption: the underlying graph is complete and euclidean
+///
+/// computes from an euclidean cycle the hamiltonian cycle, by skipping
+/// already visited vertices
+fn hamiltonian_from_eulerian_cycle(base_graph: &NAMatrix, euler_cycle: &mut Vec<usize>) {
+    let dim = base_graph.dim();
+    let mut visited = vec![false; dim];
+    let mut is_in_ham_cycle: Vec<(usize, bool)> = euler_cycle.iter().map(|&i| (i, false)).collect();
+
+    for pair in is_in_ham_cycle.iter_mut() {
+        let i = pair.0;
+        let in_cycle = &mut pair.1;
+        if !visited[i] {
+            visited[i] = true;
+            *in_cycle = true;
+        }
+    }
+
+    let mut is_in_cycle_iter = is_in_ham_cycle.into_iter();
+    euler_cycle.retain(|&i| {
+        let (i, in_cycle) = is_in_cycle_iter.next().unwrap();
+        todo!();
+    });
 }
 
 /// This function is taylored to be applied in the christofides algorithm.
