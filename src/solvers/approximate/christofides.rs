@@ -42,25 +42,116 @@ pub fn christofides(graph: &Graph) -> Solution {
     let mut euler_cycle = eulerian_cycle_from_multigraph(multigraph);
 
     // 6. compute a hamiltonian cylce from the eulerian cycle -- the approximate TSP solution
-    hamiltonian_from_eulerian_cycle(&graph_matr, &mut euler_cycle);
+    hamiltonian_from_eulerian_cycle(graph_matr.dim(), &mut euler_cycle);
     let hamilton_cycle = euler_cycle;
     let sum_cost: f64 = hamilton_cycle
         .windows(2)
         .map(|window| graph_matr[(window[0], window[1])])
         .sum();
-    todo!()
+    (sum_cost, hamilton_cycle)
 }
 
-fn eulerian_cycle_from_multigraph(multigraph: DMatrix<(f64, usize)>) -> Vec<usize> {
-    todo!()
+fn eulerian_cycle_from_multigraph(mut multigraph: DMatrix<(f64, usize)>) -> Vec<usize> {
+    // every vertex has at least degree 2
+    let dim = multigraph.shape().0;
+    let mut euler_cycle = Vec::with_capacity(2 * dim + 1);
+    let mut degree: Vec<usize> = multigraph
+        .column_iter()
+        .map(|col| col.into_iter().map(|&(_, times)| times).sum())
+        .collect();
+
+    // trivial cycle: from vertex 0 to itself
+    euler_cycle.push(0);
+
+    // find a cycle and incorporate it into the euler_cycle
+    while let Some((vertex_idx_in_cycle, &vertex)) = euler_cycle
+        .iter()
+        .enumerate()
+        .find(|(_idx, &vertex)| degree[vertex] != 0)
+    {
+        // the previous cycle has been closed, without visiting all edged in the graph
+        // now find another cycle
+        let cycle = find_cycle(vertex, &mut multigraph, &mut degree);
+        // split the euler_cycle into 2 parts:
+        // [0..vertex_idx_in_cycle] and [vertex_idx_in_cycle+1..]
+        let tail = euler_cycle.split_off(vertex_idx_in_cycle + 1);
+        euler_cycle.extend_from_slice(&cycle[1..]);
+        euler_cycle.extend_from_slice(&tail);
+    }
+    euler_cycle
+}
+
+/// computes a cycle in the given multigraph
+///
+/// assumption:
+/// `degree[i] == multigraph.column(
+fn find_cycle(
+    start_vertex: usize,
+    multigraph: &mut DMatrix<(f64, usize)>,
+    degree: &mut [usize],
+) -> Vec<usize> {
+    let mut cycle = Vec::new();
+
+    let mut vertex = start_vertex;
+    cycle.push(vertex);
+    while let Some((idx, neighbour)) = multigraph
+        .column_mut(vertex)
+        .iter_mut()
+        .enumerate()
+        .find(|(_idx, &mut (_cost, times))| times != 0)
+    {
+        // find the next vertex in the eulerian cycle
+        cycle.push(idx);
+
+        debug_assert!(
+            neighbour.1 > 0,
+            "There should exist an edge from vertex {} to {} ",
+            vertex,
+            idx
+        );
+        neighbour.1 -= 1;
+
+        debug_assert!(
+            multigraph[(vertex, idx)].1 > 0,
+            "There should exist an edge from vertex {} to {} ",
+            vertex,
+            idx
+        );
+        multigraph[(vertex, idx)].1 -= 1;
+
+        debug_assert!(
+            degree[vertex] > 0,
+            "The degree of the vertex {} should be more than 0",
+            vertex
+        );
+        degree[vertex] -= 1;
+
+        debug_assert!(
+            degree[idx] > 0,
+            "The degree of the vertex {} should be more than 0",
+            idx
+        );
+        degree[idx] -= 1;
+        vertex = idx;
+    }
+    cycle
 }
 
 /// assumption: the underlying graph is complete and euclidean
 ///
 /// computes from an euclidean cycle the hamiltonian cycle, by skipping
 /// already visited vertices
-fn hamiltonian_from_eulerian_cycle(base_graph: &NAMatrix, euler_cycle: &mut Vec<usize>) {
-    let dim = base_graph.dim();
+///
+/// `dim`: number of vertices in the base graph
+/// (at least needed: `dim >= euler_cycle.iter().max().unwrap()`). May panic, if this does not
+/// hold.
+fn hamiltonian_from_eulerian_cycle(dim: usize, euler_cycle: &mut Vec<usize>) {
+    debug_assert!(
+        dim >= *euler_cycle
+            .iter()
+            .max()
+            .expect("The eulerian cycle shall not be empty")
+    );
     let mut visited = vec![false; dim];
     let mut is_in_ham_cycle: Vec<(usize, bool)> = euler_cycle.iter().map(|&i| (i, false)).collect();
 
@@ -74,10 +165,15 @@ fn hamiltonian_from_eulerian_cycle(base_graph: &NAMatrix, euler_cycle: &mut Vec<
     }
 
     let mut is_in_cycle_iter = is_in_ham_cycle.into_iter();
-    euler_cycle.retain(|&i| {
-        let (i, in_cycle) = is_in_cycle_iter.next().unwrap();
-        todo!();
+    euler_cycle.retain(|&_| {
+        let (_, in_cycle) = is_in_cycle_iter.next().unwrap();
+        in_cycle
     });
+    euler_cycle.push(
+        *euler_cycle
+            .first()
+            .expect("the hamiltonian cycle should not be empty"),
+    );
 }
 
 /// This function is taylored to be applied in the christofides algorithm.
@@ -138,7 +234,10 @@ mod test {
     use crate::{
         datastructures::{Graph, NAMatrix},
         mst::prim,
-        solvers::approximate::christofides::fill_multigraph_with_mst_and_matching,
+        solvers::approximate::christofides::{
+            eulerian_cycle_from_multigraph, fill_multigraph_with_mst_and_matching, find_cycle,
+            hamiltonian_from_eulerian_cycle,
+        },
     };
 
     use super::UndirectedEdge;
@@ -307,5 +406,105 @@ mod test {
             expected,
             fill_multigraph_with_mst_and_matching(&graph, &mst, matching)
         );
+    }
+
+    /// graph with one cycle:
+    /// 0 - 1
+    /// |   |
+    /// 3 - 2
+    #[test]
+    fn test_find_cycle() {
+        let mut multigraph = DMatrix::from_row_slice(
+            4,
+            4,
+            &[
+                (0., 0),
+                (1., 1),
+                (0., 0),
+                (1., 1),
+                (1., 1),
+                (0., 0),
+                (1., 1),
+                (0., 0),
+                (0., 0),
+                (1., 1),
+                (0., 0),
+                (1., 1),
+                (1., 1),
+                (0., 0),
+                (1., 1),
+                (0., 0),
+            ],
+        );
+        let mut degree = vec![2; 4];
+        let expected = vec![0, 1, 2, 3, 0];
+        assert_eq!(expected, find_cycle(0, &mut multigraph, &mut degree))
+    }
+
+    /// multigraph with eulerian cycle:
+    ///   ___
+    ///  /   \
+    /// 0-----1
+    /// |\   /|
+    /// | \ / |
+    /// |  X  |
+    /// | / \ |
+    /// |/   \|
+    /// 3-----2
+    ///  \___/
+    ///
+    ///  a eulerian cycle: 0-1-2-3-0-1-3-2-0
+    ///  (is not the only one)
+    #[test]
+    fn test_find_eulerian_cycle() {
+        let multigraph = DMatrix::from_row_slice(
+            4,
+            4,
+            &[
+                (0., 0),
+                (1., 2),
+                (1., 1),
+                (1., 1),
+                (1., 2),
+                (0., 0),
+                (1., 1),
+                (1., 1),
+                (1., 1),
+                (1., 1),
+                (0., 0),
+                (1., 2),
+                (1., 1),
+                (1., 1),
+                (1., 2),
+                (0., 0),
+            ],
+        );
+        // the graph contains 9 edges
+        let expected = 9;
+        assert_eq!(expected, eulerian_cycle_from_multigraph(multigraph).len());
+    }
+
+    /// multigraph with eulerian cycle:
+    ///   ___
+    ///  /   \
+    /// 0-----1
+    /// |\   /|
+    /// | \ / |
+    /// |  X  |
+    /// | / \ |
+    /// |/   \|
+    /// 3-----2
+    ///  \___/
+    ///
+    ///  eulerian cycle: 0-1-2-3-0-1-3-2-0
+    ///
+    ///  hamiltonian cycle: 0-1-2-3-0
+    #[test]
+    fn test_hamiltonian_from_eulerian_cycle() {
+        let mut euler_cycle = vec![0, 1, 2, 3, 0, 1, 3, 2, 0];
+        let expected = vec![0, 1, 2, 3, 0];
+
+        hamiltonian_from_eulerian_cycle(4, &mut euler_cycle);
+        assert_eq!(expected, euler_cycle);
     }
 }
