@@ -14,12 +14,17 @@ use crate::{
 /// trait,
 /// the type [`datastructures::NAMatrix`] is used.
 pub fn christofides(graph: &Graph) -> Solution {
-    // #TODO: validate that the triangle ineq. holds
-    // assert!(graph.is_euclidean(), "The given Graph is not euclidean, but Christofides Algorithm
-    // requires the triangle inequality");
+    // create an adjacency matrix from the adjacency list
+    let graph_matr: NAMatrix = graph.into();
+
+    // validate that the triangle ineq. holds
+    debug_assert!(
+        graph_matr.is_euclidean(),
+        "The given Graph is not euclidean, but Christofides Algorithm
+    // requires the triangle inequality"
+    );
 
     // 1. find MST
-    let graph_matr: NAMatrix = graph.into();
     let mst = prim(&graph_matr);
 
     // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST
