@@ -232,11 +232,14 @@ mod test {
     use nalgebra::DMatrix;
 
     use crate::{
-        datastructures::{Graph, NAMatrix},
+        datastructures::{Edge, Graph, NAMatrix},
         mst::prim,
-        solvers::approximate::christofides::{
-            eulerian_cycle_from_multigraph, fill_multigraph_with_mst_and_matching, find_cycle,
-            hamiltonian_from_eulerian_cycle,
+        solvers::{
+            self,
+            approximate::christofides::{
+                christofides, eulerian_cycle_from_multigraph,
+                fill_multigraph_with_mst_and_matching, find_cycle, hamiltonian_from_eulerian_cycle,
+            },
         },
     };
 
@@ -506,5 +509,61 @@ mod test {
 
         hamiltonian_from_eulerian_cycle(4, &mut euler_cycle);
         assert_eq!(expected, euler_cycle);
+    }
+
+    /// euclidean graph:
+    /// 0-----1
+    /// |\   /|
+    /// | \ / |
+    /// |  X  |
+    /// | / \ |
+    /// |/   \|
+    /// 3-----2
+    ///
+    /// edge weights: vertical and horizontal edges: 1.,
+    ///               diagonal edges: 2.
+    ///
+    /// let `s` be the accumulated cost of an exact solution of the TSP,
+    /// then Christofides algorithm finds a solution with cost of at most `1.5 * s`
+    #[test]
+    fn test_christofides_against_exact_solver() {
+        let graph: Graph = vec![
+            vec![
+                Edge { to: 0, cost: 0. },
+                Edge { to: 1, cost: 1. },
+                Edge { to: 2, cost: 2. },
+                Edge { to: 3, cost: 1. },
+            ],
+            vec![
+                Edge { to: 0, cost: 1. },
+                Edge { to: 1, cost: 0. },
+                Edge { to: 2, cost: 1. },
+                Edge { to: 3, cost: 2. },
+            ],
+            vec![
+                Edge { to: 0, cost: 2. },
+                Edge { to: 1, cost: 1. },
+                Edge { to: 2, cost: 0. },
+                Edge { to: 3, cost: 1. },
+            ],
+            vec![
+                Edge { to: 0, cost: 1. },
+                Edge { to: 1, cost: 2. },
+                Edge { to: 2, cost: 1. },
+                Edge { to: 3, cost: 0. },
+            ],
+        ]
+        .into();
+
+        let exact_solution = solvers::exact::first_improved_solver::<NAMatrix>(&(&graph).into());
+        let result = christofides(&graph);
+        assert!(
+            exact_solution.0 <= result.0,
+            "Christofides algorithm cannot outperfrom the exact solution"
+        );
+        assert!(
+            1.5 * exact_solution.0 >= result.0,
+            "Christofides algorithm is at most 50% worse than the exact solution"
+        );
     }
 }
