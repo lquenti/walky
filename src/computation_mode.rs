@@ -11,3 +11,8 @@ pub const PAR_COMPUTATION: usize = 1;
 
 /// use multiple machinges to parallelize computation, via MPI
 pub const MPI_COMPUTATION: usize = 2;
+
+#[inline]
+pub fn panic_on_invaid_mode<const MODE: usize>() -> ! {
+    panic!("The Mode {} is not valid", MODE)
+}
