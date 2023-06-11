@@ -1,7 +1,10 @@
 //! Compute a minimum spanning tree
 
 use core::panic;
-use std::cmp::Reverse;
+use std::{
+    cmp::Reverse,
+    ops::{Deref, DerefMut},
+};
 
 use crate::{
     computation_mode::{MPI_COMPUTATION, PAR_COMPUTATION, SEQ_COMPUTATION},
@@ -9,6 +12,7 @@ use crate::{
 };
 
 use delegate::delegate;
+use nalgebra::{Dyn, MatrixView1xX, U1};
 use ordered_float::OrderedFloat;
 use priority_queue::PriorityQueue;
 use rayon::prelude::*;
@@ -120,15 +124,19 @@ fn prim_with_excluded_node<D: FindMinCostEdge>(graph: &NAMatrix, excluded_vertex
 
         // update the minimal connection costs foll all newly adjacent vertices
         //for edge in graph[next_vertex].iter() {
-        for (to, &cost) in graph.row(next_vertex).iter().enumerate() {
-            dist_from_mst.update_minimal_cost(next_vertex, Edge { to, cost });
-        }
+        //for (to, &cost) in graph.row(next_vertex).iter().enumerate() {
+        //    dist_from_mst.update_minimal_cost(next_vertex, Edge { to, cost });
+        //}
+        dist_from_mst.update_minimal_cost(next_vertex, graph.row(next_vertex))
     }
 
     // remove the last entry (for unreachable_vertex) as it is only relevant for the algorithm
     mst_adj_list.pop();
     Graph::from(mst_adj_list)
 }
+
+type NAMatrixRowView<'a> =
+    nalgebra::Matrix<f64, U1, Dyn, nalgebra::ViewStorage<'a, f64, U1, Dyn, U1, Dyn>>;
 
 /// This trait reflects a datastructure,
 /// that holds Edges and can give back the edge with minimal cost,
@@ -146,7 +154,7 @@ trait FindMinCostEdge {
     /// If it is higher, the cost does *not* increase.
     /// If provided with the edge `from --> edge_to.to`,
     /// the structure will then possibly remember the reverse edge `from <-- edge_to.to`
-    fn update_minimal_cost(&mut self, from: usize, edge_to: Edge);
+    fn update_minimal_cost(&mut self, from: usize, new_neighbours: NAMatrixRowView);
 
     /// sets the cost of connecting from `from` to `edge_to.to` to the value `edge_to.cost`.
     fn set_cost(&mut self, from: usize, edge_to: Edge);
@@ -196,15 +204,17 @@ impl FindMinCostEdge for VerticesInPriorityQueue {
         (next_vertex, Edge { to, cost })
     }
 
-    fn update_minimal_cost(&mut self, from: usize, edge_to: Edge) {
-        if self.used[edge_to.to] {
-            return;
-        }
-        let Reverse(OrderedFloat(old_cost)) = self.cost_queue
-            .push_increase(edge_to.to, Reverse(OrderedFloat(edge_to.cost)))
-            .unwrap_or_else(|| panic!("Every unused unused vertex shall be contained in the queue from the beginning. Missing vertex: {}", edge_to.to));
-        if edge_to.cost <= old_cost {
-            self.connection_to_mst[edge_to.to] = from;
+    fn update_minimal_cost(&mut self, from: usize, new_neighbours: NAMatrixRowView) {
+        for (to, &cost) in new_neighbours.iter().enumerate() {
+            if self.used[to] {
+                continue;
+            }
+            let Reverse(OrderedFloat(old_cost)) = self.cost_queue
+            .push_increase(to, Reverse(OrderedFloat(cost)))
+            .unwrap_or_else(|| panic!("Every unused unused vertex shall be contained in the queue from the beginning. Missing vertex: {}", to));
+            if cost <= old_cost {
+                self.connection_to_mst[to] = from;
+            }
         }
     }
 
@@ -255,13 +265,12 @@ impl FindMinCostEdge for Vec<(Edge, bool)> {
         (next_vertex, reverse_edge)
     }
 
-    fn update_minimal_cost(&mut self, from: usize, edge_to: Edge) {
-        //self[edge_to.to] = f64::min(self[edge_to.to], edge.cost);
-        if edge_to.cost < self[edge_to.to].0.cost {
-            self[edge_to.to].0 = Edge {
-                to: from,
-                cost: edge_to.cost,
-            };
+    fn update_minimal_cost(&mut self, from: usize, new_neighbours: NAMatrixRowView) {
+        //self[to] = f64::min(self[to], edge.cost);
+        for (to, &cost) in new_neighbours.iter().enumerate() {
+            if cost < self[to].0.cost {
+                self[to].0 = Edge { to: from, cost };
+            }
         }
     }
 
@@ -281,18 +290,54 @@ impl FindMinCostEdge for Vec<(Edge, bool)> {
 #[derive(Debug, PartialEq)]
 struct MultiThreadedVecWrapper(Vec<(Edge, bool)>);
 
+impl Deref for MultiThreadedVecWrapper {
+    type Target = Vec<(Edge, bool)>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl DerefMut for MultiThreadedVecWrapper {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 impl FindMinCostEdge for MultiThreadedVecWrapper {
     fn from_default_value(default_val: Edge, size: usize) -> Self {
         MultiThreadedVecWrapper(Vec::from_default_value(default_val, size))
     }
     delegate! {
         to self.0 {
-            fn update_minimal_cost(&mut self, from: usize, edge_to: Edge);
             fn set_cost(&mut self, from: usize, edge_to: Edge);
             fn set_excluded_vertex(&mut self, excluded_vertex: usize);
             fn mark_vertex_as_used(&mut self, used_vertex: usize);
         }
     }
+
+    fn update_minimal_cost(&mut self, from: usize, new_neighbours: NAMatrixRowView) {
+        //self[to] = f64::min(self[to], edge.cost);
+        let dim = new_neighbours.shape().1;
+        //for (to, &cost) in new_neighbours.par_iter().enumerate()
+        (0..dim).into_par_iter().for_each(|to| {
+            let neighbour_prt = new_neighbours.as_ptr() as *mut f64;
+            // safety: the data exists, we do not leave the range
+            // of the underlying NAMatrix (we add at most dim*(dim-1),
+            // and the pointer to the row has at most offset dim-1 from the cell at index (0,0).
+            // Therefore we stay within an offset of (dim*dim)-1
+            let cost = unsafe { *neighbour_prt.add(dim * to) };
+            let to_dist_ptr = self.as_ptr() as *mut (Edge, bool);
+            if cost < self[to].0.cost {
+                // safety:
+                //  - no race conditions, since the parallel iterator visits each value of to
+                //    exactly once
+                //  - we do not exeed the length of the vector self.0
+                unsafe {
+                    (*to_dist_ptr.add(to)).0 = Edge { to: from, cost };
+                }
+            }
+        });
+    }
+
     fn find_edge_with_minimal_cost(&self) -> (usize, Edge) {
         let base_case = Edge {
             to: self.0.len(),
@@ -319,6 +364,8 @@ impl FindMinCostEdge for MultiThreadedVecWrapper {
 #[cfg(test)]
 mod test {
     use std::assert_eq;
+
+    use nalgebra::DMatrix;
 
     use super::*;
 
@@ -498,8 +545,14 @@ mod test {
         let res_st = prim_with_excluded_node_single_threaded(&(&graph).into(), excluded_vertex);
         let res_mt = prim_with_excluded_node_multi_threaded(&(&graph).into(), excluded_vertex);
         let res_prio = prim_with_excluded_node_priority_queue(&(&graph).into(), excluded_vertex);
-        assert_eq!(res_st, res_mt);
-        assert_eq!(res_st, res_prio);
+        assert_eq!(
+            res_st, res_mt,
+            "single_threaded should agree with multi_threaded"
+        );
+        assert_eq!(
+            res_st, res_prio,
+            "single_threaded should agree with priority queue version"
+        );
     }
 
     #[test]
@@ -548,8 +601,9 @@ mod test {
         let size = 5;
 
         let mut vert = VerticesInPriorityQueue::from_default_value(default_val, size);
+        let mat = DMatrix::from_row_slice(1, size, &[1.0; 5]);
 
-        vert.update_minimal_cost(0, Edge { to: 1, cost: 1.0 });
+        vert.update_minimal_cost(0, mat.row(0));
     }
 
     #[test]
@@ -562,8 +616,9 @@ mod test {
         let size = 5;
 
         let mut vert = VerticesInPriorityQueue::from_default_value(default_val, size);
+        let mat = DMatrix::from_row_slice(1, size, &[0.0, 1.0, 0.0, 0.0, 0.0]);
 
-        vert.update_minimal_cost(0, Edge { to: 1, cost: 1.0 });
+        vert.update_minimal_cost(0, mat.row(0));
         assert_eq!(vert.connection_to_mst[1], 0);
         assert_eq!(
             vert.cost_queue.get_priority(&1),
