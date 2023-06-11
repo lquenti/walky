@@ -3,7 +3,10 @@
 use core::panic;
 use std::cmp::Reverse;
 
-use crate::datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix};
+use crate::{
+    computation_mode::{MPI_COMPUTATION, PAR_COMPUTATION, SEQ_COMPUTATION},
+    datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix},
+};
 
 use delegate::delegate;
 use ordered_float::OrderedFloat;
@@ -11,9 +14,17 @@ use priority_queue::PriorityQueue;
 use rayon::prelude::*;
 
 /// Prims algorithm for computing an MST of the given `graph`.
+///
+/// `MODE`: constant parameter, choose one of the values from [`crate::computation_mode`]
+///
 /// See [`prim_with_excluded_node`] for more details.
-pub fn prim(graph: &NAMatrix) -> Graph {
-    prim_with_excluded_node_multi_threaded(graph, graph.dim())
+pub fn prim<const MODE: usize>(graph: &NAMatrix) -> Graph {
+    match MODE {
+        SEQ_COMPUTATION => prim_with_excluded_node_single_threaded(graph, graph.dim()),
+        PAR_COMPUTATION => prim_with_excluded_node_multi_threaded(graph, graph.dim()),
+        MPI_COMPUTATION => todo!(),
+        _ => panic!("Unsupported value of the constant parameter Mode: {}", MODE),
+    }
 }
 
 /// multithreaded version of [`prim_with_excluded_node_single_threaded`].
@@ -319,7 +330,7 @@ mod test {
             vec![Edge { to: 0, cost: 1.0 }],
         ]);
 
-        let mst = prim(&(&graph).into());
+        let mst = prim::<SEQ_COMPUTATION>(&(&graph).into());
         assert_eq!(graph, mst);
     }
 
@@ -384,7 +395,7 @@ mod test {
             vec![Edge { to: 2, cost: 0.1 }, Edge { to: 1, cost: 0.1 }],
         ]);
 
-        assert_eq!(expected, prim(&(&graph).into()));
+        assert_eq!(expected, prim::<SEQ_COMPUTATION>(&(&graph).into()));
     }
 
     /// graph:
