@@ -240,7 +240,6 @@ impl FindMinCostEdge for Vec<(Edge, bool)> {
             cost: f64::INFINITY,
         };
         let (next_vertex, reverse_edge) = self
-            //.par_iter()
             .iter()
             .enumerate()
             // skip all used vertices
