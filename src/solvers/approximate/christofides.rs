@@ -1,19 +1,23 @@
 use blossom::WeightedGraph;
 use nalgebra::DMatrix;
+use rayon::prelude::*;
 
 use crate::{
-    datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix, Solution},
+    computation_mode::*,
+    datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix, Solution, Vertex},
     mst::prim,
 };
 
 /// See [the original paper from
 /// Christofides](https://apps.dtic.mil/dtic/tr/fulltext/u2/a025602.pdf)
-/// for a good overview of the algorithm
+/// for a good overview of the algorithm.
 ///
-/// should be performant, therefore instead of the generic [`datastructures::AdjacencyMatrix`]
+/// `MODE`: constant parameter, choose one of the values from [`crate::computation_mode`]
+///
+/// The algorithm should be performant, therefore instead of the generic [`datastructures::AdjacencyMatrix`]
 /// trait,
 /// the type [`datastructures::NAMatrix`] is used.
-pub fn christofides(graph: &Graph) -> Solution {
+pub fn christofides<const MODE: usize>(graph: &Graph) -> Solution {
     // create an adjacency matrix from the adjacency list
     let graph_matr: NAMatrix = graph.into();
 
@@ -25,28 +29,27 @@ pub fn christofides(graph: &Graph) -> Solution {
     );
 
     // 1. find MST
-    let mst = prim(&graph_matr);
+    let mst = prim::<MODE>(&graph_matr);
 
-    // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST
+    // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST,
+    // then compute a minimum-weight maximum matching for the subgraph
     let subgraph: WeightedGraph = Into::<WeightedGraph>::into(graph)
         .filter_vertices(|&vertex| mst.vertex_degree(vertex) % 2 == 1);
 
-    // 3. compute a minimum-weight maximum matching for the graph
     // note: the maximal matching is perfect
     let matching = subgraph
         .maximin_matching()
         .expect("Something went wrong: could not compute the maximal minimum weight matching");
 
-    // 4. union the perfect matching with the MST into a multigraph
+    // 3. union the perfect matching with the MST into a multigraph
     let matching_edges = matching.edges();
-    let multigraph = fill_multigraph_with_mst_and_matching(&graph_matr, &mst, matching_edges);
+    let multigraph =
+        fill_multigraph_with_mst_and_matching::<MODE>(&graph_matr, &mst, matching_edges);
 
-    //let graphMat: NAMatrix = graph.into();
-
-    // 5. compute a eulerian cycle through the multigraph
+    // 4. compute a eulerian cycle through the multigraph
     let mut euler_cycle = eulerian_cycle_from_multigraph(multigraph);
 
-    // 6. compute a hamiltonian cylce from the eulerian cycle -- the approximate TSP solution
+    // 5. compute a hamiltonian cylce from the eulerian cycle -- the approximate TSP solution
     hamiltonian_from_eulerian_cycle(graph_matr.dim(), &mut euler_cycle);
     let hamilton_cycle = euler_cycle;
     let sum_cost: f64 = hamilton_cycle
@@ -197,7 +200,7 @@ fn hamiltonian_from_eulerian_cycle(dim: usize, euler_cycle: &mut Vec<usize>) {
 /// `multigraph[(i, j)] == (cost, num_edges)` with `cost`: the cost of the edge, and `num_edges`:
 /// the number of times the edge occours between vertex `i` and vertex `j`.
 #[inline]
-fn fill_multigraph_with_mst_and_matching(
+fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
     base_graph: &NAMatrix,
     mst: &Graph,
     matching: Vec<(usize, usize)>,
@@ -206,17 +209,58 @@ fn fill_multigraph_with_mst_and_matching(
     let mut multigraph = base_graph.map(|cost| (cost, 0));
 
     // populate the matix with the edges of the mst
-    for (i, vertex) in mst.iter().enumerate() {
-        for &Edge { to: j, cost } in vertex.iter() {
-            multigraph[(i, j)] = (cost, 1);
+
+    match MODE {
+        SEQ_COMPUTATION => {
+            mst.iter()
+                .zip(multigraph.row_iter_mut())
+                .for_each(|(vertex, mut neighbours_vec)| {
+                    vertex
+                        .iter()
+                        .for_each(|&Edge { to, cost }| neighbours_vec[(0, to)] = (cost, 1))
+                })
         }
+        PAR_COMPUTATION => {
+            // sadly, NAlgebra doesn`t provide a par_row_iter_mut() method,
+            // so we use the fact that all edges are undirected, and therefore
+            // the adjacency matrix is symmetric, i.e. we can exchange rows with columns
+            mst.par_iter()
+                .zip(multigraph.par_column_iter_mut())
+                .for_each(|(vertex, mut neighbours_vec)| {
+                    vertex
+                        .iter()
+                        .for_each(|&Edge { to, cost }| neighbours_vec[(to, 0)] = (cost, 1))
+                });
+        }
+        MPI_COMPUTATION => todo!(),
+        _ => panic_on_invaid_mode::<MODE>(),
     }
+
     // add into the multigraph the edges from the matching
-    for edge @ (i, j) in matching.into_iter() {
-        //let cost = graph_matr[edge];
-        //multigraph[edge].0 = cost;
-        multigraph[edge].1 += 1;
-        multigraph[(j, i)].1 += 1;
+    match MODE {
+        SEQ_COMPUTATION => matching.into_iter().for_each(|edge @ (i, j)| {
+            multigraph[edge].1 += 1;
+            multigraph[(j, i)].1 += 1;
+        }),
+        PAR_COMPUTATION => {
+            let dim = multigraph.shape().0;
+            // cannot directly create a *mut pointer,
+            // since *mut pointers do not implement std::marker::Sync
+            let multigraph_slice = multigraph.as_slice();
+            // safety: each cell is only written to once,
+            // since the matching contains each vertex at most once
+            unsafe {
+                matching.into_par_iter().for_each(|(i, j)| {
+                    let multigraph_prt = multigraph_slice.as_ptr() as *mut (f64, usize);
+                    //multigraph[edge].1 += 1;
+                    (*multigraph_prt.add(j * dim + i)).1 += 1;
+                    //multigraph[(j, i)].1 += 1;
+                    (*multigraph_prt.add(i * dim + j)).1 += 1;
+                })
+            }
+        }
+        MPI_COMPUTATION => todo!(),
+        _ => panic_on_invaid_mode::<MODE>(),
     }
     multigraph
 }
@@ -239,6 +283,7 @@ mod test {
     use nalgebra::DMatrix;
 
     use crate::{
+        computation_mode::*,
         datastructures::{Edge, Graph, NAMatrix},
         mst::prim,
         solvers::{
@@ -295,7 +340,7 @@ mod test {
             &[0., 1., 2., 1., 0., 3., 2., 3., 0.],
         ));
 
-        let mst = prim(&graph);
+        let mst = prim::<SEQ_COMPUTATION>(&graph);
 
         let expected = DMatrix::from_row_slice(
             3,
@@ -314,7 +359,7 @@ mod test {
         );
         assert_eq!(
             expected,
-            fill_multigraph_with_mst_and_matching(&graph, &mst, matching)
+            fill_multigraph_with_mst_and_matching::<SEQ_COMPUTATION>(&graph, &mst, matching)
         );
     }
 
@@ -359,7 +404,7 @@ mod test {
         );
         assert_eq!(
             expected,
-            fill_multigraph_with_mst_and_matching(&graph, &mst, matching)
+            fill_multigraph_with_mst_and_matching::<SEQ_COMPUTATION>(&graph, &mst, matching)
         );
     }
 
@@ -395,7 +440,7 @@ mod test {
             &[0., 1., 2., 1., 0., 3., 2., 3., 0.],
         ));
 
-        let mst = prim(&graph);
+        let mst = prim::<SEQ_COMPUTATION>(&graph);
 
         let expected = DMatrix::from_row_slice(
             3,
@@ -414,7 +459,74 @@ mod test {
         );
         assert_eq!(
             expected,
-            fill_multigraph_with_mst_and_matching(&graph, &mst, matching)
+            fill_multigraph_with_mst_and_matching::<SEQ_COMPUTATION>(&graph, &mst, matching)
+        );
+    }
+
+    /// graph: (with edge cost annotated)
+    /// 0 ----1.--- 1
+    ///  \         /
+    ///   \       /
+    ///    2.    3.
+    ///     \   /
+    ///      \ /
+    ///       2
+    ///
+    /// resulting mst: (without edge cost annotated)
+    /// 0 - 1
+    ///  \
+    ///   2
+    /// matching (not a proper matching, but for the test that is okay):
+    /// 0 - 1
+    ///  \
+    ///   2
+    ///
+    /// resulting multigraph:
+    /// 0 - 1
+    ///  \
+    ///   2
+    /// with every edge existing twice
+    #[test]
+    fn fill_multigraph_with_mst_and_matching_seq_and_par_agree() {
+        let matching = vec![(1, 0), (2, 0)];
+        let graph = NAMatrix(DMatrix::from_row_slice(
+            3,
+            3,
+            &[0., 1., 2., 1., 0., 3., 2., 3., 0.],
+        ));
+
+        let mst = prim::<SEQ_COMPUTATION>(&graph);
+
+        let expected = DMatrix::from_row_slice(
+            3,
+            3,
+            &[
+                (0., 0),
+                (1., 2),
+                (2., 2),
+                (1., 2),
+                (0., 0),
+                (3., 0),
+                (2., 2),
+                (3., 0),
+                (0., 0),
+            ],
+        );
+        assert_eq!(
+            fill_multigraph_with_mst_and_matching::<SEQ_COMPUTATION>(
+                &graph,
+                &mst,
+                matching.clone()
+            ),
+            fill_multigraph_with_mst_and_matching::<PAR_COMPUTATION>(
+                &graph,
+                &mst,
+                matching.clone()
+            )
+        );
+        assert_eq!(
+            expected,
+            fill_multigraph_with_mst_and_matching::<SEQ_COMPUTATION>(&graph, &mst, matching,),
         );
     }
 
@@ -563,7 +675,7 @@ mod test {
         .into();
 
         let exact_solution = solvers::exact::first_improved_solver::<NAMatrix>(&(&graph).into());
-        let result = christofides(&graph);
+        let result = christofides::<SEQ_COMPUTATION>(&graph);
         assert!(
             exact_solution.0 <= result.0,
             "Christofides algorithm cannot outperfrom the exact solution"
