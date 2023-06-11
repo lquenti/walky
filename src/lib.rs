@@ -8,6 +8,7 @@ use crate::solvers::exact;
 use clap::Parser;
 use one_tree::one_tree_lower_bound;
 
+pub mod computation_mode;
 pub mod datastructures;
 pub mod mst;
 pub mod one_tree;
