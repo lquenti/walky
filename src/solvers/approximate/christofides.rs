@@ -56,6 +56,8 @@ pub fn christofides(graph: &Graph) -> Solution {
     (sum_cost, hamilton_cycle)
 }
 
+/// finds a eulerian cycle in the given multigraph,
+/// using Hierholzer's algorithm
 fn eulerian_cycle_from_multigraph(mut multigraph: DMatrix<(f64, usize)>) -> Vec<usize> {
     // every vertex has at least degree 2
     let dim = multigraph.shape().0;
@@ -100,7 +102,7 @@ fn find_cycle(
     let mut vertex = start_vertex;
     cycle.push(vertex);
     while let Some((idx, neighbour)) = multigraph
-        .column_mut(vertex)
+        .row_mut(vertex)
         .iter_mut()
         .enumerate()
         .find(|(_idx, &mut (_cost, times))| times != 0)
@@ -110,19 +112,19 @@ fn find_cycle(
 
         debug_assert!(
             neighbour.1 > 0,
-            "There should exist an edge from vertex {} to {} ",
+            "There should exist an edge from vertex {} to {}",
             vertex,
             idx
         );
         neighbour.1 -= 1;
 
         debug_assert!(
-            multigraph[(vertex, idx)].1 > 0,
-            "There should exist an edge from vertex {} to {} ",
+            multigraph[(idx, vertex)].1 > 0,
+            "There should exist an edge from vertex {} to {}",
             vertex,
             idx
         );
-        multigraph[(vertex, idx)].1 -= 1;
+        multigraph[(idx, vertex)].1 -= 1;
 
         debug_assert!(
             degree[vertex] > 0,
