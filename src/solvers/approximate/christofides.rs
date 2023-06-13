@@ -4,7 +4,7 @@ use rayon::prelude::*;
 
 use crate::{
     computation_mode::*,
-    datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix, Solution, Vertex},
+    datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix, Solution},
     mst::prim,
 };
 
@@ -265,19 +265,6 @@ fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
     multigraph
 }
 
-/// an undirected Edge with no cost
-#[derive(Debug, Copy, Clone)]
-struct UndirectedEdge {
-    a: usize,
-    b: usize,
-}
-
-impl PartialEq for UndirectedEdge {
-    fn eq(&self, other: &Self) -> bool {
-        self.a == other.a && self.b == other.b || self.a == other.b && self.b == other.a
-    }
-}
-
 #[cfg(test)]
 mod test {
     use nalgebra::DMatrix;
@@ -294,29 +281,6 @@ mod test {
             },
         },
     };
-
-    use super::UndirectedEdge;
-
-    #[test]
-    fn test_same_edge_eq() {
-        let e1 = UndirectedEdge { a: 1, b: 0 };
-        let e2 = UndirectedEdge { a: 1, b: 0 };
-        assert_eq!(e1, e2);
-    }
-
-    #[test]
-    fn test_reversed_edge_eq() {
-        let e1 = UndirectedEdge { a: 1, b: 0 };
-        let e2 = UndirectedEdge { a: 0, b: 1 };
-        assert_eq!(e1, e2);
-    }
-
-    #[test]
-    fn test_not_equal_edges() {
-        let e1 = UndirectedEdge { a: 1, b: 0 };
-        let e2 = UndirectedEdge { a: 1, b: 1 };
-        assert_ne!(e1, e2);
-    }
 
     /// graph: (with edge cost annotated)
     /// 0 ----1.--- 1
