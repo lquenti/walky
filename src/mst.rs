@@ -12,7 +12,7 @@ use crate::{
 };
 
 use delegate::delegate;
-use nalgebra::{Dyn, MatrixView1xX, U1};
+use nalgebra::{Dyn, U1};
 use ordered_float::OrderedFloat;
 use priority_queue::PriorityQueue;
 use rayon::prelude::*;
