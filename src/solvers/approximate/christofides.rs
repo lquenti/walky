@@ -6,18 +6,38 @@ use crate::{
     computation_mode::*,
     datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix, Solution},
     mst::prim,
+    solvers::approximate::matching::approx_min_cost_matching,
 };
+
+pub fn christofides<const MODE: usize>(graph: &Graph) -> Solution {
+    christofides_generic::<MODE>(graph, compute_approx_matching::<MODE>)
+}
+
+pub fn christofides_exact<const MODE: usize>(graph: &Graph) -> Solution {
+    todo!(
+        "need correctly implement the exact method,
+          currently the function interfaces collide with the approx matching solver"
+    );
+    christofides_generic::<MODE>(graph, compute_exact_matching)
+}
 
 /// See [the original paper from
 /// Christofides](https://apps.dtic.mil/dtic/tr/fulltext/u2/a025602.pdf)
 /// for a good overview of the algorithm.
 ///
 /// `MODE`: constant parameter, choose one of the values from [`crate::computation_mode`]
+//
+// `matching_computer` does the following:
+//  1. compute subgraph of `graph` only with vertices that have odd degree in the MST,
+//  2. then compute a minimum-weight maximum matching for the subgraph
 ///
 /// The algorithm should be performant, therefore instead of the generic [`datastructures::AdjacencyMatrix`]
 /// trait,
 /// the type [`datastructures::NAMatrix`] is used.
-pub fn christofides<const MODE: usize>(graph: &Graph) -> Solution {
+pub fn christofides_generic<const MODE: usize>(
+    graph: &Graph,
+    matching_computer: fn(&Graph, &NAMatrix) -> Vec<(usize, usize)>,
+) -> Solution {
     // create an adjacency matrix from the adjacency list
     let graph_matr: NAMatrix = graph.into();
 
@@ -33,18 +53,21 @@ pub fn christofides<const MODE: usize>(graph: &Graph) -> Solution {
 
     // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST,
     // then compute a minimum-weight maximum matching for the subgraph
-    let subgraph: WeightedGraph = Into::<WeightedGraph>::into(graph)
-        .filter_vertices(|&vertex| mst.vertex_degree(vertex) % 2 == 1);
+    //let subgraph: WeightedGraph = Into::<WeightedGraph>::into(graph)
+    //    .filter_vertices(|&vertex| mst.vertex_degree(vertex) % 2 == 1);
+
+    let matching = matching_computer(&mst, &graph_matr);
 
     // note: the maximal matching is perfect
-    let matching = subgraph
-        .maximin_matching()
-        .expect("Something went wrong: could not compute the maximal minimum weight matching");
+    //let matching = subgraph
+    //    .maximin_matching()
+    //    .expect("Something went wrong: could not compute the maximal minimum weight matching");
 
     // 3. union the perfect matching with the MST into a multigraph
-    let matching_edges = matching.edges();
-    let multigraph =
-        fill_multigraph_with_mst_and_matching::<MODE>(&graph_matr, &mst, matching_edges);
+    //let matching_edges = matching.edges();
+    //let multigraph =
+    //    fill_multigraph_with_mst_and_matching::<MODE>(&graph_matr, &mst, matching_edges);
+    let multigraph = fill_multigraph_with_mst_and_matching::<MODE>(&graph_matr, &mst, matching);
 
     // 4. compute a eulerian cycle through the multigraph
     let mut euler_cycle = eulerian_cycle_from_multigraph(multigraph);
@@ -57,6 +80,43 @@ pub fn christofides<const MODE: usize>(graph: &Graph) -> Solution {
         .map(|window| graph_matr[(window[0], window[1])])
         .sum();
     (sum_cost, hamilton_cycle)
+}
+
+#[inline]
+fn compute_exact_matching(mst: &Graph, graph: &NAMatrix) -> Vec<(usize, usize)> {
+    // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST,
+    // then compute a minimum-weight maximum matching for the subgraph
+    let subgraph: WeightedGraph = Into::<WeightedGraph>::into(mst)
+        .filter_vertices(|&vertex| mst.vertex_degree(vertex) % 2 == 1);
+
+    //note: the maximal matching is perfect
+    let matching = subgraph
+        .maximin_matching()
+        .expect("Something went wrong: could not compute the maximal minimum weight matching");
+
+    matching.edges()
+}
+
+#[inline]
+fn compute_approx_matching<const MODE: usize>(
+    mst: &Graph,
+    graph: &NAMatrix,
+) -> Vec<(usize, usize)> {
+    let subgraph: Vec<_> = mst
+        .iter()
+        .enumerate()
+        .filter_map(|(i, vertex)| {
+            if vertex.degree() % 2 == 1 {
+                Some(i)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    let tries = subgraph.len().pow(2);
+
+    approx_min_cost_matching::<MODE>(graph, subgraph, tries)
 }
 
 /// finds a eulerian cycle in the given multigraph,
