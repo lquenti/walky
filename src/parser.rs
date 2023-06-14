@@ -1,7 +1,4 @@
-use std::{
-    ops::{Index, IndexMut},
-    slice::SliceIndex,
-};
+use std::ops::{Deref, DerefMut};
 
 use blossom::WeightedGraph;
 use delegate::delegate;
@@ -46,13 +43,22 @@ pub struct Graph {
     pub vertices: Vec<Vertex>,
 }
 
+impl Deref for Graph {
+    type Target = Vec<Vertex>;
+    fn deref(&self) -> &Self::Target {
+        &self.vertices
+    }
+}
+
+impl DerefMut for Graph {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.vertices
+    }
+}
+
 impl Graph {
     delegate! {
         to self.vertices {
-            /// Yields an Iterator over all vertices in this graph.
-            /// The vertices are traversend in increasing order, starting from index `0`.
-            pub fn iter(&self) -> std::slice::Iter<Vertex>;
-
             /// return the number of vertices in the graph
             #[call(len)]
             pub fn num_vertices(&self) -> usize;
@@ -105,27 +111,6 @@ impl Graph {
             self.vertices.len() - 1
         );
         self.vertices[vertex].degree()
-    }
-}
-
-impl<I> Index<I> for Graph
-where
-    I: SliceIndex<[Vertex]>,
-{
-    type Output = <Vec<Vertex> as Index<I>>::Output;
-    delegate! {
-        to self.vertices {
-            fn index(&self, index: I) -> &<Self as Index<I>>::Output;
-        }
-    }
-}
-
-impl<I> IndexMut<I> for Graph
-where
-    I: SliceIndex<[Vertex]>,
-{
-    fn index_mut(&mut self, index: I) -> &mut Self::Output {
-        self.vertices.index_mut(index)
     }
 }
 

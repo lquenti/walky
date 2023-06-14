@@ -42,6 +42,24 @@ pub trait AdjacencyMatrix {
         let path_cost = self.evaluate_path(path);
         path_cost + last_edge
     }
+
+    /// checks, if the triangle inequality holds:
+    /// `cost(i,j) <= cost(i,k) + cost(k,j)` for all i,j,k
+    fn is_euclidean(&self) -> bool {
+        let dim = self.dim();
+        for i in 0..dim {
+            for j in i..dim {
+                let direct_cost = self.get(i, j);
+                for k in 0..dim {
+                    let indirect_cost = self.get(i, k) + self.get(k, j);
+                    if direct_cost > indirect_cost {
+                        return false;
+                    }
+                }
+            }
+        }
+        true
+    }
 }
 
 pub type Path = Vec<usize>;
