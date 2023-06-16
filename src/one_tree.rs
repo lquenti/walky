@@ -91,6 +91,8 @@ fn one_tree_lower_bound_seq(graph: &NAMatrix) -> f64 {
 mod test {
     use approx::assert_abs_diff_eq;
 
+    use computation_mode::*;
+
     use super::*;
 
     /// graph:
@@ -240,6 +242,9 @@ mod test {
             );
         }
 
-        assert_abs_diff_eq!(0.31, one_tree_lower_bound(&(&graph).into()));
+        assert_abs_diff_eq!(
+            0.31,
+            one_tree_lower_bound::<SEQ_COMPUTATION>(&(&graph).into())
+        );
     }
 }
