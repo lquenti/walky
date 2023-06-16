@@ -4,10 +4,11 @@ use crate::{
 };
 use std::{error::Error, fs::File, io::Read, path::PathBuf};
 
-use crate::solvers::exact;
-use clap::{Parser, Subcommand, ValueEnum};
-use one_tree::one_tree_lower_bound;
+use cli::{Cli, MSTAlgorithm, Parallelism, ExactAlgorithm, ApproxAlgorithm, LowerBoundAlgorithm};
+use one_tree::one_tree;
+use solvers::exact;
 
+pub mod cli;
 pub mod computation_mode;
 pub mod datastructures;
 pub mod mst;
@@ -16,137 +17,65 @@ pub mod parser;
 pub mod preconditions;
 pub mod solvers;
 
-/// This struct contains all the arguments captured from the command line.
-#[derive(Clone, Debug, Parser)]
-#[command(author, version, about, long_about=None)]
-#[command(propagate_version = true)]
-pub struct Cli {
-    #[command(subcommand)]
-    command: Commands,
-}
-
-#[derive(Clone, Debug, Subcommand)]
-enum Commands {
-    /// Find the exact best solution to a given TSP instance
-    Exact {
-        /// The Algorithm to use
-        algorithm: ExactAlgorithm,
-        /// Path to the TSPLIB-XML file
-        input_file: PathBuf,
-        /// Whether to solve it sequential or parallel
-        #[arg(short, long, default_value_t=Parallelism::SingleThreaded, value_enum)]
-        parallelism: Parallelism,
-    },
-    /// Find an approximate solution to a given TSP instance
-    Approx {
-        /// The Algorithm to use
-        algorithm: ApproxAlgorithm,
-        /// Path to the TSPLIB-XML file
-        input_file: PathBuf,
-        #[arg(short, long, default_value_t=Parallelism::SingleThreaded, value_enum)]
-        /// Whether to solve it sequential or parallel
-        parallelism: Parallelism,
-        /// Whether to also compute a lower_bound. Optional.
-        #[arg(short, long, value_enum)]
-        lower_bound: Option<LowerBoundAlgorithm>
-    },
-    /// Compute the Minimal Spanning Tree of a given TSP instance
-    MST {
-        /// The Algorithm to use
-        algorithm: MSTAlgorithm,
-        /// Path to the TSPLIB-XML file
-        input_file: PathBuf,
-        /// Whether to solve it sequential or parallel
-        #[arg(short, long, default_value_t=Parallelism::SingleThreaded, value_enum)]
-        parallelism: Parallelism,
-    },
-    /// Compute a lower bound cost of a TSP instance
-    LowerBound {
-        /// The Algorithm to use
-        algorithm: LowerBoundAlgorithm,
-        /// Path to the TSPLIB-XML file
-        input_file: PathBuf,
-        /// Whether to solve it sequential or parallel
-        #[arg(short, long, default_value_t=Parallelism::SingleThreaded, value_enum)]
-        parallelism: Parallelism,
-    },
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum ExactAlgorithm {
-    /// Testing each possible (n!) solutions
-    V1,
-    /// Fixating the first Element, so testing ((n-1)!) solutions
-    V2,
-    /// Recursive Enumeration; Stop if partial sum is worse than previous best
-    V3,
-    /// Stop if partial sum + greedy nearest neighbour graph is bigger than current optimum
-    V4,
-    /// As V4, but use an MST instead of NN-graph as a tighter bound
-    V5,
-    /// Cache MST distance once computed
-    V6,
-    /// The Held-Karp Dynamic Programming Algorithm
-    HeldKarp
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum ApproxAlgorithm {
-    /// Starting at each vertex, always visiting the lowest possible next vertex
-    NearestNeighbour,
-    /// The Christofides(-Serdyukov) algorithm
-    Christofides
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum MSTAlgorithm {
-    /// Prim's algorithm for finding the MST
-    Prim,
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum LowerBoundAlgorithm {
-    /// The one tree lower bound
-    OneTree,
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum Parallelism {
-    /// Run in a single threaded
-    SingleThreaded,
-    /// Run in multiple threads on a single node
-    MultiThreaded,
-    /// Run on multiple nodes. Requires MPI.
-    MPI,
-}
-
-/*
-#[derive(Debug, Parser)]
-pub struct Args {
-    /// path to the input file
-    input_file: PathBuf,
-}
- */
-
-/// This function calls the main logic of our program.
-pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
-    Ok(())
-    /*
-    let mut file = File::open(args.input_file)?;
+/// Extracts the TSP instance from a TSPLIB-XML file.
+fn get_tsp_instance(input_file: PathBuf) -> Result<TravellingSalesmanProblemInstance, Box<dyn Error>> {
+    let mut file = File::open(input_file)?;
     let mut xml = String::new();
     file.read_to_string(&mut xml)?;
 
-    let tsp_instance = TravellingSalesmanProblemInstance::parse_from_xml(&xml[..])?;
+    Ok(TravellingSalesmanProblemInstance::parse_from_xml(&xml[..])?)
+}
 
-    let m: VecMatrix = tsp_instance.graph.clone().into();
-    let (best_cost, best_path) = exact::naive_solver(&m);
+/// Executes the driver logic for computing an exact solution
+fn exact_run(algorithm: ExactAlgorithm, input_file: PathBuf, parallelism: Parallelism) -> Result<(), Box<dyn Error>> {
+    let tsp_instance = get_tsp_instance(input_file)?;
 
-    let na_matrix: NAMatrix = (&tsp_instance.graph).into();
-    let lower_bound = one_tree_lower_bound(&na_matrix);
+    if (parallelism != Parallelism::SingleThreaded) {
+        unimplemented!()
+    }
 
-    println!("Best Path: {:?}", best_path);
+    let m: VecMatrix = tsp_instance.graph.into();
+    let (best_cost, best_permutation) = match algorithm {
+        ExactAlgorithm::V1 => exact::naive_solver(&m),
+        ExactAlgorithm::V2 => exact::first_improved_solver(&m),
+        ExactAlgorithm::V3 => unimplemented!(),
+        ExactAlgorithm::V4 => unimplemented!(),
+        ExactAlgorithm::V5 => unimplemented!(),
+        ExactAlgorithm::V6 => unimplemented!(),
+        ExactAlgorithm::HeldKarp => unimplemented!()
+    };
     println!("Best Cost: {}", best_cost);
+    println!("Best Permutation: {:?}", best_permutation);
+    Ok(())
+}
+
+/// Executes the driver logic for computing an approximate solution
+fn approx_run(algorithm: ApproxAlgorithm, input_file: PathBuf, parallelism: Parallelism, lower_bound: Option<LowerBoundAlgorithm>) -> Result<(), Box<dyn Error>> {
+    let tsp_instance = get_tsp_instance(input_file)?;
+    Ok(())
+}
+
+/// Executes the driver logic for computing a minimal spanning tree
+fn mst_run(algorithm: MSTAlgorithm, input_file: PathBuf, parallelism: Parallelism) -> Result<(), Box<dyn Error>> {
+    let tsp_instance = get_tsp_instance(input_file)?;
+    Ok(())
+}
+
+/// Executes the driver logic for computing a lower bound
+fn lower_bound_run(algorithm: LowerBoundAlgorithm, input_file: PathBuf, parallelism: Parallelism) -> Result<(), Box<dyn Error>> {
+    let tsp_instance = get_tsp_instance(input_file)?;
+    let na_matrix: NAMatrix = (&tsp_instance.graph).into();
+    let lower_bound = one_tree::one_tree_lower_bound(&na_matrix);
     println!("1-tree lower bound: {}", lower_bound);
     Ok(())
-     */
+}
+
+/// This function calls the main logic of our program.
+pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
+    match cli.command {
+        cli::Commands::Exact { algorithm, input_file, parallelism } => exact_run(algorithm, input_file, parallelism),
+        cli::Commands::Approx { algorithm, input_file, parallelism, lower_bound } => approx_run(algorithm, input_file, parallelism, lower_bound),
+        cli::Commands::MST { algorithm, input_file, parallelism } => mst_run(algorithm, input_file, parallelism),
+        cli::Commands::LowerBound { algorithm, input_file, parallelism } => lower_bound_run(algorithm, input_file, parallelism)
+    }
 }

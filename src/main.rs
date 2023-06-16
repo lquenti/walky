@@ -1,7 +1,7 @@
 use std::error::Error;
 
 use clap::Parser;
-use walky::Cli;
+use walky::cli::Cli;
 
 /// parse the command line arguments and pass them to `[walky::run]`
 fn main() -> Result<(), Box<dyn Error>> {
