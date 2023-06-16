@@ -2,6 +2,7 @@ use crate::{
     datastructures::{NAMatrix, VecMatrix},
     mst::prim,
     parser::TravellingSalesmanProblemInstance,
+    solvers::approximate::christofides::christofides,
 };
 use std::{error::Error, fs::File, io::Read, path::PathBuf};
 
@@ -58,13 +59,35 @@ fn exact_run(
 
 /// Executes the driver logic for computing an approximate solution
 fn approx_run(
-    _algorithm: ApproxAlgorithm,
+    algorithm: ApproxAlgorithm,
     input_file: PathBuf,
-    _parallelism: Parallelism,
-    _lower_bound: Option<LowerBoundAlgorithm>,
+    parallelism: Parallelism,
+    lower_bound: Option<LowerBoundAlgorithm>,
 ) -> Result<(), Box<dyn Error>> {
-    let _tsp_instance = get_tsp_instance(input_file)?;
-    unimplemented!()
+    let tsp_instance = get_tsp_instance(input_file.clone())?;
+
+    match algorithm {
+        ApproxAlgorithm::Christofides => {
+            let solution = match parallelism {
+                Parallelism::SingleThreaded => {
+                    christofides::<{ computation_mode::SEQ_COMPUTATION }>(&tsp_instance.graph)
+                }
+                Parallelism::MultiThreaded => {
+                    christofides::<{ computation_mode::PAR_COMPUTATION }>(&tsp_instance.graph)
+                }
+                Parallelism::MPI => {
+                    christofides::<{ computation_mode::MPI_COMPUTATION }>(&tsp_instance.graph)
+                }
+            };
+            println!("Christofides solution weight: {}", solution.0);
+        }
+        ApproxAlgorithm::NearestNeighbour => todo!(),
+    };
+
+    if let Some(lower_bound_algo) = lower_bound {
+        lower_bound_run(lower_bound_algo, input_file, parallelism)?
+    }
+    Ok(())
 }
 
 /// Executes the driver logic for computing a minimal spanning tree
@@ -76,21 +99,17 @@ fn mst_run(
     let tsp_instance = get_tsp_instance(input_file)?;
     let na_matrix: NAMatrix = (&tsp_instance.graph).into();
 
-    match algorithm {
-        MSTAlgorithm::Prim => {
-            let mst = match parallelism {
-                Parallelism::SingleThreaded => {
-                    prim::<{ computation_mode::SEQ_COMPUTATION }>(&na_matrix)
-                }
-                Parallelism::MultiThreaded => {
-                    prim::<{ computation_mode::PAR_COMPUTATION }>(&na_matrix)
-                }
-                Parallelism::MPI => prim::<{ computation_mode::MPI_COMPUTATION }>(&na_matrix),
-            };
-            println!("MST weight: {}", mst.undirected_edge_weight());
-            Ok(())
-        }
-    }
+    let mst = match algorithm {
+        MSTAlgorithm::Prim => match parallelism {
+            Parallelism::SingleThreaded => {
+                prim::<{ computation_mode::SEQ_COMPUTATION }>(&na_matrix)
+            }
+            Parallelism::MultiThreaded => prim::<{ computation_mode::PAR_COMPUTATION }>(&na_matrix),
+            Parallelism::MPI => prim::<{ computation_mode::MPI_COMPUTATION }>(&na_matrix),
+        },
+    };
+    println!("MST weight: {}", mst.undirected_edge_weight());
+    Ok(())
 }
 
 /// Executes the driver logic for computing a lower bound
@@ -116,9 +135,9 @@ fn lower_bound_run(
                 }
             };
             println!("1-tree lower bound: {}", lower_bound);
-            Ok(())
         }
     }
+    Ok(())
 }
 
 /// This function calls the main logic of our program.
