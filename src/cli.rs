@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use clap::{Parser, Subcommand, ValueEnum};
+use std::path::PathBuf;
 
 /// This struct contains all the arguments captured from the command line.
 #[derive(Clone, Debug, Parser)]
@@ -33,7 +33,7 @@ pub enum Commands {
         parallelism: Parallelism,
         /// Whether to also compute a lower_bound. Optional.
         #[arg(short, long, value_enum)]
-        lower_bound: Option<LowerBoundAlgorithm>
+        lower_bound: Option<LowerBoundAlgorithm>,
     },
     /// Compute the Minimal Spanning Tree of a given TSP instance
     MST {
@@ -72,7 +72,7 @@ pub enum ExactAlgorithm {
     /// Cache MST distance once computed
     V6,
     /// The Held-Karp Dynamic Programming Algorithm
-    HeldKarp
+    HeldKarp,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
@@ -80,7 +80,7 @@ pub enum ApproxAlgorithm {
     /// Starting at each vertex, always visiting the lowest possible next vertex
     NearestNeighbour,
     /// The Christofides(-Serdyukov) algorithm
-    Christofides
+    Christofides,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
