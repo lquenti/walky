@@ -9,9 +9,8 @@ BINARY=$(readlink -f "../target/release/walky")
 pushd ..
 
 cargo build --release
-# Since hyperfine spawns a shell, we use the abs path everywhere
 # Add --show-output for debugging
-hyperfine --warmup 10 --runs 100 --parameter-scan N $MIN_SIZE $MAX_SIZE --export-json results.json "$BINARY $(readlink -f ./benchmarks/inputs)/{N}.xml"
+hyperfine --shell=none --warmup 10 --runs 100 --parameter-scan N $MIN_SIZE $MAX_SIZE --export-json results.json "$BINARY $(readlink -f ./benchmarks/inputs)/{N}.xml"
 
 popd
 mv ../results.json .
