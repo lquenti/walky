@@ -27,30 +27,46 @@ pub struct Cli {
 
 #[derive(Clone, Debug, Subcommand)]
 enum Commands {
+    /// Find the exact best solution to a given TSP instance
     Exact {
+        /// The Algorithm to use
         algorithm: ExactAlgorithm,
+        /// Path to the TSPLIB-XML file
         input_file: PathBuf,
+        /// Whether to solve it sequential or parallel
         #[arg(short, long, default_value_t=Parallelism::SingleThreaded, value_enum)]
         parallelism: Parallelism,
     },
+    /// Find an approximate solution to a given TSP instance
     Approx {
+        /// The Algorithm to use
         algorithm: ApproxAlgorithm,
+        /// Path to the TSPLIB-XML file
         input_file: PathBuf,
         #[arg(short, long, default_value_t=Parallelism::SingleThreaded, value_enum)]
+        /// Whether to solve it sequential or parallel
         parallelism: Parallelism,
-        /// TODO make comment that it is optional
+        /// Whether to also compute a lower_bound. Optional.
         #[arg(short, long, value_enum)]
         lower_bound: Option<LowerBoundAlgorithm>
     },
+    /// Compute the Minimal Spanning Tree of a given TSP instance
     MST {
+        /// The Algorithm to use
         algorithm: MSTAlgorithm,
+        /// Path to the TSPLIB-XML file
         input_file: PathBuf,
+        /// Whether to solve it sequential or parallel
         #[arg(short, long, default_value_t=Parallelism::SingleThreaded, value_enum)]
         parallelism: Parallelism,
     },
+    /// Compute a lower bound cost of a TSP instance
     LowerBound {
+        /// The Algorithm to use
         algorithm: LowerBoundAlgorithm,
+        /// Path to the TSPLIB-XML file
         input_file: PathBuf,
+        /// Whether to solve it sequential or parallel
         #[arg(short, long, default_value_t=Parallelism::SingleThreaded, value_enum)]
         parallelism: Parallelism,
     },
@@ -58,28 +74,49 @@ enum Commands {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 enum ExactAlgorithm {
-    TODO,
+    /// Testing each possible (n!) solutions
+    V1,
+    /// Fixating the first Element, so testing ((n-1)!) solutions
+    V2,
+    /// Recursive Enumeration; Stop if partial sum is worse than previous best
+    V3,
+    /// Stop if partial sum + greedy nearest neighbour graph is bigger than current optimum
+    V4,
+    /// As V4, but use an MST instead of NN-graph as a tighter bound
+    V5,
+    /// Cache MST distance once computed
+    V6,
+    /// The Held-Karp Dynamic Programming Algorithm
+    HeldKarp
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 enum ApproxAlgorithm {
-    TODO,
+    /// Starting at each vertex, always visiting the lowest possible next vertex
+    NearestNeighbour,
+    /// The Christofides(-Serdyukov) algorithm
+    Christofides
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 enum MSTAlgorithm {
+    /// Prim's algorithm for finding the MST
     Prim,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 enum LowerBoundAlgorithm {
-    TODO,
+    /// The one tree lower bound
+    OneTree,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 enum Parallelism {
+    /// Run in a single threaded
     SingleThreaded,
+    /// Run in multiple threads on a single node
     MultiThreaded,
+    /// Run on multiple nodes. Requires MPI.
     MPI,
 }
 
