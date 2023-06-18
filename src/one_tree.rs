@@ -2,6 +2,7 @@
 //! See [this article](https://doi.org/10.1287/opre.18.6.1138) for further information.
 
 use crate::{
+    computation_mode,
     datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix},
     mst::prim_with_excluded_node_single_threaded,
 };
@@ -59,9 +60,24 @@ pub fn one_tree(graph: &NAMatrix, special_vertex: usize) -> Graph {
 
 /// cumputes the 1-tree lower bound
 ///
+/// `MODE`: the level of parallelization, see also [`computation_mode`]
+///
 /// # Panics
 /// if the graph is empty.
-pub fn one_tree_lower_bound(graph: &NAMatrix) -> f64 {
+pub fn one_tree_lower_bound<const MODE: usize>(graph: &NAMatrix) -> f64 {
+    match MODE {
+        computation_mode::SEQ_COMPUTATION => one_tree_lower_bound_seq(graph),
+        computation_mode::PAR_COMPUTATION => todo!(),
+        computation_mode::MPI_COMPUTATION => todo!(),
+        _ => computation_mode::panic_on_invaid_mode::<MODE>(),
+    }
+}
+
+/// cumputes the 1-tree lower bound
+///
+/// # Panics
+/// if the graph is empty.
+fn one_tree_lower_bound_seq(graph: &NAMatrix) -> f64 {
     (0..graph.dim())
         .map(|special_vertex| one_tree(graph, special_vertex).undirected_edge_weight())
         .min_by(|x, y| {
@@ -74,6 +90,8 @@ pub fn one_tree_lower_bound(graph: &NAMatrix) -> f64 {
 #[cfg(test)]
 mod test {
     use approx::assert_abs_diff_eq;
+
+    use computation_mode::*;
 
     use super::*;
 
@@ -224,6 +242,9 @@ mod test {
             );
         }
 
-        assert_abs_diff_eq!(0.31, one_tree_lower_bound(&(&graph).into()));
+        assert_abs_diff_eq!(
+            0.31,
+            one_tree_lower_bound::<SEQ_COMPUTATION>(&(&graph).into())
+        );
     }
 }

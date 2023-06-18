@@ -72,6 +72,7 @@ pub fn third_improved_solver(_graph: Graph) -> Solution {
 /// prune if currently known + NN is bigger than current optimum (greedy)
 /// Sixth improvement:
 /// Use MST as lower bound (should I precompute them?)
+/// Also store em
 
 /// Finding the next permutation given an array.
 /// Based on [Nayuki](https://www.nayuki.io/page/next-lexicographical-permutation-algorithm)
