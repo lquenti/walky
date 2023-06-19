@@ -303,6 +303,7 @@ fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
                         .for_each(|&Edge { to, cost }| neighbours_vec[(to, 0)] = (cost, 1))
                 });
         }
+        #[cfg(feature = "mpi")]
         MPI_COMPUTATION => todo!(),
         _ => panic_on_invaid_mode::<MODE>(),
     }
@@ -330,6 +331,7 @@ fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
                 })
             }
         }
+        #[cfg(feature = "mpi")]
         MPI_COMPUTATION => todo!(),
         _ => panic_on_invaid_mode::<MODE>(),
     }
