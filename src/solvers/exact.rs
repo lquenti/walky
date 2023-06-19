@@ -58,42 +58,71 @@ where
 /// Runtime: O(n!)
 pub fn second_improved_solver<T>(graph_matrix: &T) -> Solution
 where
-    T: AdjacencyMatrix
+    T: AdjacencyMatrix,
 {
     let mut current_prefix = Vec::new();
+    current_prefix.reserve(graph_matrix.dim());
     let mut result = (f64::INFINITY, Vec::new());
-    _second_improved_solver_rec(graph_matrix, &mut current_prefix, &mut result);
+    _second_improved_solver_rec(graph_matrix, &mut current_prefix, 0.0, &mut result);
     result
 }
 
 /// The recursive function underlying [`second_improved_solver`]
 ///
 /// Think of it as Depth first traversal and we evaluate at the leafs.
-fn _second_improved_solver_rec<T>(graph_matrix: &T, current_prefix: &mut Path, result: &mut Solution)
-where
-    T: AdjacencyMatrix
+fn _second_improved_solver_rec<T>(
+    graph_matrix: &T,
+    current_prefix: &mut Path,
+    current_cost: f64,
+    result: &mut Solution,
+) where
+    T: AdjacencyMatrix,
 {
     let n = graph_matrix.dim();
+    let mut current_cost = current_cost; // Copy trait anyways
 
     // Base case: Is this one better?
     if current_prefix.len() == n {
+        // Add the last edge, finishing the circle
+        current_cost += graph_matrix.get(
+            *current_prefix.last().unwrap(),
+            *current_prefix.first().unwrap(),
+        );
+
         let best_cost = result.0;
-        let cost = graph_matrix.evaluate_circle(&current_prefix);
-        if cost < best_cost {
-            // TODO Does this work or is it copy?
-            result.0 = cost;
+        if current_cost < best_cost {
+            result.0 = current_cost;
             result.1 = current_prefix.clone();
         }
+        return;
     }
-    else {
-        // Branch down with branching factor n-k, where k is the length of current_prefix
-        for i in 0..n {
-            if !current_prefix.contains(&i) {
-                current_prefix.push(i);
-                _second_improved_solver_rec(graph_matrix, current_prefix, result);
-                current_prefix.pop();
-            }
+    // Branch down with branching factor n-k, where k is the length of current_prefix
+    for i in 0..n {
+        // Prune if already in prefix
+        if current_prefix.contains(&i) {
+            continue;
         }
+
+        current_prefix.push(i);
+        // If this is a single element, we do not have an edge yet
+        if current_prefix.len() == 1 {
+            _second_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
+            current_prefix.pop();
+            continue;
+        }
+
+        // Calculate the cost of our new edge
+        let from = current_prefix.len() - 2;
+        let to = from + 1;
+        let cost_last_edge = graph_matrix.get(current_prefix[from], current_prefix[to]);
+        current_cost += cost_last_edge;
+
+        // rec call
+        _second_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
+
+        // remove
+        current_cost -= cost_last_edge;
+        current_prefix.pop();
     }
 }
 
