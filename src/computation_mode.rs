@@ -10,6 +10,7 @@ pub const SEQ_COMPUTATION: usize = 0;
 pub const PAR_COMPUTATION: usize = 1;
 
 /// use multiple machinges to parallelize computation, via MPI
+#[cfg(feature = "mpi")]
 pub const MPI_COMPUTATION: usize = 2;
 
 #[inline]

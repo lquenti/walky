@@ -68,6 +68,7 @@ pub fn one_tree_lower_bound<const MODE: usize>(graph: &NAMatrix) -> f64 {
     match MODE {
         computation_mode::SEQ_COMPUTATION => one_tree_lower_bound_seq(graph),
         computation_mode::PAR_COMPUTATION => todo!(),
+        #[cfg(feature = "mpi")]
         computation_mode::MPI_COMPUTATION => todo!(),
         _ => computation_mode::panic_on_invaid_mode::<MODE>(),
     }

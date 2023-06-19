@@ -7,7 +7,7 @@ use std::{
 };
 
 use crate::{
-    computation_mode::{MPI_COMPUTATION, PAR_COMPUTATION, SEQ_COMPUTATION},
+    computation_mode::*,
     datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix},
 };
 
@@ -26,8 +26,9 @@ pub fn prim<const MODE: usize>(graph: &NAMatrix) -> Graph {
     match MODE {
         SEQ_COMPUTATION => prim_with_excluded_node_single_threaded(graph, graph.dim()),
         PAR_COMPUTATION => prim_with_excluded_node_multi_threaded(graph, graph.dim()),
+        #[cfg(feature = "mpi")]
         MPI_COMPUTATION => todo!(),
-        _ => panic!("Unsupported value of the constant parameter Mode: {}", MODE),
+        _ => panic_on_invaid_mode::<MODE>(),
     }
 }
 
