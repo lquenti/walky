@@ -49,6 +49,7 @@ pub fn approx_min_cost_matching<const MODE: usize>(
     match MODE {
         SEQ_COMPUTATION => improve_matching(graph, matching.as_mut_slice(), tries),
         PAR_COMPUTATION => par_improve_matching(graph, matching.as_mut_slice(), tries),
+        #[cfg(feature = "mpi")]
         MPI_COMPUTATION => todo!(),
         _ => panic_on_invaid_mode::<MODE>(),
     }
