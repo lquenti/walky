@@ -128,10 +128,75 @@ fn _second_improved_solver_rec<T>(
 
 /// Third improvement of [`naive_solver`]:
 /// Prune a lot whenever the partial sum is already bigger than the previous optimum
+pub fn third_improved_solver<T>(graph_matrix: &T) -> Solution
+where
+    T: AdjacencyMatrix,
+{
+    let mut current_prefix = Vec::new();
+    current_prefix.reserve(graph_matrix.dim());
+    let mut result = (f64::INFINITY, Vec::new());
+    _third_improved_solver_rec(graph_matrix, &mut current_prefix, 0.0, &mut result);
+    result
+}
+
+/// The recursive function underlying [`third_improved_solver`]
 ///
-/// Runtime: TODO
-pub fn third_improved_solver(_graph: Graph) -> Solution {
-    todo!()
+/// For the most part it is the same function as [`_second_improved_solver_rec`]. We could just not
+/// parametrize it without a whole lot of dependency injection and indirection.
+///
+/// The only difference is that we prune once it is better than our previously computed best
+/// solution.
+fn _third_improved_solver_rec<T>(
+    graph_matrix: &T,
+    current_prefix: &mut Path,
+    current_cost: f64,
+    result: &mut Solution,
+) where
+    T: AdjacencyMatrix,
+{
+    // See [`_second_improved_solver_rec`] for more comments
+    let n = graph_matrix.dim();
+    let mut current_cost = current_cost;
+
+    if current_prefix.len() == n {
+        current_cost += graph_matrix.get(
+            *current_prefix.last().unwrap(),
+            *current_prefix.first().unwrap(),
+        );
+
+        let best_cost = result.0;
+        if current_cost < best_cost {
+            result.0 = current_cost;
+            result.1 = current_prefix.clone();
+        }
+        return;
+    }
+    for i in 0..n {
+        if current_prefix.contains(&i) {
+            continue;
+        }
+
+        current_prefix.push(i);
+        if current_prefix.len() == 1 {
+            _second_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
+            current_prefix.pop();
+            continue;
+        }
+
+        let from = current_prefix.len() - 2;
+        let to = from + 1;
+        let cost_last_edge = graph_matrix.get(current_prefix[from], current_prefix[to]);
+        current_cost += cost_last_edge;
+
+        // HERE IS THE BIG DIFFERENCE TO [`_second_improved_solver_rec`]!
+        if current_cost <= result.0 {
+            _second_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
+        }
+        // This was it. This is the pruning
+
+        current_cost -= cost_last_edge;
+        current_prefix.pop();
+    }
 }
 
 /// Fourth improvement of [`naive_solver`]:
@@ -706,7 +771,7 @@ mod exact_solver {
     fn test_float_tsp_vecmatrix() {
         // Test each solution
         let gm: VecMatrix = SMALL_FLOAT_GRAPH.clone().into();
-        for f in [naive_solver, first_improved_solver, second_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(37.41646270666716, best_cost));
             assert!(is_same_undirected_circle(
@@ -720,7 +785,7 @@ mod exact_solver {
     fn test_float_tsp_namatrix() {
         // Test each solution
         let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&SMALL_FLOAT_GRAPH);
-        for f in [naive_solver, first_improved_solver, second_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(37.41646270666716, best_cost));
             assert!(is_same_undirected_circle(
@@ -733,7 +798,7 @@ mod exact_solver {
     #[test]
     fn test_big_floating_tsp_vecmatrix() {
         let gm: VecMatrix = BIG_FLOAT_GRAPH.clone().into();
-        for f in [naive_solver, first_improved_solver, second_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(33.03008250868411, best_cost));
             assert!(is_same_undirected_circle(
@@ -746,7 +811,7 @@ mod exact_solver {
     #[test]
     fn test_big_floating_tsp_namatrix() {
         let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&BIG_FLOAT_GRAPH);
-        for f in [naive_solver, first_improved_solver, second_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(33.03008250868411, best_cost));
             assert!(is_same_undirected_circle(
@@ -759,7 +824,7 @@ mod exact_solver {
     #[test]
     fn test_integer_tsp_vecmatrix() {
         let gm: VecMatrix = SMALL_INT_GRAPH.clone().into();
-        for f in [naive_solver, first_improved_solver, second_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(best_cost, 17.0));
             assert!(is_same_undirected_circle(
@@ -772,7 +837,7 @@ mod exact_solver {
     #[test]
     fn test_integer_tsp_namatrix() {
         let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&SMALL_INT_GRAPH);
-        for f in [naive_solver, first_improved_solver, second_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(best_cost, 17.0));
             assert!(is_same_undirected_circle(
