@@ -52,12 +52,49 @@ where
 /// Second improvement of [`naive_solver`]:
 /// We carry along a partial sum whenever we change an element.
 ///
+/// Since we want the prefix to stay the same, we also use recusrive enumeration.
+///
 /// The complexity analysis gets tedious here, so we basically still have
 /// Runtime: O(n!)
-pub fn second_improved_solver(_graph: Graph) -> Solution {
-    todo!() // Hard, we need a new enumeration algorithm that is easier to prefix sum
-            // We should probably also inline it
-            // Not? recursive search
+pub fn second_improved_solver<T>(graph_matrix: &T) -> Solution
+where
+    T: AdjacencyMatrix
+{
+    let mut current_prefix = Vec::new();
+    let mut result = (f64::INFINITY, Vec::new());
+    _second_improved_solver_rec(graph_matrix, &mut current_prefix, &mut result);
+    result
+}
+
+/// The recursive function underlying [`second_improved_solver`]
+///
+/// Think of it as Depth first traversal and we evaluate at the leafs.
+fn _second_improved_solver_rec<T>(graph_matrix: &T, current_prefix: &mut Path, result: &mut Solution)
+where
+    T: AdjacencyMatrix
+{
+    let n = graph_matrix.dim();
+
+    // Base case: Is this one better?
+    if current_prefix.len() == n {
+        let best_cost = result.0;
+        let cost = graph_matrix.evaluate_circle(&current_prefix);
+        if cost < best_cost {
+            // TODO Does this work or is it copy?
+            result.0 = cost;
+            result.1 = current_prefix.clone();
+        }
+    }
+    else {
+        // Branch down with branching factor n-k, where k is the length of current_prefix
+        for i in 0..n {
+            if !current_prefix.contains(&i) {
+                current_prefix.push(i);
+                _second_improved_solver_rec(graph_matrix, current_prefix, result);
+                current_prefix.pop();
+            }
+        }
+    }
 }
 
 /// Third improvement of [`naive_solver`]:
@@ -640,7 +677,7 @@ mod exact_solver {
     fn test_float_tsp_vecmatrix() {
         // Test each solution
         let gm: VecMatrix = SMALL_FLOAT_GRAPH.clone().into();
-        for f in [naive_solver, first_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(37.41646270666716, best_cost));
             assert!(is_same_undirected_circle(
@@ -654,7 +691,7 @@ mod exact_solver {
     fn test_float_tsp_namatrix() {
         // Test each solution
         let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&SMALL_FLOAT_GRAPH);
-        for f in [naive_solver, first_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(37.41646270666716, best_cost));
             assert!(is_same_undirected_circle(
@@ -667,7 +704,7 @@ mod exact_solver {
     #[test]
     fn test_big_floating_tsp_vecmatrix() {
         let gm: VecMatrix = BIG_FLOAT_GRAPH.clone().into();
-        for f in [naive_solver, first_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(33.03008250868411, best_cost));
             assert!(is_same_undirected_circle(
@@ -680,7 +717,7 @@ mod exact_solver {
     #[test]
     fn test_big_floating_tsp_namatrix() {
         let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&BIG_FLOAT_GRAPH);
-        for f in [naive_solver, first_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(33.03008250868411, best_cost));
             assert!(is_same_undirected_circle(
@@ -693,7 +730,7 @@ mod exact_solver {
     #[test]
     fn test_integer_tsp_vecmatrix() {
         let gm: VecMatrix = SMALL_INT_GRAPH.clone().into();
-        for f in [naive_solver, first_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(best_cost, 17.0));
             assert!(is_same_undirected_circle(
@@ -706,7 +743,7 @@ mod exact_solver {
     #[test]
     fn test_integer_tsp_namatrix() {
         let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&SMALL_INT_GRAPH);
-        for f in [naive_solver, first_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(best_cost, 17.0));
             assert!(is_same_undirected_circle(
