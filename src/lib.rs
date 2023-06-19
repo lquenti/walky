@@ -44,12 +44,13 @@ fn exact_run(
 
     let m: VecMatrix = tsp_instance.graph.into();
     let (best_cost, best_permutation) = match algorithm {
-        ExactAlgorithm::V1 => exact::naive_solver(&m),
-        ExactAlgorithm::V2 => exact::first_improved_solver(&m),
-        ExactAlgorithm::V3 => unimplemented!(),
-        ExactAlgorithm::V4 => unimplemented!(),
-        ExactAlgorithm::V5 => unimplemented!(),
-        ExactAlgorithm::V6 => unimplemented!(),
+        ExactAlgorithm::V0 => exact::naive_solver(&m),
+        ExactAlgorithm::V1 => exact::first_improved_solver(&m),
+        ExactAlgorithm::V2 => exact::second_improved_solver(&m),
+        ExactAlgorithm::V3 => exact::third_improved_solver(&m),
+        ExactAlgorithm::V4 => exact::fourth_improved_solver(&m),
+        ExactAlgorithm::V5 => exact::fifth_improved_solver(&m),
+        ExactAlgorithm::V6 => exact::sixth_improved_solver(&m),
         ExactAlgorithm::HeldKarp => unimplemented!(),
     };
     println!("Best Cost: {}", best_cost);

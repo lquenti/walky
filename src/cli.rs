@@ -60,14 +60,16 @@ pub enum Commands {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum ExactAlgorithm {
     /// Testing each possible (n!) solutions
-    V1,
+    V0,
     /// Fixating the first Element, so testing ((n-1)!) solutions
+    V1,
+    /// Recursive Enumeration; Keep the partial sums cached
     V2,
-    /// Recursive Enumeration; Stop if partial sum is worse than previous best
+    /// Stop if partial sum is worse than previous best
     V3,
     /// Stop if partial sum + greedy nearest neighbour graph is bigger than current optimum
     V4,
-    /// As V4, but use an MST instead of NN-graph as a tighter bound
+    /// As V5, but use an MST instead of NN-graph as a tighter bound
     V5,
     /// Cache MST distance once computed
     V6,
