@@ -9,15 +9,26 @@ use crate::{
     solvers::approximate::matching::approx_min_cost_matching,
 };
 
+/// Computes an approximation to the TSP, using Christofides algorithm.
+/// This implementation uses for performance reasons a randomized approximation to
+/// the min-const matching problem (see [`super::matching::approx_min_cost_matching`].
+///
+/// For an implementation with exact min-cost matching implementation see [`christofides_exact`].
+///
+/// For further description, see also [`christofides_generic`].
 pub fn christofides<const MODE: usize>(graph: &Graph) -> Solution {
     christofides_generic::<MODE>(graph, compute_approx_matching::<MODE>)
 }
 
+/// Computes an approximation to the TSP, using Christofides algorithm.
+/// This implementation is much slower than [`christofides`], since it uses
+/// an exact solution to the min-cost matching problem,
+/// which is also not parallelized.
+///
+/// For an implementation with approximated min-cost matching implementation see [`christofides_exact`].
+///
+/// For further description, see also [`christofides_generic`].
 pub fn christofides_exact<const MODE: usize>(graph: &Graph) -> Solution {
-    todo!(
-        "need correctly implement the exact method,
-          currently the function interfaces collide with the approx matching solver"
-    );
     christofides_generic::<MODE>(graph, compute_exact_matching)
 }
 
@@ -26,14 +37,14 @@ pub fn christofides_exact<const MODE: usize>(graph: &Graph) -> Solution {
 /// for a good overview of the algorithm.
 ///
 /// `MODE`: constant parameter, choose one of the values from [`crate::computation_mode`]
-//
-// `matching_computer` does the following:
-//  1. compute subgraph of `graph` only with vertices that have odd degree in the MST,
-//  2. then compute a minimum-weight maximum matching for the subgraph
 ///
-/// The algorithm should be performant, therefore instead of the generic [`datastructures::AdjacencyMatrix`]
+/// `matching_computer` does the following:
+///  1. compute subgraph of `graph` only with vertices that have odd degree in the MST,
+///  2. then compute a minimum-weight maximum matching for the subgraph
+///
+/// The algorithm should be performant, therefore instead of the generic [`crate::datastructures::AdjacencyMatrix`]
 /// trait,
-/// the type [`datastructures::NAMatrix`] is used.
+/// the type [`NAMatrix`] is used.
 pub fn christofides_generic<const MODE: usize>(
     graph: &Graph,
     matching_computer: fn(&Graph, &NAMatrix) -> Vec<(usize, usize)>,
@@ -86,7 +97,7 @@ pub fn christofides_generic<const MODE: usize>(
 fn compute_exact_matching(mst: &Graph, graph: &NAMatrix) -> Vec<(usize, usize)> {
     // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST,
     // then compute a minimum-weight maximum matching for the subgraph
-    let subgraph: WeightedGraph = Into::<WeightedGraph>::into(mst)
+    let subgraph: WeightedGraph = Into::<WeightedGraph>::into(graph)
         .filter_vertices(|&vertex| mst.vertex_degree(vertex) % 2 == 1);
 
     //note: the maximal matching is perfect
