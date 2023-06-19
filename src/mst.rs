@@ -24,8 +24,8 @@ use rayon::prelude::*;
 /// See [`prim_with_excluded_node`] for more details.
 pub fn prim<const MODE: usize>(graph: &NAMatrix) -> Graph {
     match MODE {
-        SEQ_COMPUTATION => prim_with_excluded_node_single_threaded(graph, graph.dim()),
-        PAR_COMPUTATION => prim_with_excluded_node_multi_threaded(graph, graph.dim()),
+        SEQ_COMPUTATION => prim_with_excluded_node_single_threaded(graph, &[]),
+        PAR_COMPUTATION => prim_with_excluded_node_multi_threaded(graph, &[]),
         MPI_COMPUTATION => todo!(),
         _ => panic!("Unsupported value of the constant parameter Mode: {}", MODE),
     }
@@ -35,8 +35,11 @@ pub fn prim<const MODE: usize>(graph: &NAMatrix) -> Graph {
 ///
 /// If you have multiple calls to prims algorithm, use a single threaded version
 /// and make the calls in parallel.
-pub fn prim_with_excluded_node_multi_threaded(graph: &NAMatrix, excluded_vertex: usize) -> Graph {
-    prim_with_excluded_node::<MultiThreadedVecWrapper>(graph, excluded_vertex)
+pub fn prim_with_excluded_node_multi_threaded(
+    graph: &NAMatrix,
+    excluded_vertices: &[usize],
+) -> Graph {
+    prim_with_excluded_node::<MultiThreadedVecWrapper>(graph, excluded_vertices)
 }
 
 /// naive version using only vectors as data structures.
@@ -44,13 +47,19 @@ pub fn prim_with_excluded_node_multi_threaded(graph: &NAMatrix, excluded_vertex:
 /// this is faster than a priority queue due to
 /// less branching and better auto-vectorization potential.
 /// Asymptotic performance: O(N^2)
-pub fn prim_with_excluded_node_single_threaded(graph: &NAMatrix, excluded_vertex: usize) -> Graph {
-    prim_with_excluded_node::<Vec<(Edge, bool)>>(graph, excluded_vertex)
+pub fn prim_with_excluded_node_single_threaded(
+    graph: &NAMatrix,
+    excluded_vertices: &[usize],
+) -> Graph {
+    prim_with_excluded_node::<Vec<(Edge, bool)>>(graph, excluded_vertices)
 }
 
 /// improve asymptotic performance by using a priority queue
-pub fn prim_with_excluded_node_priority_queue(graph: &NAMatrix, excluded_vertex: usize) -> Graph {
-    prim_with_excluded_node::<VerticesInPriorityQueue>(graph, excluded_vertex)
+pub fn prim_with_excluded_node_priority_queue(
+    graph: &NAMatrix,
+    excluded_vertices: &[usize],
+) -> Graph {
+    prim_with_excluded_node::<VerticesInPriorityQueue>(graph, excluded_vertices)
 }
 
 /// greedy algorithm:
@@ -65,7 +74,10 @@ pub fn prim_with_excluded_node_priority_queue(graph: &NAMatrix, excluded_vertex:
 /// todo: add source for the algorithm
 ///
 /// todo: make the implementation more pretty and more rust ideomatic
-fn prim_with_excluded_node<D: FindMinCostEdge>(graph: &NAMatrix, excluded_vertex: usize) -> Graph {
+fn prim_with_excluded_node<D: FindMinCostEdge>(
+    graph: &NAMatrix,
+    excluded_vertices: &[usize],
+) -> Graph {
     let num_vertices = graph.dim();
     let unconnected_node = num_vertices;
 
@@ -88,7 +100,18 @@ fn prim_with_excluded_node<D: FindMinCostEdge>(graph: &NAMatrix, excluded_vertex
     // It is used as a base case.
 
     // start with vertex 0, or with vertex 1 if vertex 0 shall be excluded
-    let start_index = if excluded_vertex != 0 { 0 } else { 1 };
+    let start_index = {
+        let mut idx = 0;
+        while excluded_vertices.contains(&idx) {
+            idx += 1;
+        }
+        if idx >= num_vertices {
+            // all vertices are excluded --> empty MST
+            return vec![].into();
+        }
+        idx
+    };
+
     dist_from_mst.set_cost(
         start_index,
         Edge {
@@ -96,7 +119,9 @@ fn prim_with_excluded_node<D: FindMinCostEdge>(graph: &NAMatrix, excluded_vertex
             cost: 0.,
         },
     );
-    dist_from_mst.set_excluded_vertex(excluded_vertex);
+    for &vertex in excluded_vertices {
+        dist_from_mst.set_excluded_vertex(vertex)
+    }
 
     // iterate over maximally `num_vertices` many iterations (for every vertex one)
     for _ in 0..=num_vertices {
@@ -509,7 +534,7 @@ mod test {
 
         assert_eq!(
             expected,
-            prim_with_excluded_node_multi_threaded(&(&graph).into(), 0)
+            prim_with_excluded_node_multi_threaded(&(&graph).into(), &[0])
         );
     }
 
@@ -541,7 +566,7 @@ mod test {
                 Edge { to: 2, cost: 0.1 },
             ],
         ]);
-        let excluded_vertex = 0;
+        let excluded_vertex = &[0];
         let res_st = prim_with_excluded_node_single_threaded(&(&graph).into(), excluded_vertex);
         let res_mt = prim_with_excluded_node_multi_threaded(&(&graph).into(), excluded_vertex);
         let res_prio = prim_with_excluded_node_priority_queue(&(&graph).into(), excluded_vertex);
