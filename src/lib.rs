@@ -75,6 +75,7 @@ fn approx_run(
                 Parallelism::MultiThreaded => {
                     christofides::<{ computation_mode::PAR_COMPUTATION }>(&tsp_instance.graph)
                 }
+                #[cfg(feature = "mpi")]
                 Parallelism::MPI => {
                     christofides::<{ computation_mode::MPI_COMPUTATION }>(&tsp_instance.graph)
                 }
@@ -105,6 +106,7 @@ fn mst_run(
                 prim::<{ computation_mode::SEQ_COMPUTATION }>(&na_matrix)
             }
             Parallelism::MultiThreaded => prim::<{ computation_mode::PAR_COMPUTATION }>(&na_matrix),
+            #[cfg(feature = "mpi")]
             Parallelism::MPI => prim::<{ computation_mode::MPI_COMPUTATION }>(&na_matrix),
         },
     };
@@ -130,6 +132,7 @@ fn lower_bound_run(
                 Parallelism::MultiThreaded => {
                     one_tree_lower_bound::<{ computation_mode::PAR_COMPUTATION }>(&na_matrix)
                 }
+                #[cfg(feature = "mpi")]
                 Parallelism::MPI => {
                     one_tree_lower_bound::<{ computation_mode::MPI_COMPUTATION }>(&na_matrix)
                 }

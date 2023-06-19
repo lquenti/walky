@@ -102,5 +102,6 @@ pub enum Parallelism {
     /// Run in multiple threads on a single node
     MultiThreaded,
     /// Run on multiple nodes. Requires MPI.
+    #[cfg(feature = "mpi")]
     MPI,
 }
