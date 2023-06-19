@@ -1,5 +1,3 @@
-use std::mem::swap;
-
 use rand::{seq::SliceRandom, thread_rng};
 use rayon::prelude::*;
 
