@@ -53,6 +53,8 @@ where
 /// We carry along a partial sum whenever we change an element.
 ///
 /// Since we want the prefix to stay the same, we also use recusrive enumeration.
+/// This means that we unfortunately have to inline the traversal, making the function more
+/// convoluted.
 ///
 /// The complexity analysis gets tedious here, so we basically still have
 /// Runtime: O(n!)
@@ -200,10 +202,152 @@ fn _third_improved_solver_rec<T>(
 }
 
 /// Fourth improvement of [`naive_solver`]:
-/// prune if currently known + NN is bigger than current optimum (greedy)
-/// Sixth improvement:
-/// Use MST as lower bound (should I precompute them?)
-/// Also store em
+/// We prune not only if our current path is bigger than the previously known minimum but already
+/// before. Instead, we prune if (current path + a lower bound on the remaining vertices) >
+/// previously known minimum.
+///
+/// This works since (Smol < TSP), thus if `current_path` and this smol Graph is ALREADY bigger than
+/// the previously known minimum then `current_path` extended to a full TSP will DEFINITELY be
+/// huger.
+///
+/// In this function, we use a Nearest Neighbour graph as a lower bound. This means, that starting
+/// at a
+///
+/// Note that this "graph" is maybe a not even fully connected forest. If we require it to be fully
+/// connected it is not obvious that this bound is lower than the TSP.
+///
+/// See the report for a more formal proof.
+pub fn fourth_improved_solver<T>(graph_matrix: &T) -> Solution
+where
+    T: AdjacencyMatrix,
+{
+    let mut current_prefix = Vec::new();
+    current_prefix.reserve(graph_matrix.dim());
+    let mut result = (f64::INFINITY, Vec::new());
+    _fourth_improved_solver_rec(graph_matrix, &mut current_prefix, 0.0, &mut result);
+    result
+}
+
+/// The recursive function underlying [`fourth_improved_solver`]
+///
+/// As previous, it works like the version before, but this time it also uses a NN computation
+/// before pruning.
+fn _fourth_improved_solver_rec<T>(
+    graph_matrix: &T,
+    current_prefix: &mut Path,
+    current_cost: f64,
+    result: &mut Solution,
+) where
+    T: AdjacencyMatrix,
+{
+    let n = graph_matrix.dim();
+    let mut current_cost = current_cost;
+
+    // Base case: Is this one better?
+    if current_prefix.len() == n {
+        // Add the last edge, finishing the circle
+        current_cost += graph_matrix.get(
+            *current_prefix.last().unwrap(),
+            *current_prefix.first().unwrap(),
+        );
+
+        let best_cost = result.0;
+        if current_cost < best_cost {
+            result.0 = current_cost;
+            result.1 = current_prefix.clone();
+        }
+        return;
+    }
+
+    // Branch down with branching factor n-k, where k is the length of current_prefix
+    for i in 0..n {
+        // We do not visit twice
+        if current_prefix.contains(&i) {
+            continue;
+        }
+
+        current_prefix.push(i);
+        // If this is a single element, we do not have an edge yet
+        if current_prefix.len() == 1 {
+            _second_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
+            current_prefix.pop();
+            continue;
+        }
+
+        // Calculate the cost of our new edge
+        let from = current_prefix.len() - 2;
+        let to = from + 1;
+        let cost_last_edge = graph_matrix.get(current_prefix[from], current_prefix[to]);
+        current_cost += cost_last_edge;
+
+        // If our current sub-tour, together with a lower bound, is already bigger than the whole
+        // tour the whole tour will definitely be bigger than our previous best version
+        let lower_bound = compute_nn_of_remaining_vertices(graph_matrix, current_prefix);
+        if current_cost + lower_bound <= result.0 {
+            _second_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
+        }
+
+        // Remove the last edge
+        current_cost -= cost_last_edge;
+        current_prefix.pop();
+    }
+}
+
+/// Compute the nearest neighbour for each not yet connected vertex of a given graph_matrix.
+/// Note that this does not necessarily has to result in a traversable path with correct degrees.
+/// In fact, there are no gurantees that this results in a fully connected graph as one there could
+/// just be two vertices that connect to each other, i.e. `A -> B && B -> A`.
+fn compute_nn_of_remaining_vertices<T>(graph_matrix: &T, subtour: &Path) -> f64
+where
+    T: AdjacencyMatrix,
+{
+    let mut res = f64::INFINITY;
+    let n = graph_matrix.dim();
+    for i in 0..n {
+        // If it is part of the subtour, the vertex is already used.
+        if subtour.contains(&i) {
+            continue;
+        }
+
+        // Otherwise, we can start finding its nearest neighbour
+        for j in 0..n {
+            // we do not connect to ourself
+            if i == j {
+                continue;
+            }
+
+            let cost = graph_matrix.get(i, j);
+            // if it is lower we take it
+            if cost < res {
+                res = cost;
+            }
+        }
+
+    }
+    res
+}
+
+
+/// Fifth improvement of [`naive_solver`]:
+/// Instead of using a NN-based graph for pruning as in [`fourth_improved_solver`] we instead opt
+/// out to use an Minimal Spanning Tree (MST), which we compute for every step.
+pub fn fifth_improved_solver<T>(graph_matrix: &T) -> Solution
+where
+    T: AdjacencyMatrix,
+{
+    let mut result = (f64::INFINITY, Vec::new());
+    result
+}
+
+/// Sixth improvement of [`naive_solver`]:
+/// Cache the aforementioned, computed MSTs in a Hashmap
+pub fn sixth_improved_solver<T>(graph_matrix: &T) -> Solution
+where
+    T: AdjacencyMatrix,
+{
+    let mut result = (f64::INFINITY, Vec::new());
+    result
+}
 
 /// Finding the next permutation given an array.
 /// Based on [Nayuki](https://www.nayuki.io/page/next-lexicographical-permutation-algorithm)
@@ -771,7 +915,7 @@ mod exact_solver {
     fn test_float_tsp_vecmatrix() {
         // Test each solution
         let gm: VecMatrix = SMALL_FLOAT_GRAPH.clone().into();
-        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver, fourth_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(37.41646270666716, best_cost));
             assert!(is_same_undirected_circle(
@@ -785,7 +929,7 @@ mod exact_solver {
     fn test_float_tsp_namatrix() {
         // Test each solution
         let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&SMALL_FLOAT_GRAPH);
-        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver, fourth_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(37.41646270666716, best_cost));
             assert!(is_same_undirected_circle(
@@ -798,7 +942,7 @@ mod exact_solver {
     #[test]
     fn test_big_floating_tsp_vecmatrix() {
         let gm: VecMatrix = BIG_FLOAT_GRAPH.clone().into();
-        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver, fourth_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(33.03008250868411, best_cost));
             assert!(is_same_undirected_circle(
@@ -811,7 +955,7 @@ mod exact_solver {
     #[test]
     fn test_big_floating_tsp_namatrix() {
         let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&BIG_FLOAT_GRAPH);
-        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver, fourth_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(33.03008250868411, best_cost));
             assert!(is_same_undirected_circle(
@@ -824,7 +968,7 @@ mod exact_solver {
     #[test]
     fn test_integer_tsp_vecmatrix() {
         let gm: VecMatrix = SMALL_INT_GRAPH.clone().into();
-        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver, fourth_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(best_cost, 17.0));
             assert!(is_same_undirected_circle(
@@ -837,7 +981,7 @@ mod exact_solver {
     #[test]
     fn test_integer_tsp_namatrix() {
         let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&SMALL_INT_GRAPH);
-        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver].iter() {
+        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver, fourth_improved_solver].iter() {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(best_cost, 17.0));
             assert!(is_same_undirected_circle(
