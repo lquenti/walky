@@ -1,6 +1,6 @@
 //! Exact methods to solve the TSP problem.
 
-use std::{collections::hash_map::DefaultHasher, hash::{Hash, Hasher}};
+use std::hash::{Hash, Hasher};
 
 use crate::{
     datastructures::{AdjacencyMatrix, NAMatrix, Path, Solution},
