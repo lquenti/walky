@@ -311,7 +311,7 @@ where
         let mut shortest_edge_cost = f64::INFINITY;
 
         // Otherwise, we can start finding its nearest neighbour
-        for j in (i+1)..n {
+        for j in (i + 1)..n {
             // we do not connect to ourself
             // Also we just connect within
             if subtour.contains(&j) {
@@ -328,31 +328,27 @@ where
         if shortest_edge_cost != f64::INFINITY {
             res += shortest_edge_cost;
         }
-
     }
     res
 }
 
-
 /// Fifth improvement of [`naive_solver`]:
 /// Instead of using a NN-based graph for pruning as in [`fourth_improved_solver`] we instead opt
 /// out to use an Minimal Spanning Tree (MST), which we compute for every step.
-pub fn fifth_improved_solver<T>(graph_matrix: &T) -> Solution
+pub fn fifth_improved_solver<T>(_graph_matrix: &T) -> Solution
 where
     T: AdjacencyMatrix,
 {
-    let mut result = (f64::INFINITY, Vec::new());
-    result
+    todo!()
 }
 
 /// Sixth improvement of [`naive_solver`]:
 /// Cache the aforementioned, computed MSTs in a Hashmap
-pub fn sixth_improved_solver<T>(graph_matrix: &T) -> Solution
+pub fn sixth_improved_solver<T>(_graph_matrix: &T) -> Solution
 where
     T: AdjacencyMatrix,
 {
-    let mut result = (f64::INFINITY, Vec::new());
-    result
+    todo!()
 }
 
 /// Finding the next permutation given an array.
@@ -921,7 +917,15 @@ mod exact_solver {
     fn test_float_tsp_vecmatrix() {
         // Test each solution
         let gm: VecMatrix = SMALL_FLOAT_GRAPH.clone().into();
-        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver, fourth_improved_solver].iter() {
+        for f in [
+            naive_solver,
+            first_improved_solver,
+            second_improved_solver,
+            third_improved_solver,
+            fourth_improved_solver,
+        ]
+        .iter()
+        {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(37.41646270666716, best_cost));
             assert!(is_same_undirected_circle(
@@ -935,7 +939,15 @@ mod exact_solver {
     fn test_float_tsp_namatrix() {
         // Test each solution
         let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&SMALL_FLOAT_GRAPH);
-        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver, fourth_improved_solver].iter() {
+        for f in [
+            naive_solver,
+            first_improved_solver,
+            second_improved_solver,
+            third_improved_solver,
+            fourth_improved_solver,
+        ]
+        .iter()
+        {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(37.41646270666716, best_cost));
             assert!(is_same_undirected_circle(
@@ -948,7 +960,15 @@ mod exact_solver {
     #[test]
     fn test_big_floating_tsp_vecmatrix() {
         let gm: VecMatrix = BIG_FLOAT_GRAPH.clone().into();
-        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver, fourth_improved_solver].iter() {
+        for f in [
+            naive_solver,
+            first_improved_solver,
+            second_improved_solver,
+            third_improved_solver,
+            fourth_improved_solver,
+        ]
+        .iter()
+        {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(33.03008250868411, best_cost));
             assert!(is_same_undirected_circle(
@@ -961,7 +981,15 @@ mod exact_solver {
     #[test]
     fn test_big_floating_tsp_namatrix() {
         let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&BIG_FLOAT_GRAPH);
-        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver, fourth_improved_solver].iter() {
+        for f in [
+            naive_solver,
+            first_improved_solver,
+            second_improved_solver,
+            third_improved_solver,
+            fourth_improved_solver,
+        ]
+        .iter()
+        {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(33.03008250868411, best_cost));
             assert!(is_same_undirected_circle(
@@ -974,7 +1002,15 @@ mod exact_solver {
     #[test]
     fn test_integer_tsp_vecmatrix() {
         let gm: VecMatrix = SMALL_INT_GRAPH.clone().into();
-        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver, fourth_improved_solver].iter() {
+        for f in [
+            naive_solver,
+            first_improved_solver,
+            second_improved_solver,
+            third_improved_solver,
+            fourth_improved_solver,
+        ]
+        .iter()
+        {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(best_cost, 17.0));
             assert!(is_same_undirected_circle(
@@ -987,7 +1023,15 @@ mod exact_solver {
     #[test]
     fn test_integer_tsp_namatrix() {
         let gm: NAMatrix = <NAMatrix as From<&Graph>>::from(&SMALL_INT_GRAPH);
-        for f in [naive_solver, first_improved_solver, second_improved_solver, third_improved_solver, fourth_improved_solver].iter() {
+        for f in [
+            naive_solver,
+            first_improved_solver,
+            second_improved_solver,
+            third_improved_solver,
+            fourth_improved_solver,
+        ]
+        .iter()
+        {
             let (best_cost, best_permutation) = f(&gm);
             assert!(relative_eq!(best_cost, 17.0));
             assert!(is_same_undirected_circle(

@@ -1,3 +1,4 @@
+use crate::datastructures::{Edge, Graph, Vertex};
 use crate::{
     datastructures::{NAMatrix, VecMatrix},
     mst::prim,
@@ -5,7 +6,6 @@ use crate::{
     solvers::approximate::christofides::christofides,
 };
 use std::{error::Error, fs::File, io::Read, path::PathBuf};
-use crate::datastructures::{Edge, Graph, Vertex};
 
 use cli::{ApproxAlgorithm, Cli, ExactAlgorithm, LowerBoundAlgorithm, MSTAlgorithm, Parallelism};
 use one_tree::one_tree_lower_bound;
@@ -144,38 +144,38 @@ fn lower_bound_run(
 }
 
 fn debug() {
-        let xs: Graph = Graph {
-            vertices: vec![
-                Vertex {
-                    edges: vec![
-                        Edge { to: 1, cost: 5.0 },
-                        Edge { to: 2, cost: 4.0 },
-                        Edge { to: 3, cost: 10.0 },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge { to: 0, cost: 5.0 },
-                        Edge { to: 2, cost: 8.0 },
-                        Edge { to: 3, cost: 5.0 },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge { to: 0, cost: 4.0 },
-                        Edge { to: 1, cost: 8.0 },
-                        Edge { to: 3, cost: 3.0 },
-                    ],
-                },
-                Vertex {
-                    edges: vec![
-                        Edge { to: 0, cost: 10.0 },
-                        Edge { to: 1, cost: 5.0 },
-                        Edge { to: 2, cost: 3.0 },
-                    ],
-                },
-            ],
-        };
+    let xs: Graph = Graph {
+        vertices: vec![
+            Vertex {
+                edges: vec![
+                    Edge { to: 1, cost: 5.0 },
+                    Edge { to: 2, cost: 4.0 },
+                    Edge { to: 3, cost: 10.0 },
+                ],
+            },
+            Vertex {
+                edges: vec![
+                    Edge { to: 0, cost: 5.0 },
+                    Edge { to: 2, cost: 8.0 },
+                    Edge { to: 3, cost: 5.0 },
+                ],
+            },
+            Vertex {
+                edges: vec![
+                    Edge { to: 0, cost: 4.0 },
+                    Edge { to: 1, cost: 8.0 },
+                    Edge { to: 3, cost: 3.0 },
+                ],
+            },
+            Vertex {
+                edges: vec![
+                    Edge { to: 0, cost: 10.0 },
+                    Edge { to: 1, cost: 5.0 },
+                    Edge { to: 2, cost: 3.0 },
+                ],
+            },
+        ],
+    };
     let xs: VecMatrix = xs.into();
     let res = exact::third_improved_solver(&xs);
     let res2 = exact::fourth_improved_solver(&xs);
@@ -207,6 +207,9 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
             input_file,
             parallelism,
         } => lower_bound_run(algorithm, input_file, parallelism),
-        cli::Commands::Debug => Ok(debug()),
+        cli::Commands::Debug => {
+            debug();
+            Ok(())
+        }
     }
 }
