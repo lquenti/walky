@@ -1,5 +1,7 @@
 //! Exact methods to solve the TSP problem.
 
+use std::{collections::hash_map::DefaultHasher, hash::{Hash, Hasher}};
+
 use crate::{
     datastructures::{AdjacencyMatrix, NAMatrix, Path, Solution},
     mst,
@@ -418,7 +420,7 @@ pub fn sixth_improved_solver(graph_matrix: &NAMatrix) -> Solution {
     let mut current_prefix = Vec::new();
     current_prefix.reserve(graph_matrix.dim());
     let mut result = (f64::INFINITY, Vec::new());
-    let mut mst_cache: FxHashMap<Path, f64> = FxHashMap::default(); // TODO can we change it to new?
+    let mut mst_cache: FxHashMap<u64, f64> = FxHashMap::default();
     _sixth_improved_solver_rec(
         graph_matrix,
         &mut current_prefix,
@@ -433,12 +435,21 @@ pub fn sixth_improved_solver(graph_matrix: &NAMatrix) -> Solution {
 ///
 /// Like the fifth, but we HashMap the MSTs
 /// Note that we do not use the default Hashmap but instead FxHash from the core team
+///
+/// One Note: We use FxHashMap<u64, f64> instead of FxHashMap<Path, f64> for performance reasons.
+/// Otherwise we would have to copy the vector every time we do a lookup.
+///
+/// Unfortunately, we also can't use FxHashMap<&Path, f64> because we mutate on the original Path
+/// each iteration, resulting in one clone a iteration as well.
+///
+/// Lastly, Rusts default hasher has to be allocated each time we call it.
+/// Thus, we use another hasher
 fn _sixth_improved_solver_rec(
     graph_matrix: &NAMatrix,
     current_prefix: &mut Path,
     current_cost: f64,
     result: &mut Solution,
-    mst_cache: &mut FxHashMap<Path, f64>,
+    mst_cache: &mut FxHashMap<u64, f64>,
 ) {
     let n = graph_matrix.dim();
     let mut current_cost = current_cost;
@@ -488,7 +499,12 @@ fn _sixth_improved_solver_rec(
 
         // If our current sub-tour, together with a lower bound, is already bigger than the whole
         // tour the whole tour will definitely be bigger than our previous best version
-        let lower_bound = mst_cache.entry(current_prefix.clone()).or_insert(
+        let hash = {
+            let mut hasher = DefaultHasher::new();
+            current_prefix.hash(&mut hasher);
+            hasher.finish()
+        };
+        let lower_bound = mst_cache.entry(hash).or_insert(
             mst::prim_with_excluded_node_single_threaded(graph_matrix, current_prefix)
                 .acc_edge_cost(),
         );
