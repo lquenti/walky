@@ -25,6 +25,7 @@ blossom = "0.4.0"                                          # for the blossom alg
 nalgebra = {version = "0.32", features = ["rayon"]}        # for fast matrices
 lazy_static = "1.4.0"
 mpi = {version = "0.6", optional = true}                   # for MPI crate feature
+rand = "0.8"                                               # You wouldn't guess it
 
 [dev-dependencies]
 approx = "0.5.1"                # for assertions with float values
