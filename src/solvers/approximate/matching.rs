@@ -260,8 +260,7 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries
             let (other_cost, _status_cost) =
                 world.process_at_rank(rk).receive_with_tag::<f64>(COST_TAG);
             let (msg, _status) = world
-                //.process_at_rank(rk)
-                .any_process()
+                .process_at_rank(rk)
                 .receive_vec_with_tag::<usize>(MATCHING_TAG);
             if other_cost < min_cost {
                 min_cost = other_cost;
