@@ -1,6 +1,6 @@
 //! Exact methods to solve the TSP problem.
 
-use crate::datastructures::{AdjacencyMatrix, Graph, Path, Solution};
+use crate::datastructures::{AdjacencyMatrix, Path, Solution};
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
@@ -180,7 +180,7 @@ fn _third_improved_solver_rec<T>(
 
         current_prefix.push(i);
         if current_prefix.len() == 1 {
-            _second_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
+            _third_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
             current_prefix.pop();
             continue;
         }
@@ -192,7 +192,7 @@ fn _third_improved_solver_rec<T>(
 
         // HERE IS THE BIG DIFFERENCE TO [`_second_improved_solver_rec`]!
         if current_cost <= result.0 {
-            _second_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
+            _third_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
         }
         // This was it. This is the pruning
 
@@ -269,7 +269,7 @@ fn _fourth_improved_solver_rec<T>(
         current_prefix.push(i);
         // If this is a single element, we do not have an edge yet
         if current_prefix.len() == 1 {
-            _second_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
+            _fourth_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
             current_prefix.pop();
             continue;
         }
@@ -282,9 +282,10 @@ fn _fourth_improved_solver_rec<T>(
 
         // If our current sub-tour, together with a lower bound, is already bigger than the whole
         // tour the whole tour will definitely be bigger than our previous best version
-        let lower_bound = compute_nn_of_remaining_vertices(graph_matrix, current_prefix);
+        let lower_bound = compute_nn_of_remaining_vertices(graph_matrix, current_prefix, n);
+        //println!("{:?}, {}, {}", current_prefix, current_cost, lower_bound);
         if current_cost + lower_bound <= result.0 {
-            _second_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
+            _fourth_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
         }
 
         // Remove the last edge
@@ -297,30 +298,35 @@ fn _fourth_improved_solver_rec<T>(
 /// Note that this does not necessarily has to result in a traversable path with correct degrees.
 /// In fact, there are no gurantees that this results in a fully connected graph as one there could
 /// just be two vertices that connect to each other, i.e. `A -> B && B -> A`.
-fn compute_nn_of_remaining_vertices<T>(graph_matrix: &T, subtour: &Path) -> f64
+fn compute_nn_of_remaining_vertices<T>(graph_matrix: &T, subtour: &Path, n: usize) -> f64
 where
     T: AdjacencyMatrix,
 {
-    let mut res = f64::INFINITY;
-    let n = graph_matrix.dim();
+    let mut res = 0.0;
     for i in 0..n {
         // If it is part of the subtour, the vertex is already used.
         if subtour.contains(&i) {
             continue;
         }
+        let mut shortest_edge_cost = f64::INFINITY;
 
         // Otherwise, we can start finding its nearest neighbour
-        for j in 0..n {
+        for j in (i+1)..n {
             // we do not connect to ourself
-            if i == j {
+            // Also we just connect within
+            if subtour.contains(&j) {
                 continue;
             }
 
             let cost = graph_matrix.get(i, j);
             // if it is lower we take it
-            if cost < res {
-                res = cost;
+            if cost < shortest_edge_cost {
+                shortest_edge_cost = cost;
             }
+        }
+        // Without this check, a single node would have length infinity
+        if shortest_edge_cost != f64::INFINITY {
+            res += shortest_edge_cost;
         }
 
     }

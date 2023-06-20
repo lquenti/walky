@@ -5,6 +5,7 @@ use crate::{
     solvers::approximate::christofides::christofides,
 };
 use std::{error::Error, fs::File, io::Read, path::PathBuf};
+use crate::datastructures::{Edge, Graph, Vertex};
 
 use cli::{ApproxAlgorithm, Cli, ExactAlgorithm, LowerBoundAlgorithm, MSTAlgorithm, Parallelism};
 use one_tree::one_tree_lower_bound;
@@ -42,7 +43,8 @@ fn exact_run(
         unimplemented!()
     }
 
-    let m: VecMatrix = tsp_instance.graph.into();
+    // TODO replace me with nalgebra
+    let m: NAMatrix = (&tsp_instance.graph).into();
     let (best_cost, best_permutation) = match algorithm {
         ExactAlgorithm::V0 => exact::naive_solver(&m),
         ExactAlgorithm::V1 => exact::first_improved_solver(&m),
@@ -141,6 +143,46 @@ fn lower_bound_run(
     Ok(())
 }
 
+fn debug() {
+        let xs: Graph = Graph {
+            vertices: vec![
+                Vertex {
+                    edges: vec![
+                        Edge { to: 1, cost: 5.0 },
+                        Edge { to: 2, cost: 4.0 },
+                        Edge { to: 3, cost: 10.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 5.0 },
+                        Edge { to: 2, cost: 8.0 },
+                        Edge { to: 3, cost: 5.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 4.0 },
+                        Edge { to: 1, cost: 8.0 },
+                        Edge { to: 3, cost: 3.0 },
+                    ],
+                },
+                Vertex {
+                    edges: vec![
+                        Edge { to: 0, cost: 10.0 },
+                        Edge { to: 1, cost: 5.0 },
+                        Edge { to: 2, cost: 3.0 },
+                    ],
+                },
+            ],
+        };
+    let xs: VecMatrix = xs.into();
+    let res = exact::third_improved_solver(&xs);
+    let res2 = exact::fourth_improved_solver(&xs);
+    println!("{:?}", res);
+    println!("{:?}", res2);
+}
+
 /// This function calls the main logic of our program.
 pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
     match cli.command {
@@ -165,5 +207,6 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
             input_file,
             parallelism,
         } => lower_bound_run(algorithm, input_file, parallelism),
+        cli::Commands::Debug => Ok(debug()),
     }
 }

@@ -55,6 +55,8 @@ pub enum Commands {
         #[arg(short, long, default_value_t=Parallelism::SingleThreaded, value_enum)]
         parallelism: Parallelism,
     },
+    /// Development playground
+    Debug,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
