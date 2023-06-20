@@ -64,20 +64,9 @@ pub fn christofides_generic<const MODE: usize>(
 
     // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST,
     // then compute a minimum-weight maximum matching for the subgraph
-    //let subgraph: WeightedGraph = Into::<WeightedGraph>::into(graph)
-    //    .filter_vertices(|&vertex| mst.vertex_degree(vertex) % 2 == 1);
-
     let matching = matching_computer(&mst, &graph_matr);
 
-    // note: the maximal matching is perfect
-    //let matching = subgraph
-    //    .maximin_matching()
-    //    .expect("Something went wrong: could not compute the maximal minimum weight matching");
-
     // 3. union the perfect matching with the MST into a multigraph
-    //let matching_edges = matching.edges();
-    //let multigraph =
-    //    fill_multigraph_with_mst_and_matching::<MODE>(&graph_matr, &mst, matching_edges);
     let multigraph = fill_multigraph_with_mst_and_matching::<MODE>(&graph_matr, &mst, matching);
 
     // 4. compute a eulerian cycle through the multigraph
