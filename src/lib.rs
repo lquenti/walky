@@ -77,6 +77,7 @@ fn approx_run(
                 }
                 #[cfg(feature = "mpi")]
                 Parallelism::MPI => {
+                    mpi::initialize();
                     christofides::<{ computation_mode::MPI_COMPUTATION }>(&tsp_instance.graph)
                 }
             };

@@ -215,8 +215,9 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries
     //extern crate mpi;
     use mpi::traits::*;
 
-    let universe = mpi::initialize().unwrap();
-    let world = universe.world();
+    //let universe = mpi::initialize().unwrap();
+    //let world = universe.world();
+    let world = SystemCommunicator::world();
     let size = world.size();
     let rank = world.rank();
 
