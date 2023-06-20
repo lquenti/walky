@@ -8,7 +8,7 @@ use std::{error::Error, fs::File, io::Read, path::PathBuf};
 
 use cli::{ApproxAlgorithm, Cli, ExactAlgorithm, LowerBoundAlgorithm, MSTAlgorithm, Parallelism};
 use one_tree::one_tree_lower_bound;
-use solvers::exact;
+use solvers::{exact, approximate::nearest_neighbour::nearest_neighbour};
 
 pub mod cli;
 pub mod computation_mode;
@@ -82,7 +82,15 @@ fn approx_run(
             };
             println!("Christofides solution weight: {}", solution.0);
         }
-        ApproxAlgorithm::NearestNeighbour => todo!(),
+        ApproxAlgorithm::NearestNeighbour => {
+            let solution = match parallelism {
+                Parallelism::SingleThreaded => {
+                    nearest_neighbour(&(&tsp_instance.graph).into())
+                }
+                _ => todo!(),
+            };
+            println!("Nearest Neighbour solution weight: {}", solution.0);
+        }
     };
 
     if let Some(lower_bound_algo) = lower_bound {
