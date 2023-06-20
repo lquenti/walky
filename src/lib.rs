@@ -1,6 +1,6 @@
 use crate::datastructures::{Edge, Graph, Vertex};
 use crate::{
-    datastructures::{NAMatrix, VecMatrix},
+    datastructures::NAMatrix,
     mst::prim,
     parser::TravellingSalesmanProblemInstance,
     solvers::approximate::christofides::christofides,
@@ -176,11 +176,8 @@ fn debug() {
             },
         ],
     };
-    let xs: VecMatrix = xs.into();
-    let res = exact::third_improved_solver(&xs);
-    let res2 = exact::fourth_improved_solver(&xs);
-    println!("{:?}", res);
-    println!("{:?}", res2);
+    let xs: NAMatrix = (&xs).into();
+    let _res2 = exact::fifth_improved_solver(&xs);
 }
 
 /// This function calls the main logic of our program.
