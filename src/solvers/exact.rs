@@ -7,7 +7,7 @@ use crate::{
     mst,
 };
 
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHasher};
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
@@ -500,7 +500,7 @@ fn _sixth_improved_solver_rec(
         // If our current sub-tour, together with a lower bound, is already bigger than the whole
         // tour the whole tour will definitely be bigger than our previous best version
         let hash = {
-            let mut hasher = DefaultHasher::new();
+            let mut hasher = FxHasher::default();
             current_prefix.hash(&mut hasher);
             hasher.finish()
         };
