@@ -243,7 +243,6 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries
 
     if rank != MAIN_RANK {
         root_process.send_with_tag(&cost, COST_TAG);
-        println!("sent cost to root from {}", rank);
         let matching_singletons = matching
             .iter()
             .flat_map(|(a, b)| [*a, *b])
@@ -274,6 +273,7 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries
         root_process.broadcast_into(&mut min_cost);
         root_process.broadcast_into(&mut best_matching);
     }
+    println!("min cost at rank {}: {}", rank, min_cost);
     let best_matching: Vec<_> = best_matching
         .chunks_exact(2)
         .map(|chunk| (chunk[0], chunk[1]))
