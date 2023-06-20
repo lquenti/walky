@@ -219,7 +219,6 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries
     let world = universe.world();
     let size = world.size();
     let rank = world.rank();
-    println!("rank {} is here", rank);
 
     //if size != 2 {
     //    panic!("Size of MPI_COMM_WORLD must be 2, but is {}!", size);
@@ -232,7 +231,7 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries
     //improve_matching(graph, matching, tries);
     improve_matching(graph, matching, tries);
     let cost: f64 = matching.iter().map(|&edge| graph[edge]).sum();
-    println!("rank {} got cost {}", rank, cost);
+    println!("initial imp matching cost at rank {}: {}", rank, cost);
     let mut min_cost = cost;
     let mut best_matching = matching.iter().flat_map(|&(a, b)| [a, b]).collect();
 
@@ -261,12 +260,10 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries
         for rk in 1..size {
             let (other_cost, _status_cost) =
                 world.process_at_rank(rk).receive_with_tag::<f64>(COST_TAG);
-            println!("got cost from node {}", rk);
             let (msg, _status) = world
                 //.process_at_rank(rk)
                 .any_process()
                 .receive_vec_with_tag::<usize>(MATCHING_TAG);
-            println!("got matching from node {}", rk);
             if other_cost < min_cost {
                 min_cost = other_cost;
                 best_matching = msg;
