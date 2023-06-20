@@ -50,7 +50,7 @@ pub fn approx_min_cost_matching<const MODE: usize>(
         SEQ_COMPUTATION => improve_matching(graph, matching.as_mut_slice(), tries),
         PAR_COMPUTATION => par_improve_matching(graph, matching.as_mut_slice(), tries),
         #[cfg(feature = "mpi")]
-        MPI_COMPUTATION => todo!(),
+        MPI_COMPUTATION => mpi_improve_matching(graph, matching.as_mut_slice(), tries),
         _ => panic_on_invaid_mode::<MODE>(),
     }
     matching
@@ -219,6 +219,7 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries
     let world = universe.world();
     let size = world.size();
     let rank = world.rank();
+    println!("rank {} is here", rank);
 
     //if size != 2 {
     //    panic!("Size of MPI_COMM_WORLD must be 2, but is {}!", size);
@@ -228,43 +229,57 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries
 
     // for every node / process:
     // try a different matching and randomized improvement
+    //improve_matching(graph, matching, tries);
     improve_matching(graph, matching, tries);
     let cost: f64 = matching.iter().map(|&edge| graph[edge]).sum();
+    println!("rank {} got cost {}", rank, cost);
+    let mut min_cost = cost;
+    let mut best_matching = matching.iter().flat_map(|&(a, b)| [a, b]).collect();
 
     // rank 0 is the main node
-    const main_rank: mpi::Rank = 0;
-    const cost_tag: mpi::Tag = 0;
-    const matching_tag: mpi::Tag = 1;
-    world
-        .process_at_rank(main_rank)
-        .send_with_tag(&cost, cost_tag);
-    world.process_at_rank(main_rank).send_with_tag(
-        &matching
+    const MAIN_RANK: mpi::Rank = 0;
+    let root_process = world.process_at_rank(MAIN_RANK);
+    const COST_TAG: mpi::Tag = 0;
+    const MATCHING_TAG: mpi::Tag = 1;
+
+    if rank != MAIN_RANK {
+        root_process.send_with_tag(&cost, COST_TAG);
+        println!("sent cost to root from {}", rank);
+        let matching_singletons = matching
             .iter()
             .flat_map(|(a, b)| [*a, *b])
-            .collect::<Vec<usize>>()[..],
-        matching_tag,
-    );
+            .collect::<Vec<usize>>();
+        root_process.send_with_tag(matching_singletons.as_slice(), MATCHING_TAG);
+        println!("sent matching to root from {}", rank);
+    }
 
-    if rank == main_rank {
-        let mut rank_with_best_solution = 0;
-        let mut min_cost = cost;
-        let mut best_matching = vec![]; //matching.iter().map(|v| *v).collect();
+    if rank == MAIN_RANK {
+        // the matchings will be sent as a Vec<usize>, because (usize, usize) toes not implement
+        // the trait mpi::Equivalence
 
-        // find node with best solution
+        // find the best solution across all nodes
         for rk in 1..size {
-            let (other_cost, status_cost) =
-                world.process_at_rank(rk).receive_with_tag::<f64>(cost_tag);
-            let (msg, status) = world
-                .process_at_rank(rk)
-                .receive_vec_with_tag::<usize>(matching_tag);
+            let (other_cost, _status_cost) =
+                world.process_at_rank(rk).receive_with_tag::<f64>(COST_TAG);
+            println!("got cost from node {}", rk);
+            let (msg, _status) = world
+                //.process_at_rank(rk)
+                .any_process()
+                .receive_vec_with_tag::<usize>(MATCHING_TAG);
+            println!("got matching from node {}", rk);
             if other_cost < min_cost {
-                rank_with_best_solution = rk;
                 min_cost = other_cost;
                 best_matching = msg;
             }
         }
-        //best_matching = best_matching.into_iter().chunks_exact(
-        //matching.copy_from_slice(best_matching.as_slice());
+
+        // broadcast best solution from the root_node to all nodes
+        root_process.broadcast_into(&mut min_cost);
+        root_process.broadcast_into(&mut best_matching);
     }
+    let best_matching: Vec<_> = best_matching
+        .chunks_exact(2)
+        .map(|chunk| (chunk[0], chunk[1]))
+        .collect();
+    matching.copy_from_slice(best_matching.as_slice());
 }

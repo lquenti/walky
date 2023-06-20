@@ -27,7 +27,10 @@ pub fn prim<const MODE: usize>(graph: &NAMatrix) -> Graph {
         SEQ_COMPUTATION => prim_with_excluded_node_single_threaded(graph, graph.dim()),
         PAR_COMPUTATION => prim_with_excluded_node_multi_threaded(graph, graph.dim()),
         #[cfg(feature = "mpi")]
-        MPI_COMPUTATION => todo!(),
+        MPI_COMPUTATION => {
+            //todo!()
+            prim_with_excluded_node_single_threaded(graph, graph.dim())
+        }
         _ => panic_on_invaid_mode::<MODE>(),
     }
 }
