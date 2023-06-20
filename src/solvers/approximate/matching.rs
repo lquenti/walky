@@ -213,6 +213,7 @@ fn par_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries
 #[cfg(feature = "mpi")]
 fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries: usize) {
     //extern crate mpi;
+    use mpi::topology::SystemCommunicator;
     use mpi::traits::*;
 
     //let universe = mpi::initialize().unwrap();
