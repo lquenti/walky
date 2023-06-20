@@ -341,7 +341,13 @@ fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
             }
         }
         #[cfg(feature = "mpi")]
-        MPI_COMPUTATION => todo!(),
+        MPI_COMPUTATION => {
+            //todo!(),
+            matching.into_iter().for_each(|edge @ (i, j)| {
+                multigraph[edge].1 += 1;
+                multigraph[(j, i)].1 += 1;
+            })
+        }
         _ => panic_on_invaid_mode::<MODE>(),
     }
     multigraph
