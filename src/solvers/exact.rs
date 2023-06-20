@@ -1,6 +1,9 @@
 //! Exact methods to solve the TSP problem.
 
-use crate::{datastructures::{AdjacencyMatrix, NAMatrix, Path, Solution}, mst};
+use crate::{
+    datastructures::{AdjacencyMatrix, NAMatrix, Path, Solution},
+    mst,
+};
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
@@ -335,8 +338,7 @@ where
 /// Fifth improvement of [`naive_solver`]:
 /// Instead of using a NN-based graph for pruning as in [`fourth_improved_solver`] we instead opt
 /// out to use an Minimal Spanning Tree (MST), which we compute for every step.
-pub fn fifth_improved_solver(graph_matrix: &NAMatrix) -> Solution
-{
+pub fn fifth_improved_solver(graph_matrix: &NAMatrix) -> Solution {
     let mut current_prefix = Vec::new();
     current_prefix.reserve(graph_matrix.dim());
     let mut result = (f64::INFINITY, Vec::new());
@@ -353,8 +355,7 @@ fn _fifth_improved_solver_rec(
     current_prefix: &mut Path,
     current_cost: f64,
     result: &mut Solution,
-)
-{
+) {
     let n = graph_matrix.dim();
     let mut current_cost = current_cost;
 
@@ -397,7 +398,8 @@ fn _fifth_improved_solver_rec(
 
         // If our current sub-tour, together with a lower bound, is already bigger than the whole
         // tour the whole tour will definitely be bigger than our previous best version
-        let lower_bound_graph = mst::prim_with_excluded_node_single_threaded(&graph_matrix, &current_prefix);
+        let lower_bound_graph =
+            mst::prim_with_excluded_node_single_threaded(graph_matrix, current_prefix);
         let lower_bound = lower_bound_graph.acc_edge_cost();
         if current_cost + lower_bound <= result.0 {
             _fifth_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
@@ -1012,7 +1014,7 @@ mod exact_solver {
             second_improved_solver,
             third_improved_solver,
             fourth_improved_solver,
-            fifth_improved_solver
+            fifth_improved_solver,
         ]
         .iter()
         {
@@ -1055,7 +1057,7 @@ mod exact_solver {
             second_improved_solver,
             third_improved_solver,
             fourth_improved_solver,
-            fifth_improved_solver
+            fifth_improved_solver,
         ]
         .iter()
         {
@@ -1098,7 +1100,7 @@ mod exact_solver {
             second_improved_solver,
             third_improved_solver,
             fourth_improved_solver,
-            fifth_improved_solver
+            fifth_improved_solver,
         ]
         .iter()
         {

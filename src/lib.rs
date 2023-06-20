@@ -1,8 +1,6 @@
 use crate::datastructures::{Edge, Graph, Vertex};
 use crate::{
-    datastructures::NAMatrix,
-    mst::prim,
-    parser::TravellingSalesmanProblemInstance,
+    datastructures::NAMatrix, mst::prim, parser::TravellingSalesmanProblemInstance,
     solvers::approximate::christofides::christofides,
 };
 use std::{error::Error, fs::File, io::Read, path::PathBuf};

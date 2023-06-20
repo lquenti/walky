@@ -115,9 +115,10 @@ impl Graph {
 
     /// Calculates the accumulated edge cost for all edges
     pub fn acc_edge_cost(&self) -> f64 {
-        self.vertices.iter().map(
-            |v| v.iter().fold(0.0, |acc, e| acc+e.cost)
-            ).sum()
+        self.vertices
+            .iter()
+            .map(|v| v.iter().fold(0.0, |acc, e| acc + e.cost))
+            .sum()
     }
 }
 
