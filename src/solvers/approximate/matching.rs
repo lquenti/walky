@@ -267,11 +267,11 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries
                 best_matching = msg;
             }
         }
-
-        // broadcast best solution from the root_node to all nodes
-        root_process.broadcast_into(&mut min_cost);
-        root_process.broadcast_into(&mut best_matching);
     }
+
+    // broadcast best solution from the root_node to all nodes
+    root_process.broadcast_into(&mut min_cost);
+    root_process.broadcast_into(&mut best_matching);
 
     // sync all nodes at this line
     world.barrier();
