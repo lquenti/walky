@@ -273,9 +273,6 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries
     root_process.broadcast_into(&mut min_cost);
     root_process.broadcast_into(&mut best_matching);
 
-    // sync all nodes at this line
-    world.barrier();
-
     println!("min cost at rank {}: {}", rank, min_cost);
     let best_matching: Vec<_> = best_matching
         .chunks_exact(2)
