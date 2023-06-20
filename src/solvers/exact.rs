@@ -5,6 +5,8 @@ use crate::{
     mst,
 };
 
+use rustc_hash::FxHashMap;
+
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
 ///
@@ -346,10 +348,9 @@ pub fn fifth_improved_solver(graph_matrix: &NAMatrix) -> Solution {
     result
 }
 
-/// The recursive function underlying [`fourth_improved_solver`]
+/// The recursive function underlying [`fifth_improved_solver`]
 ///
-/// As previous, it works like the version before, but this time it also uses a NN computation
-/// before pruning.
+/// This time we use a MST instead of NN
 fn _fifth_improved_solver_rec(
     graph_matrix: &NAMatrix,
     current_prefix: &mut Path,
@@ -413,11 +414,98 @@ fn _fifth_improved_solver_rec(
 
 /// Sixth improvement of [`naive_solver`]:
 /// Cache the aforementioned, computed MSTs in a Hashmap
-pub fn sixth_improved_solver<T>(_graph_matrix: &T) -> Solution
-where
-    T: AdjacencyMatrix,
-{
-    todo!()
+pub fn sixth_improved_solver(graph_matrix: &NAMatrix) -> Solution {
+    let mut current_prefix = Vec::new();
+    current_prefix.reserve(graph_matrix.dim());
+    let mut result = (f64::INFINITY, Vec::new());
+    let mut mst_cache: FxHashMap<Path, f64> = FxHashMap::default(); // TODO can we change it to new?
+    _sixth_improved_solver_rec(
+        graph_matrix,
+        &mut current_prefix,
+        0.0,
+        &mut result,
+        &mut mst_cache,
+    );
+    result
+}
+
+/// The recursive function underlying [`sixth_improved_solver`]
+///
+/// Like the fifth, but we HashMap the MSTs
+/// Note that we do not use the default Hashmap but instead FxHash from the core team
+fn _sixth_improved_solver_rec(
+    graph_matrix: &NAMatrix,
+    current_prefix: &mut Path,
+    current_cost: f64,
+    result: &mut Solution,
+    mst_cache: &mut FxHashMap<Path, f64>,
+) {
+    let n = graph_matrix.dim();
+    let mut current_cost = current_cost;
+
+    // Base case: Is this one better?
+    if current_prefix.len() == n {
+        // Add the last edge, finishing the circle
+        current_cost += graph_matrix.get(
+            *current_prefix.last().unwrap(),
+            *current_prefix.first().unwrap(),
+        );
+
+        let best_cost = result.0;
+        if current_cost < best_cost {
+            result.0 = current_cost;
+            result.1 = current_prefix.clone();
+        }
+        return;
+    }
+
+    // Branch down with branching factor n-k, where k is the length of current_prefix
+    for i in 0..n {
+        // We do not visit twice
+        if current_prefix.contains(&i) {
+            continue;
+        }
+
+        current_prefix.push(i);
+        // If this is a single element, we do not have an edge yet
+        if current_prefix.len() == 1 {
+            _sixth_improved_solver_rec(
+                graph_matrix,
+                current_prefix,
+                current_cost,
+                result,
+                mst_cache,
+            );
+            current_prefix.pop();
+            continue;
+        }
+
+        // Calculate the cost of our new edge
+        let from = current_prefix.len() - 2;
+        let to = from + 1;
+        let cost_last_edge = graph_matrix.get(current_prefix[from], current_prefix[to]);
+        current_cost += cost_last_edge;
+
+        // If our current sub-tour, together with a lower bound, is already bigger than the whole
+        // tour the whole tour will definitely be bigger than our previous best version
+        let lower_bound = mst_cache.entry(current_prefix.clone()).or_insert(
+            mst::prim_with_excluded_node_single_threaded(graph_matrix, current_prefix)
+                .acc_edge_cost(),
+        );
+        if current_cost + *lower_bound <= result.0 {
+            _sixth_improved_solver_rec(
+                graph_matrix,
+                current_prefix,
+                current_cost,
+                result,
+                mst_cache,
+            );
+        }
+
+        // Remove the last edge
+        current_cost -= cost_last_edge;
+        current_prefix.pop();
+    }
 }
 
 /// Finding the next permutation given an array.
@@ -1015,6 +1103,7 @@ mod exact_solver {
             third_improved_solver,
             fourth_improved_solver,
             fifth_improved_solver,
+            sixth_improved_solver,
         ]
         .iter()
         {
@@ -1058,6 +1147,7 @@ mod exact_solver {
             third_improved_solver,
             fourth_improved_solver,
             fifth_improved_solver,
+            sixth_improved_solver,
         ]
         .iter()
         {
@@ -1101,6 +1191,7 @@ mod exact_solver {
             third_improved_solver,
             fourth_improved_solver,
             fifth_improved_solver,
+            sixth_improved_solver,
         ]
         .iter()
         {
