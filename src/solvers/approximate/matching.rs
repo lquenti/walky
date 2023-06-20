@@ -222,18 +222,11 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [(usize, usize)], tries
     let size = world.size();
     let rank = world.rank();
 
-    //if size != 2 {
-    //    panic!("Size of MPI_COMM_WORLD must be 2, but is {}!", size);
-    //}
-    //
-    //
-
     // for every node / process:
     // try a different matching and randomized improvement
     //improve_matching(graph, matching, tries);
     improve_matching(graph, matching, tries);
     let cost: f64 = matching.iter().map(|&edge| graph[edge]).sum();
-    println!("initial imp matching cost at rank {}: {}", rank, cost);
     let mut min_cost = cost;
     let mut best_matching = matching.iter().flat_map(|&(a, b)| [a, b]).collect();
 
