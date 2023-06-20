@@ -265,6 +265,11 @@ fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
     mst: &Graph,
     matching: Vec<(usize, usize)>,
 ) -> DMatrix<(f64, usize)> {
+    #[cfg(feature = "mpi")]
+    if MODE == MPI_COMPUTATION {
+        return fill_multigraph_with_mst_and_matching::<SEQ_COMPUTATION>(base_graph, mst, matching);
+    }
+
     // base the multigraph on the original graph
     let mut multigraph = base_graph.map(|cost| (cost, 0));
 
@@ -293,16 +298,7 @@ fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
                 });
         }
         #[cfg(feature = "mpi")]
-        MPI_COMPUTATION => {
-            //todo!(),
-            mst.iter()
-                .zip(multigraph.row_iter_mut())
-                .for_each(|(vertex, mut neighbours_vec)| {
-                    vertex
-                        .iter()
-                        .for_each(|&Edge { to, cost }| neighbours_vec[(0, to)] = (cost, 1))
-                })
-        }
+        MPI_COMPUTATION => unreachable!("On MPI the SEQ_COMPUTATION variant is used"),
         _ => panic_on_invaid_mode::<MODE>(),
     }
 
@@ -330,13 +326,7 @@ fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
             }
         }
         #[cfg(feature = "mpi")]
-        MPI_COMPUTATION => {
-            //todo!(),
-            matching.into_iter().for_each(|edge @ (i, j)| {
-                multigraph[edge].1 += 1;
-                multigraph[(j, i)].1 += 1;
-            })
-        }
+        MPI_COMPUTATION => unreachable!("On MPI the SEQ_COMPUTATION variant is used"),
         _ => panic_on_invaid_mode::<MODE>(),
     }
     multigraph
