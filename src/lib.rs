@@ -19,6 +19,17 @@ pub mod parser;
 pub mod preconditions;
 pub mod solvers;
 
+/// rank 0 is the main node
+#[cfg(feature = "mpi")]
+const ROOT_RANK: mpi::Rank = 0;
+
+#[cfg(feature = "mpi")]
+use crate::datastructures::AdjacencyMatrix;
+#[cfg(feature = "mpi")]
+use crate::solvers::approximate::matching::{bootstrap_mpi_matching_calc, mpi_improve_matching};
+#[cfg(feature = "mpi")]
+use mpi::topology::*;
+
 /// Extracts the TSP instance from a TSPLIB-XML file.
 fn get_tsp_instance(
     input_file: PathBuf,
@@ -77,8 +88,27 @@ fn approx_run(
                 }
                 #[cfg(feature = "mpi")]
                 Parallelism::MPI => {
-                    let _universe = mpi::initialize();
-                    christofides::<{ computation_mode::MPI_COMPUTATION }>(&tsp_instance.graph)
+                    let universe = mpi::initialize().unwrap();
+                    let world = universe.world();
+                    let rank = world.rank();
+                    let root_process = world.process_at_rank(0);
+
+                    if rank == ROOT_RANK {
+                        christofides::<{ computation_mode::MPI_COMPUTATION }>(&tsp_instance.graph)
+                    } else {
+                        let mut tries = 0;
+                        let graph = NAMatrix::from_dim(1);
+                        let (mut matching, graph) = bootstrap_mpi_matching_calc(
+                            &root_process,
+                            &mut [],
+                            rank,
+                            &mut tries,
+                            &graph,
+                        );
+                        mpi_improve_matching(&graph, matching.as_mut_slice(), tries);
+                        // non-root process is done here
+                        return Ok(());
+                    }
                 }
             };
             println!("Christofides solution weight: {}", solution.0);

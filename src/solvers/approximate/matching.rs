@@ -10,6 +10,8 @@ use rayon::prelude::*;
 use mpi::collective::Root;
 #[cfg(feature = "mpi")]
 use mpi::topology::*;
+#[cfg(feature = "mpi")]
+use nalgebra::{Dyn, Matrix};
 
 use crate::{computation_mode::*, datastructures::NAMatrix};
 
@@ -195,10 +197,10 @@ fn par_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries: us
     }
 }
 
-//#[cfg(feature = "mpi")]
-fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries: usize) {
-    extern crate mpi;
-    use mpi::topology::SystemCommunicator;
+#[cfg(feature = "mpi")]
+pub fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries: usize) {
+    //extern crate mpi;
+    //use mpi::topology::SystemCommunicator;
     use mpi::traits::*;
 
     //let universe = mpi::initialize().unwrap();
@@ -206,6 +208,12 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries: us
     let world = SystemCommunicator::world();
     let size = world.size();
     let rank = world.rank();
+    let root_process = world.process_at_rank(crate::ROOT_RANK);
+    const COST_TAG: mpi::Tag = 0;
+    const MATCHING_TAG: mpi::Tag = 1;
+
+    let mut tries_copy = tries;
+    bootstrap_mpi_matching_calc(&root_process, matching, rank, &mut tries_copy, graph);
 
     // for every node / process:
     // try a different matching and randomized improvement
@@ -216,13 +224,7 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries: us
     //let mut best_matching = matching.iter().flat_map(|&[a, b]| [a, b]).collect();
     let mut best_matching_singletons: Vec<usize> = matching.iter().flat_map(|&edg| edg).collect();
 
-    // rank 0 is the main node
-    const MAIN_RANK: mpi::Rank = 0;
-    let root_process = world.process_at_rank(MAIN_RANK);
-    const COST_TAG: mpi::Tag = 0;
-    const MATCHING_TAG: mpi::Tag = 1;
-
-    if rank != MAIN_RANK {
+    if rank != crate::ROOT_RANK {
         root_process.send_with_tag(&cost, COST_TAG);
         // create a mutable slice over the data of `matching`.
         // If matching is a slice of length n and type `&mut [[usize;2]]`,
@@ -233,7 +235,7 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries: us
         root_process.send_with_tag(matching_singletons, MATCHING_TAG);
     }
 
-    if rank == MAIN_RANK {
+    if rank == crate::ROOT_RANK {
         // the matchings will be sent as a Vec<usize>, because [usize; 2] toes not implement
         // the trait mpi::Equivalence
 
@@ -267,12 +269,65 @@ fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries: us
     });
 }
 
+/// Distribute the initial matching
+/// from the root_node to all other processes.
+///
+/// `root_process`: handle of the root process
+///
+/// `matching`: If called on the root process: should be the matching.
+/// If called from any other process: can be chosen arbitrarily, as it will be overwritten from the
+/// root process
+///
+/// `rank`: rank of the current process
+///
+/// `tries`: If called on the root process: should contain the number of tries.
+/// If called from any other process: can be chosen arbitrarily, as it will be overwritten from the
+/// root process
+///
+/// `graph`: If called on the root process: should reference the graph.
+/// If called from any other process: can be chosen arbitrarily.
 #[cfg(feature = "mpi")]
-fn bootstrap_mpi_matching_calc<C: Communicator>(
-    matching: &mut [[usize; 2]],
+pub fn bootstrap_mpi_matching_calc<C: Communicator>(
     root_process: &Process<C>,
-) {
-    let matching_singletons =
-        unsafe { from_raw_parts_mut(&mut matching[0][0] as *mut usize, matching.len() * 2) };
+    matching: &mut [[usize; 2]],
+    rank: Rank,
+    tries: &mut usize,
+    graph: &NAMatrix,
+) -> (Vec<[usize; 2]>, NAMatrix) {
+    // broadcast tries from the root node to all processes
+
+    use crate::datastructures::AdjacencyMatrix;
+    root_process.broadcast_into(tries);
+    // broadcast the size of the matching to all processes
+    let mut matching_size = matching.len();
+    root_process.broadcast_into(&mut matching_size);
+
+    // create storage for the incoming matching
+    let mut matching_vec = vec![[0usize; 2]; matching_size];
+    // cast the matching slice type from `&mut [[usize;2]]` to `&mut [usize]`
+    // to be able to send it via MPI
+    let matching_singletons = if rank == 0 {
+        unsafe { from_raw_parts_mut(&mut matching[0][0] as *mut usize, matching.len() * 2) }
+    } else {
+        unsafe { from_raw_parts_mut(&mut matching_vec[0][0] as *mut usize, matching.len() * 2) }
+    };
+    // distribute the matching from the root process to all other processes
     root_process.broadcast_into(matching_singletons);
+
+    // broadcast the NAMatrix from the root process to all processes
+    let mut dim = if rank == crate::ROOT_RANK {
+        graph.dim()
+    } else {
+        0
+    };
+    root_process.broadcast_into(&mut dim);
+
+    let mut matrix_vec = vec![0.; dim * dim];
+    if rank == crate::ROOT_RANK {
+        matrix_vec.copy_from_slice(graph.data.as_vec())
+    }
+    root_process.broadcast_into(&mut matrix_vec);
+    let matrix = NAMatrix(Matrix::from_vec_generic(Dyn(dim), Dyn(dim), matrix_vec));
+
+    (matching_vec, matrix)
 }
