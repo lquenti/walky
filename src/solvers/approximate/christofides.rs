@@ -47,7 +47,7 @@ pub fn christofides_exact<const MODE: usize>(graph: &Graph) -> Solution {
 /// the type [`NAMatrix`] is used.
 pub fn christofides_generic<const MODE: usize>(
     graph: &Graph,
-    matching_computer: fn(&Graph, &NAMatrix) -> Vec<(usize, usize)>,
+    matching_computer: fn(&Graph, &NAMatrix) -> Vec<[usize; 2]>,
 ) -> Solution {
     // create an adjacency matrix from the adjacency list
     let graph_matr: NAMatrix = graph.into();
@@ -83,7 +83,7 @@ pub fn christofides_generic<const MODE: usize>(
 }
 
 #[inline]
-fn compute_exact_matching(mst: &Graph, graph: &NAMatrix) -> Vec<(usize, usize)> {
+fn compute_exact_matching(mst: &Graph, graph: &NAMatrix) -> Vec<[usize; 2]> {
     // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST,
     // then compute a minimum-weight maximum matching for the subgraph
     let subgraph: WeightedGraph = Into::<WeightedGraph>::into(graph)
@@ -94,14 +94,11 @@ fn compute_exact_matching(mst: &Graph, graph: &NAMatrix) -> Vec<(usize, usize)> 
         .maximin_matching()
         .expect("Something went wrong: could not compute the maximal minimum weight matching");
 
-    matching.edges()
+    matching.edges().into_iter().map(|(a, b)| [a, b]).collect()
 }
 
 #[inline]
-fn compute_approx_matching<const MODE: usize>(
-    mst: &Graph,
-    graph: &NAMatrix,
-) -> Vec<(usize, usize)> {
+fn compute_approx_matching<const MODE: usize>(mst: &Graph, graph: &NAMatrix) -> Vec<[usize; 2]> {
     let subgraph: Vec<_> = mst
         .iter()
         .enumerate()
@@ -263,7 +260,7 @@ fn hamiltonian_from_eulerian_cycle(dim: usize, euler_cycle: &mut Vec<usize>) {
 fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
     base_graph: &NAMatrix,
     mst: &Graph,
-    matching: Vec<(usize, usize)>,
+    matching: Vec<[usize; 2]>,
 ) -> DMatrix<(f64, usize)> {
     #[cfg(feature = "mpi")]
     if MODE == MPI_COMPUTATION {
@@ -304,8 +301,8 @@ fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
 
     // add into the multigraph the edges from the matching
     match MODE {
-        SEQ_COMPUTATION => matching.into_iter().for_each(|edge @ (i, j)| {
-            multigraph[edge].1 += 1;
+        SEQ_COMPUTATION => matching.into_iter().for_each(|[i, j]| {
+            multigraph[(i, j)].1 += 1;
             multigraph[(j, i)].1 += 1;
         }),
         PAR_COMPUTATION => {
@@ -316,7 +313,7 @@ fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
             // safety: each cell is only written to once,
             // since the matching contains each vertex at most once
             unsafe {
-                matching.into_par_iter().for_each(|(i, j)| {
+                matching.into_par_iter().for_each(|[i, j]| {
                     let multigraph_prt = multigraph_slice.as_ptr() as *mut (f64, usize);
                     //multigraph[edge].1 += 1;
                     (*multigraph_prt.add(j * dim + i)).1 += 1;
