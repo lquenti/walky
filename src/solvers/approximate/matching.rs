@@ -298,38 +298,61 @@ pub fn bootstrap_mpi_matching_calc<C: Communicator>(
 ) -> (Vec<[usize; 2]>, NAMatrix) {
     // broadcast tries from the root node to all processes
 
-    use crate::datastructures::AdjacencyMatrix;
     root_process.broadcast_into(tries);
-    // broadcast the size of the matching to all processes
+
     let mut matching_size = matching.len();
-    root_process.broadcast_into(&mut matching_size);
+    broaadcast_matching_size(root_process, &mut matching_size);
+
+    // broadcast the NAMatrix dim from the root process to all processes
+    use crate::datastructures::AdjacencyMatrix;
+    let mut dim = graph.dim();
+    broadcast_dim(root_process, dim);
 
     // create storage for the incoming matching
     let mut matching_vec = vec![[0usize; 2]; matching_size];
-    // cast the matching slice type from `&mut [[usize;2]]` to `&mut [usize]`
-    // to be able to send it via MPI
-    let matching_singletons = if rank == 0 {
-        unsafe { from_raw_parts_mut(&mut matching[0][0] as *mut usize, matching.len() * 2) }
-    } else {
-        unsafe { from_raw_parts_mut(&mut matching_vec[0][0] as *mut usize, matching.len() * 2) }
-    };
-    // distribute the matching from the root process to all other processes
-    root_process.broadcast_into(matching_singletons);
+    if rank == crate::ROOT_RANK {
+        matching_vec.copy_from_slice(matching);
+    }
+    broadcast_matching(root_process, &mut matching_vec);
 
     // broadcast the NAMatrix from the root process to all processes
-    let mut dim = if rank == crate::ROOT_RANK {
-        graph.dim()
-    } else {
-        0
-    };
-    root_process.broadcast_into(&mut dim);
-
     let mut matrix_vec = vec![0.; dim * dim];
     if rank == crate::ROOT_RANK {
         matrix_vec.copy_from_slice(graph.data.as_vec())
     }
-    root_process.broadcast_into(&mut matrix_vec);
+    broadcast_matrix_vec(root_node, &mut matrix_vec);
     let matrix = NAMatrix(Matrix::from_vec_generic(Dyn(dim), Dyn(dim), matrix_vec));
 
     (matching_vec, matrix)
+}
+
+/// broadcast the size of the matching to all processes
+#[cfg(feature = "mpi")]
+fn broaadcast_matching_size<C: Communicator>(root_process: &Process<C>, matching_size: &mut usize) {
+    root_process.broadcast_into(&mut matching_size);
+}
+
+#[cfg(feature = "mpi")]
+fn broadcast_dim<C: Communicator>(root_process: &Process<C>, dim: &mut usize) {
+    root_process.broadcast_into(dim);
+}
+
+#[cfg(feature = "mpi")]
+fn broadcast_matching<C: Communicator>(root_process: &Process<C>, matching: &mut Vec<[usize; 2]>) {
+    // cast the matching slice type from `&mut [[usize;2]]` to `&mut [usize]`
+    // to be able to send it via MPI
+    //let matching_singletons = if rank == 0 {
+    //    unsafe { from_raw_parts_mut(&mut matching[0][0] as *mut usize, matching.len() * 2) }
+    //} else {
+    //    unsafe { from_raw_parts_mut(&mut matching_vec[0][0] as *mut usize, matching.len() * 2) }
+    //};
+    let matching_singletons =
+        unsafe { from_raw_parts_mut(&mut matching[0][0] as *mut usize, matching.len() * 2) };
+    // distribute the matching from the root process to all other processes
+    root_process.broadcast_into(matching_singletons);
+}
+
+#[cfg(feature = "mpi")]
+fn broadcast_matrix_vec<C: Communicator>(root_process: &Process<C>, matrix_vec: &mut Vec<f64>) {
+    root_process.broadcast_into(&mut matrix_vec);
 }
