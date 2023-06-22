@@ -213,7 +213,9 @@ pub fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries
     const MATCHING_TAG: mpi::Tag = 1;
 
     let mut tries_copy = tries;
-    bootstrap_mpi_matching_calc(&root_process, matching, rank, &mut tries_copy, graph);
+    if rank == crate::ROOT_RANK {
+        bootstrap_mpi_matching_calc(&root_process, matching, rank, &mut tries_copy, graph);
+    }
 
     // for every node / process:
     // try a different matching and randomized improvement
