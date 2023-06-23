@@ -1,0 +1,3 @@
+[build]
+# always build for the host CPU, this optimizes performance
+rustflags = ["-Ctarget-cpu=native"]
