@@ -2,8 +2,13 @@
 
 use ordered_float::OrderedFloat;
 use rand::seq::SliceRandom;
+use rayon::iter::ParallelIterator;
+use rayon::prelude::IntoParallelIterator;
 
-use crate::datastructures::{AdjacencyMatrix, NAMatrix, Solution};
+use crate::{
+    computation_mode::{panic_on_invaid_mode, PAR_COMPUTATION, SEQ_COMPUTATION},
+    datastructures::{AdjacencyMatrix, NAMatrix, Solution},
+};
 
 /// Using the nearest neighbour algorithm for a single starting node.
 ///
@@ -59,25 +64,40 @@ fn n_random_numbers(min: usize, max: usize, n: usize) -> Vec<usize> {
 
 /// Call [`single_nearest_neighbour`] n times, randomly.
 /// Since [`single_nearest_neighbour`] is deterministic, we use n different starting nodes.
-pub fn n_nearest_neighbour(graph_matrix: &NAMatrix, n: usize) -> Solution {
+///
+/// `MODE`: constant parameter, choose one of the values from [`crate::computation_mode`]
+///
+/// See [`prim_with_excluded_node`] for more details.
+pub fn n_nearest_neighbour<const MODE: usize>(graph_matrix: &NAMatrix, n: usize) -> Solution {
     assert!(n != 0);
     assert!(n <= graph_matrix.dim());
-    n_random_numbers(0, graph_matrix.dim(), n)
-        .into_iter()
-        .map(|k| single_nearest_neighbour(graph_matrix, k))
-        .min_by_key(|&(distance, _)| OrderedFloat(distance))
-        .unwrap()
+    match MODE {
+        SEQ_COMPUTATION => n_random_numbers(0, graph_matrix.dim(), n)
+            .into_iter()
+            .map(|k| single_nearest_neighbour(graph_matrix, k))
+            .min_by_key(|&(distance, _)| OrderedFloat(distance))
+            .unwrap(),
+        PAR_COMPUTATION => n_random_numbers(0, graph_matrix.dim(), n)
+            .into_par_iter()
+            .map(|k| single_nearest_neighbour(graph_matrix, k))
+            .min_by_key(|&(distance, _)| OrderedFloat(distance))
+            .unwrap(),
+        #[cfg(feature = "mpi")]
+        MPI_COMPUTATION => todo!(),
+        _ => panic_on_invaid_mode::<MODE>(),
+    }
 }
 
 /// Call [`single_nearest_neighbour`] for every starting node.
-pub fn nearest_neighbour(graph_matrix: &NAMatrix) -> Solution {
-    n_nearest_neighbour(graph_matrix, graph_matrix.dim())
+pub fn nearest_neighbour<const MODE: usize>(graph_matrix: &NAMatrix) -> Solution {
+    n_nearest_neighbour::<MODE>(graph_matrix, graph_matrix.dim())
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
     use crate::{
+        computation_mode,
         datastructures::{Edge, Graph, NAMatrix, Vertex},
         solvers::exact::first_improved_solver,
     };
@@ -151,9 +171,14 @@ mod test {
         assert_eq!(path, vec![4, 0, 3, 1, 2]);
 
         // Check that total is 27 and one of the best two
-        let (distance, path) = nearest_neighbour(&nm);
+        let (distance, path) = nearest_neighbour::<{ computation_mode::SEQ_COMPUTATION }>(&nm);
         assert_eq!(distance, 27.0);
         assert!(path == vec![2, 4, 0, 3, 1] || path == vec![4, 0, 3, 1, 2]);
+
+        // Are they the same?
+        let (distance2, path2) = nearest_neighbour::<{ computation_mode::PAR_COMPUTATION }>(&nm);
+        assert_eq!(distance, distance2);
+        assert!(path2 == vec![2, 4, 0, 3, 1] || path2 == vec![4, 0, 3, 1, 2]);
 
         // That that we are below or equal to the perfect solution
         let (perfect_d, _) = first_improved_solver(&nm);
@@ -331,11 +356,19 @@ mod test {
         assert_eq!(path, vec![7, 5, 0, 4, 3, 8, 1, 2, 6, 9]);
 
         // Check that total is 27 and one of the best two
-        let (distance, path) = nearest_neighbour(&nm);
+        let (distance, path) = nearest_neighbour::<{ computation_mode::SEQ_COMPUTATION }>(&nm);
         assert_eq!(distance, 28.0);
         assert!(
             path == vec![1, 8, 3, 9, 6, 0, 5, 7, 4, 2]
                 || path == vec![2, 1, 8, 3, 9, 6, 0, 5, 7, 4]
+        );
+
+        // Are they the same?
+        let (distance2, path2) = nearest_neighbour::<{ computation_mode::PAR_COMPUTATION }>(&nm);
+        assert_eq!(distance, distance2);
+        assert!(
+            path2 == vec![1, 8, 3, 9, 6, 0, 5, 7, 4, 2]
+                || path2 == vec![2, 1, 8, 3, 9, 6, 0, 5, 7, 4]
         );
 
         // That that we are below or equal to the perfect solution

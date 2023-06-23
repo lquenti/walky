@@ -84,7 +84,9 @@ fn approx_run(
         }
         ApproxAlgorithm::NearestNeighbour => {
             let solution = match parallelism {
-                Parallelism::SingleThreaded => nearest_neighbour(&(&tsp_instance.graph).into()),
+                Parallelism::SingleThreaded => nearest_neighbour::<
+                    { computation_mode::SEQ_COMPUTATION },
+                >(&(&tsp_instance.graph).into()),
                 _ => todo!(),
             };
             println!("Nearest Neighbour solution weight: {}", solution.0);
