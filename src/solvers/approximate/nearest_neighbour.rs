@@ -116,4 +116,53 @@ mod test {
         let (perfect_d, _) = first_improved_solver(&nm);
         assert!(perfect_d <= distance);
     }
+
+    #[test]
+    fn integer_graph_10x10() {
+        let graph = Graph {vertices: vec![Vertex { edges: vec![Edge { to: 1, cost: 8.0 }, Edge { to: 2, cost: 6.0 }, Edge { to: 3, cost: 7.0 }, Edge { to: 4, cost: 4.0 }, Edge { to: 5, cost: 2.0 }, Edge { to: 6, cost: 4.0 }, Edge { to: 7, cost: 5.0 }, Edge { to: 8, cost: 5.0 }, Edge { to: 9, cost: 5.0 }] },Vertex { edges: vec![Edge { to: 0, cost: 8.0 }, Edge { to: 2, cost: 2.0 }, Edge { to: 3, cost: 6.0 }, Edge { to: 4, cost: 8.0 }, Edge { to: 5, cost: 3.0 }, Edge { to: 6, cost: 2.0 }, Edge { to: 7, cost: 7.0 }, Edge { to: 8, cost: 1.0 }, Edge { to: 9, cost: 6.0 }] },Vertex { edges: vec![Edge { to: 0, cost: 6.0 }, Edge { to: 1, cost: 2.0 }, Edge { to: 3, cost: 4.0 }, Edge { to: 4, cost: 6.0 }, Edge { to: 5, cost: 5.0 }, Edge { to: 6, cost: 5.0 }, Edge { to: 7, cost: 5.0 }, Edge { to: 8, cost: 4.0 }, Edge { to: 9, cost: 5.0 }] },Vertex { edges: vec![Edge { to: 0, cost: 7.0 }, Edge { to: 1, cost: 6.0 }, Edge { to: 2, cost: 4.0 }, Edge { to: 4, cost: 5.0 }, Edge { to: 5, cost: 6.0 }, Edge { to: 6, cost: 6.0 }, Edge { to: 7, cost: 4.0 }, Edge { to: 8, cost: 2.0 }, Edge { to: 9, cost: 2.0 }] },Vertex { edges: vec![Edge { to: 0, cost: 4.0 }, Edge { to: 1, cost: 8.0 }, Edge { to: 2, cost: 6.0 }, Edge { to: 3, cost: 5.0 }, Edge { to: 5, cost: 9.0 }, Edge { to: 6, cost: 6.0 }, Edge { to: 7, cost: 3.0 }, Edge { to: 8, cost: 6.0 }, Edge { to: 9, cost: 5.0 }] },Vertex { edges: vec![Edge { to: 0, cost: 2.0 }, Edge { to: 1, cost: 3.0 }, Edge { to: 2, cost: 5.0 }, Edge { to: 3, cost: 6.0 }, Edge { to: 4, cost: 9.0 }, Edge { to: 6, cost: 4.0 }, Edge { to: 7, cost: 2.0 }, Edge { to: 8, cost: 3.0 }, Edge { to: 9, cost: 6.0 }] },Vertex { edges: vec![Edge { to: 0, cost: 4.0 }, Edge { to: 1, cost: 2.0 }, Edge { to: 2, cost: 5.0 }, Edge { to: 3, cost: 6.0 }, Edge { to: 4, cost: 6.0 }, Edge { to: 5, cost: 4.0 }, Edge { to: 7, cost: 5.0 }, Edge { to: 8, cost: 3.0 }, Edge { to: 9, cost: 4.0 }] },Vertex { edges: vec![Edge { to: 0, cost: 5.0 }, Edge { to: 1, cost: 7.0 }, Edge { to: 2, cost: 5.0 }, Edge { to: 3, cost: 4.0 }, Edge { to: 4, cost: 3.0 }, Edge { to: 5, cost: 2.0 }, Edge { to: 6, cost: 5.0 }, Edge { to: 8, cost: 5.0 }, Edge { to: 9, cost: 7.0 }] },Vertex { edges: vec![Edge { to: 0, cost: 5.0 }, Edge { to: 1, cost: 1.0 }, Edge { to: 2, cost: 4.0 }, Edge { to: 3, cost: 2.0 }, Edge { to: 4, cost: 6.0 }, Edge { to: 5, cost: 3.0 }, Edge { to: 6, cost: 3.0 }, Edge { to: 7, cost: 5.0 }, Edge { to: 9, cost: 6.0 }] },Vertex { edges: vec![Edge { to: 0, cost: 5.0 }, Edge { to: 1, cost: 6.0 }, Edge { to: 2, cost: 5.0 }, Edge { to: 3, cost: 2.0 }, Edge { to: 4, cost: 5.0 }, Edge { to: 5, cost: 6.0 }, Edge { to: 6, cost: 4.0 }, Edge { to: 7, cost: 7.0 }, Edge { to: 8, cost: 6.0 }] }]};
+        let nm: NAMatrix = (&graph).into();
+        // Starting Node 0
+        let (distance, path) = single_nearest_neighbour(&nm, 0);
+        assert_eq!(distance, 31.0);
+        assert_eq!(path, vec![0, 5, 7, 4, 3, 8, 1, 2, 6, 9]);
+        // Starting Node 1
+        let (distance, path) = single_nearest_neighbour(&nm, 1);
+        assert_eq!(distance, 28.0);
+        assert_eq!(path, vec![1, 8, 3, 9, 6, 0, 5, 7, 4, 2]);
+        // Starting Node 2
+        let (distance, path) = single_nearest_neighbour(&nm, 2);
+        assert_eq!(distance, 28.0);
+        assert_eq!(path, vec![2, 1, 8, 3, 9, 6, 0, 5, 7, 4]);
+        // Starting Node 3
+        let (distance, path) = single_nearest_neighbour(&nm, 3);
+        assert_eq!(distance, 30.0);
+        assert_eq!(path, vec![3, 8, 1, 2, 5, 0, 4, 7, 6, 9]);
+        // Starting Node 4
+        let (distance, path) = single_nearest_neighbour(&nm, 4);
+        assert_eq!(distance, 29.0);
+        assert_eq!(path, vec![4, 7, 5, 0, 6, 1, 8, 3, 9, 2]);
+        // Starting Node 5
+        let (distance, path) = single_nearest_neighbour(&nm, 5);
+        assert_eq!(distance, 33.0);
+        assert_eq!(path, vec![5, 0, 4, 7, 3, 8, 1, 2, 6, 9]);
+        // Starting Node 6
+        let (distance, path) = single_nearest_neighbour(&nm, 6);
+        assert_eq!(distance, 30.0);
+        assert_eq!(path, vec![6, 1, 8, 3, 9, 0, 5, 7, 4, 2]);
+        // Starting Node 7
+        let (distance, path) = single_nearest_neighbour(&nm, 7);
+        assert_eq!(distance, 34.0);
+        assert_eq!(path, vec![7, 5, 0, 4, 3, 8, 1, 2, 6, 9]);
+
+        // Check that total is 27 and one of the best two
+        let (distance, path) = nearest_neighbour(&nm);
+        assert_eq!(distance, 28.0);
+        assert!(
+            path == vec![1, 8, 3, 9, 6, 0, 5, 7, 4, 2] || path == vec![2, 1, 8, 3, 9, 6, 0, 5, 7, 4]
+            );
+
+        // That that we are below or equal to the perfect solution
+        let (perfect_d, _) = first_improved_solver(&nm);
+        assert!(perfect_d <= distance);
+    }
 }

@@ -15,7 +15,7 @@ def tsp_nearest_neighbour(graph_matrix, start_node):
     num_nodes = len(graph_matrix)
     path = [start_node]
     unvisited = set(range(num_nodes))
-    print("Startintg at node", start_node)
+    print("Starting at node", start_node)
     unvisited.remove(start_node)
     current_node = start_node
 
@@ -32,16 +32,16 @@ def tsp_nearest_neighbour(graph_matrix, start_node):
     return path, cost
 
 
-def main(seed=1337, size=5, start_node=3):
+def main(seed=1337, size=10):
     random.seed(seed)
     np.random.seed(seed)
     graph_matrix = generate_graph_matrix(size)
     print("Graph Matrix:")
     print(graph_matrix)
-    path, cost = tsp_nearest_neighbour(graph_matrix, start_node)
-    print("\nStart Node:", start_node)
-    print("Path:", path)
-    print("Cost:", cost)
+    for start_node in range(0, size):
+        path, cost = tsp_nearest_neighbour(graph_matrix, start_node)
+        print("Path:", path)
+        print("Cost:", cost, "\n")
 
     print(convert_to_rust_code(graph_matrix))
 
