@@ -1,4 +1,3 @@
-use crate::datastructures::{Edge, Graph, Vertex};
 use crate::{
     datastructures::NAMatrix, mst::prim, parser::TravellingSalesmanProblemInstance,
     solvers::approximate::christofides::christofides,
@@ -141,43 +140,6 @@ fn lower_bound_run(
     Ok(())
 }
 
-fn debug() {
-    let xs: Graph = Graph {
-        vertices: vec![
-            Vertex {
-                edges: vec![
-                    Edge { to: 1, cost: 5.0 },
-                    Edge { to: 2, cost: 4.0 },
-                    Edge { to: 3, cost: 10.0 },
-                ],
-            },
-            Vertex {
-                edges: vec![
-                    Edge { to: 0, cost: 5.0 },
-                    Edge { to: 2, cost: 8.0 },
-                    Edge { to: 3, cost: 5.0 },
-                ],
-            },
-            Vertex {
-                edges: vec![
-                    Edge { to: 0, cost: 4.0 },
-                    Edge { to: 1, cost: 8.0 },
-                    Edge { to: 3, cost: 3.0 },
-                ],
-            },
-            Vertex {
-                edges: vec![
-                    Edge { to: 0, cost: 10.0 },
-                    Edge { to: 1, cost: 5.0 },
-                    Edge { to: 2, cost: 3.0 },
-                ],
-            },
-        ],
-    };
-    let xs: NAMatrix = (&xs).into();
-    let _res2 = exact::fifth_improved_solver(&xs);
-}
-
 /// This function calls the main logic of our program.
 pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
     match cli.command {
@@ -202,9 +164,5 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
             input_file,
             parallelism,
         } => lower_bound_run(algorithm, input_file, parallelism),
-        cli::Commands::Debug => {
-            debug();
-            Ok(())
-        }
     }
 }
