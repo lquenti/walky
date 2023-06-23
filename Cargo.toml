@@ -9,10 +9,6 @@ license = "MIT"
 authors = ["Lars Quentin <lars@lquenti.de>", "Johann Carl Meyer <info@johannc.de>"]
 readme = "./README.md"
 
-
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 clap = {version = "4.2.5", features = ["derive"]}          # for cli arg parsing
 quick-xml = {version = "0.28.2", features = ["serialize"]} # for xml-parsing
@@ -25,6 +21,7 @@ blossom = "0.4.0"                                          # for the blossom alg
 nalgebra = {version = "0.32", features = ["rayon"]}        # for fast matrices
 lazy_static = "1.4.0"                                      # for non-compile time global variables
 rustc-hash = "1.1.0"                                       # for cryptographically insecure, FAST hashing
+mpi = {version = "0.6", optional = true}                   # for MPI crate feature
 
 [dev-dependencies]
 approx = "0.5.1"                # for assertions with float values
@@ -33,4 +30,6 @@ quickcheck_macros = "1.0.0"     # for property based testing
 
 [profile.release]
 debug = true                    # enable profiling in release builds
-
+opt-level = 3                   # -O3
+lto = true                      # LLVM Link Time Optimization
+codegen-units = 1                # Slower compile time, better performance
