@@ -9,6 +9,10 @@ license = "MIT"
 authors = ["Lars Quentin <lars@lquenti.de>", "Johann Carl Meyer <info@johannc.de>"]
 readme = "./README.md"
 
+[profile.release]
+opt-level = 3        # -O3
+lto = true           # LLVM Link Time Optimization
+codegen-unis = 1     # Slower compile time, better performance
 
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
