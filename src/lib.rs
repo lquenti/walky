@@ -1,7 +1,5 @@
 use crate::{
-    datastructures::{NAMatrix, VecMatrix},
-    mst::prim,
-    parser::TravellingSalesmanProblemInstance,
+    datastructures::NAMatrix, mst::prim, parser::TravellingSalesmanProblemInstance,
     solvers::approximate::christofides::christofides,
 };
 use std::{error::Error, fs::File, io::Read, path::PathBuf};
@@ -42,14 +40,16 @@ fn exact_run(
         unimplemented!()
     }
 
-    let m: VecMatrix = tsp_instance.graph.into();
+    // TODO replace me with nalgebra
+    let m: NAMatrix = (&tsp_instance.graph).into();
     let (best_cost, best_permutation) = match algorithm {
-        ExactAlgorithm::V1 => exact::naive_solver(&m),
-        ExactAlgorithm::V2 => exact::first_improved_solver(&m),
-        ExactAlgorithm::V3 => unimplemented!(),
-        ExactAlgorithm::V4 => unimplemented!(),
-        ExactAlgorithm::V5 => unimplemented!(),
-        ExactAlgorithm::V6 => unimplemented!(),
+        ExactAlgorithm::V0 => exact::naive_solver(&m),
+        ExactAlgorithm::V1 => exact::first_improved_solver(&m),
+        ExactAlgorithm::V2 => exact::second_improved_solver(&m),
+        ExactAlgorithm::V3 => exact::third_improved_solver(&m),
+        ExactAlgorithm::V4 => exact::fourth_improved_solver(&m),
+        ExactAlgorithm::V5 => exact::fifth_improved_solver(&m),
+        ExactAlgorithm::V6 => exact::sixth_improved_solver(&m),
         ExactAlgorithm::HeldKarp => unimplemented!(),
     };
     println!("Best Cost: {}", best_cost);
