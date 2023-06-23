@@ -403,7 +403,7 @@ fn _fifth_improved_solver_rec(
         // tour the whole tour will definitely be bigger than our previous best version
         let lower_bound_graph =
             mst::prim_with_excluded_node_single_threaded(graph_matrix, current_prefix);
-        let lower_bound = lower_bound_graph.acc_edge_cost();
+        let lower_bound = lower_bound_graph.directed_edge_weight();
         if current_cost + lower_bound <= result.0 {
             _fifth_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
         }
@@ -506,7 +506,7 @@ fn _sixth_improved_solver_rec(
         };
         let lower_bound = mst_cache.entry(hash).or_insert(
             mst::prim_with_excluded_node_single_threaded(graph_matrix, current_prefix)
-                .acc_edge_cost(),
+                .directed_edge_weight(),
         );
         if current_cost + *lower_bound <= result.0 {
             _sixth_improved_solver_rec(
