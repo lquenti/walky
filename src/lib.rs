@@ -8,7 +8,7 @@ use std::{error::Error, fs::File, io::Read, path::PathBuf};
 
 use cli::{ApproxAlgorithm, Cli, ExactAlgorithm, LowerBoundAlgorithm, MSTAlgorithm, Parallelism};
 use one_tree::one_tree_lower_bound;
-use solvers::{exact, approximate::nearest_neighbour::nearest_neighbour};
+use solvers::{approximate::nearest_neighbour::nearest_neighbour, exact};
 
 pub mod cli;
 pub mod computation_mode;
@@ -84,9 +84,7 @@ fn approx_run(
         }
         ApproxAlgorithm::NearestNeighbour => {
             let solution = match parallelism {
-                Parallelism::SingleThreaded => {
-                    nearest_neighbour(&(&tsp_instance.graph).into())
-                }
+                Parallelism::SingleThreaded => nearest_neighbour(&(&tsp_instance.graph).into()),
                 _ => todo!(),
             };
             println!("Nearest Neighbour solution weight: {}", solution.0);
