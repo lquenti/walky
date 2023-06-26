@@ -21,8 +21,7 @@ blossom = "0.4.0"                                                        # for t
 nalgebra = {version = "0.32", features = ["rayon"]}                      # for fast matrices
 lazy_static = "1.4.0"                                                    # for non-compile time global variables
 rustc-hash = "1.1.0"                                                     # for cryptographically insecure, FAST hashing
-#mpi = {version = "0.6", optional = true, features = ["user-operations"]} # for MPI crate feature
-mpi = {version = "0.6", features = ["user-operations"]} # for MPI crate feature
+mpi = {version = "0.6", optional = true, features = ["user-operations", "derive"]} # for MPI crate feature
 rand = "0.8"                                                             # You wouldn't guess it
 
 [dev-dependencies]
