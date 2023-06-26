@@ -1,7 +1,7 @@
 name: Everything Rust
 on:
   push:
-    branches: [ main, ci-doc ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 env:
