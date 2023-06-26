@@ -7,8 +7,7 @@ use rayon::prelude::IntoParallelIterator;
 
 #[cfg(feature = "mpi")]
 use mpi::{
-    collective::UserOperation, datatype::UserDatatype, internal::memoffset::offset_of, traits::*,
-    Address,
+    collective::UserOperation, traits::*,
 };
 
 use crate::{
@@ -160,7 +159,7 @@ pub fn nearest_neighbour_mpi(graph_matrix: &NAMatrix) -> Solution {
         }),
     );
 
-    let mut best_path = local_solution.1.to_owned();
+    let mut best_path = local_solution.1;
 
     let winner_process = world.process_at_rank(recvbuf.1);
     // The winner tells everybody who won
