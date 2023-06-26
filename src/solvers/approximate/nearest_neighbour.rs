@@ -5,7 +5,7 @@ use rand::seq::SliceRandom;
 use rayon::iter::ParallelIterator;
 use rayon::prelude::IntoParallelIterator;
 
-#[cfg(feature="mpi")]
+#[cfg(feature = "mpi")]
 use mpi::{
     collective::UserOperation, datatype::UserDatatype, internal::memoffset::offset_of, traits::*,
     Address,
@@ -16,13 +16,12 @@ use crate::{
     datastructures::{AdjacencyMatrix, NAMatrix, Solution},
 };
 
-#[cfg(feature="mpi")]
+#[cfg(feature = "mpi")]
 use crate::computation_mode::MPI_COMPUTATION;
 
 #[derive(Default, Clone, Copy, Equivalence)]
-#[cfg(feature="mpi")]
+#[cfg(feature = "mpi")]
 struct MPICostRank(f64, i32);
-
 
 /// Using the nearest neighbour algorithm for a single starting node.
 ///
@@ -110,7 +109,7 @@ pub fn nearest_neighbour<const MODE: usize>(graph_matrix: &NAMatrix) -> Solution
 }
 
 // TODO refactor me into the structure
-#[cfg(feature="mpi")]
+#[cfg(feature = "mpi")]
 pub fn nearest_neighbour_mpi(graph_matrix: &NAMatrix) -> Solution {
     let universe = mpi::initialize().unwrap();
     let world = universe.world();

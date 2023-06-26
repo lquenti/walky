@@ -87,17 +87,16 @@ fn approx_run(
                 Parallelism::SingleThreaded => nearest_neighbour::<
                     { computation_mode::SEQ_COMPUTATION },
                 >(&(&tsp_instance.graph).into()),
-                Parallelism::MultiThreaded => 
-                    nearest_neighbour::<
-                    { computation_mode::PAR_COMPUTATION }
+                Parallelism::MultiThreaded => nearest_neighbour::<
+                    { computation_mode::PAR_COMPUTATION },
                 >(&(&tsp_instance.graph).into()),
                 #[cfg(feature = "mpi")]
-                Parallelism::MPI =>
-                    nearest_neighbour::<
-                    { computation_mode::MPI_COMPUTATION }
-                >(&(&tsp_instance.graph).into()),
+                Parallelism::MPI => nearest_neighbour::<{ computation_mode::MPI_COMPUTATION }>(
+                    &(&tsp_instance.graph).into(),
+                ),
             };
             println!("Nearest Neighbour solution weight: {}", solution.0);
+            println!("Nearest Neighbour solution: {:?}", solution.1);
         }
     };
 
