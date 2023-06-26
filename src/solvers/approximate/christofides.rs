@@ -406,7 +406,7 @@ mod test {
     ///   2
     #[test]
     fn multigraph_can_represent_empty_mst_with_matching() {
-        let matching = vec![(1, 0), (2, 0)];
+        let matching = vec![[1, 0], [2, 0]];
         let graph = NAMatrix(DMatrix::from_row_slice(
             3,
             3,
@@ -461,7 +461,7 @@ mod test {
     /// with every edge existing twice
     #[test]
     fn multigraph_can_represent_the_mst_with_matching() {
-        let matching = vec![(1, 0), (2, 0)];
+        let matching = vec![[1, 0], [2, 0]];
         let graph = NAMatrix(DMatrix::from_row_slice(
             3,
             3,
@@ -516,7 +516,7 @@ mod test {
     /// with every edge existing twice
     #[test]
     fn fill_multigraph_with_mst_and_matching_seq_and_par_agree() {
-        let matching = vec![(1, 0), (2, 0)];
+        let matching = vec![[1, 0], [2, 0]];
         let graph = NAMatrix(DMatrix::from_row_slice(
             3,
             3,

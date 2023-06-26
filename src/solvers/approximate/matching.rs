@@ -68,10 +68,11 @@ pub fn approx_min_cost_matching<const MODE: usize>(
 //  /   \
 // 2     3
 fn improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries: usize) {
-    debug_assert!(
-        matching.len() >= 2,
-        "The matching should have at least two edges"
-    );
+    // cannot improve a matching with 0 or 1 edge
+    if matching.len() <= 1 {
+        return;
+    }
+
     let mut rng = thread_rng();
 
     for _ in 0..tries {
