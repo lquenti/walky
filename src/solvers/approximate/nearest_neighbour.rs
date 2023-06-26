@@ -6,9 +6,7 @@ use rayon::iter::ParallelIterator;
 use rayon::prelude::IntoParallelIterator;
 
 #[cfg(feature = "mpi")]
-use mpi::{
-    collective::UserOperation, traits::*,
-};
+use mpi::{collective::UserOperation, traits::*};
 
 use crate::{
     computation_mode::{panic_on_invaid_mode, PAR_COMPUTATION, SEQ_COMPUTATION},
