@@ -111,6 +111,7 @@ fn compute_approx_matching<const MODE: usize>(mst: &Graph, graph: &NAMatrix) -> 
         })
         .collect();
 
+    // make the algorithm at most linear, in terms of edges
     let tries = subgraph.len().pow(2);
 
     approx_min_cost_matching::<MODE>(graph, subgraph, tries)
