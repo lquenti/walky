@@ -6,12 +6,32 @@ use rayon::iter::ParallelIterator;
 use rayon::prelude::IntoParallelIterator;
 
 //#[cfg(feature="mpi")]
-use mpi::{traits::*, collective::UserOperation};
+use mpi::{
+    collective::UserOperation, datatype::UserDatatype, internal::memoffset::offset_of, traits::*,
+    Address,
+};
 
 use crate::{
     computation_mode::{panic_on_invaid_mode, PAR_COMPUTATION, SEQ_COMPUTATION},
     datastructures::{AdjacencyMatrix, NAMatrix, Solution},
 };
+
+#[derive(Default, Clone, Copy)]
+struct MPICostRank(f64, i32);
+
+unsafe impl Equivalence for MPICostRank {
+    type Out = UserDatatype;
+    fn equivalent_datatype() -> Self::Out {
+        UserDatatype::structured(
+            &[1, 1],
+            &[
+                offset_of!(MPICostRank, 0) as Address,
+                offset_of!(MPICostRank, 1) as Address,
+            ],
+            &[f64::equivalent_datatype(), i32::equivalent_datatype()],
+        )
+    }
+}
 
 /// Using the nearest neighbour algorithm for a single starting node.
 ///
@@ -122,24 +142,40 @@ pub fn nearest_neighbour_mpi(graph_matrix: &NAMatrix) -> Solution {
         .min_by_key(|&(distance, _)| OrderedFloat(distance))
         .unwrap();
 
-    // TODO Custom reduce
-    let sendbuf = local_solution.0;
-    let mut recvbuf = f64::INFINITY;
+    // ALLREDUCE all solutions
+    // If two solutions have same cost, we choose lower rank
+    // This makes it commutative, thus easier to reduce
+    let sendbuf = MPICostRank(local_solution.0, rank);
+    let mut recvbuf = MPICostRank(f64::INFINITY, -1);
     world.all_reduce_into(
         &sendbuf,
         &mut recvbuf,
         &UserOperation::commutative(|x, y| {
-            let x: &[f64] = x.downcast().unwrap();
-            let y: &mut [f64] = y.downcast().unwrap();
-            if x < y {
-                y[0]=x[0]; // TODO does this change the value?
+            let x: &[MPICostRank] = x.downcast().unwrap();
+            let y: &mut [MPICostRank] = y.downcast().unwrap();
+            // If y.cost < x.cost, we do nothing as the acc is better
+            // If y.cost > x.cost, we set the y to x
+            if y[0].0 > x[0].0 {
+                y[0] = x[0];
             }
-        })
+            // Else, we are equal, then we decide on the lower rank
+            // We only do this so it is commutative, since we do an
+            // ALL_REDUCE and want every note to agree which node
+            // won.
+            if y[0].1 > x[0].1 {
+                y[0] = x[0];
+            }
+        }),
     );
 
-    (recvbuf, Vec::new())
-}
+    let mut best_path = local_solution.1.to_owned();
 
+    let winner_process = world.process_at_rank(recvbuf.1);
+    // The winner tells everybody who won
+    winner_process.broadcast_into(&mut best_path[..]);
+
+    (recvbuf.0, best_path)
+}
 
 #[cfg(test)]
 mod test {
