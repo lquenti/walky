@@ -19,26 +19,10 @@ use crate::{
 #[cfg(feature="mpi")]
 use crate::computation_mode::MPI_COMPUTATION;
 
-
-
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone, Copy, Equivalence)]
 #[cfg(feature="mpi")]
 struct MPICostRank(f64, i32);
 
-#[cfg(feature="mpi")]
-unsafe impl Equivalence for MPICostRank {
-    type Out = UserDatatype;
-    fn equivalent_datatype() -> Self::Out {
-        UserDatatype::structured(
-            &[1, 1],
-            &[
-                offset_of!(MPICostRank, 0) as Address,
-                offset_of!(MPICostRank, 1) as Address,
-            ],
-            &[f64::equivalent_datatype(), i32::equivalent_datatype()],
-        )
-    }
-}
 
 /// Using the nearest neighbour algorithm for a single starting node.
 ///
@@ -160,11 +144,8 @@ pub fn nearest_neighbour_mpi(graph_matrix: &NAMatrix) -> Solution {
         &sendbuf,
         &mut recvbuf,
         &UserOperation::commutative(|x, y| {
-            println!("{:?} {:?}", x, y);
-            println!("{}")
             let x: &[MPICostRank] = x.downcast().unwrap();
             let y: &mut [MPICostRank] = y.downcast().unwrap();
-            println!("this was successful once!");
             // If y.cost < x.cost, we do nothing as the acc is better
             // If y.cost > x.cost, we set the y to x
             if y[0].0 > x[0].0 {
@@ -174,7 +155,7 @@ pub fn nearest_neighbour_mpi(graph_matrix: &NAMatrix) -> Solution {
             // We only do this so it is commutative, since we do an
             // ALL_REDUCE and want every note to agree which node
             // won.
-            if y[0].1 > x[0].1 {
+            if x[0].0 == y[0].0 && y[0].1 > x[0].1 {
                 y[0] = x[0];
             }
         }),
