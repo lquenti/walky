@@ -194,12 +194,8 @@ fn par_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries: us
 
 #[cfg(feature = "mpi")]
 pub fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries: usize) {
-    //extern crate mpi;
-    //use mpi::topology::SystemCommunicator;
     use mpi::traits::*;
 
-    //let universe = mpi::initialize().unwrap();
-    //let world = universe.world();
     let world = SystemCommunicator::world();
     let size = world.size();
     let rank = world.rank();
@@ -218,7 +214,7 @@ pub fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries
     improve_matching(graph, matching, tries);
     let cost: f64 = matching.iter().map(|&[i, j]| graph[(i, j)]).sum();
     let mut min_cost = cost;
-    //let mut best_matching = matching.iter().flat_map(|&[a, b]| [a, b]).collect();
+
     let mut best_matching_singletons: Vec<usize> = matching.iter().flat_map(|&edg| edg).collect();
 
     if rank != crate::ROOT_RANK {
@@ -230,9 +226,9 @@ pub fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries
         let matching_singletons =
             unsafe { from_raw_parts(&matching[0][0] as *const usize, matching.len() * 2) };
         root_process.send_with_tag(matching_singletons, MATCHING_TAG);
-    }
+    } else {
+        // if rank == crate::ROOT_RANK
 
-    if rank == crate::ROOT_RANK {
         // the matchings will be sent as a Vec<usize>, because [usize; 2] toes not implement
         // the trait mpi::Equivalence
 
@@ -254,10 +250,11 @@ pub fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries
     root_process.broadcast_into(&mut min_cost);
     root_process.broadcast_into(&mut best_matching_singletons);
 
-    //let best_matching: Vec<_> = best_matching_singletons
-    //    .chunks_exact(2)
-    //    .map(|chunk| [chunk[0], chunk[1]])
-    //    .collect();
+    // copy the matching data from `matching_singletons` back into `matching`.
+    //
+    // If `matching_singletons` has the following content:
+    // `[0, 1, 2, 3, ...]` then the vertices will be grouped into edges like this:
+    // `[[0,1], [2,3], ...]`.
     matching.copy_from_slice(unsafe {
         from_raw_parts(
             transmute::<*const usize, *const [usize; 2]>(best_matching_singletons.as_ptr()),
