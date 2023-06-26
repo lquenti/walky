@@ -5,7 +5,7 @@ use rand::seq::SliceRandom;
 use rayon::iter::ParallelIterator;
 use rayon::prelude::IntoParallelIterator;
 
-//#[cfg(feature="mpi")]
+#[cfg(feature="mpi")]
 use mpi::{
     collective::UserOperation, datatype::UserDatatype, internal::memoffset::offset_of, traits::*,
     Address,
@@ -16,9 +16,16 @@ use crate::{
     datastructures::{AdjacencyMatrix, NAMatrix, Solution},
 };
 
+#[cfg(feature="mpi")]
+use crate::computation_mode::MPI_COMPUTATION;
+
+
+
 #[derive(Default, Clone, Copy)]
+#[cfg(feature="mpi")]
 struct MPICostRank(f64, i32);
 
+#[cfg(feature="mpi")]
 unsafe impl Equivalence for MPICostRank {
     type Out = UserDatatype;
     fn equivalent_datatype() -> Self::Out {
@@ -89,8 +96,6 @@ fn n_random_numbers(min: usize, max: usize, n: usize) -> Vec<usize> {
 /// Since [`single_nearest_neighbour`] is deterministic, we use n different starting nodes.
 ///
 /// `MODE`: constant parameter, choose one of the values from [`crate::computation_mode`]
-///
-/// See [`prim_with_excluded_node`] for more details.
 pub fn n_nearest_neighbour<const MODE: usize>(graph_matrix: &NAMatrix, n: usize) -> Solution {
     assert!(n != 0);
     assert!(n <= graph_matrix.dim());
@@ -106,18 +111,22 @@ pub fn n_nearest_neighbour<const MODE: usize>(graph_matrix: &NAMatrix, n: usize)
             .min_by_key(|&(distance, _)| OrderedFloat(distance))
             .unwrap(),
         #[cfg(feature = "mpi")]
-        MPI_COMPUTATION => todo!(),
+        MPI_COMPUTATION => todo!(), // We just support n=dim for now
         _ => panic_on_invaid_mode::<MODE>(),
     }
 }
 
 /// Call [`single_nearest_neighbour`] for every starting node.
 pub fn nearest_neighbour<const MODE: usize>(graph_matrix: &NAMatrix) -> Solution {
+    #[cfg(feature = "mpi")]
+    if MODE == MPI_COMPUTATION {
+        return nearest_neighbour_mpi(graph_matrix);
+    }
     n_nearest_neighbour::<MODE>(graph_matrix, graph_matrix.dim())
 }
 
 // TODO refactor me into the structure
-//#[cfg(feature="mpi")]
+#[cfg(feature="mpi")]
 pub fn nearest_neighbour_mpi(graph_matrix: &NAMatrix) -> Solution {
     let universe = mpi::initialize().unwrap();
     let world = universe.world();
@@ -151,8 +160,11 @@ pub fn nearest_neighbour_mpi(graph_matrix: &NAMatrix) -> Solution {
         &sendbuf,
         &mut recvbuf,
         &UserOperation::commutative(|x, y| {
+            println!("{:?} {:?}", x, y);
+            println!("{}")
             let x: &[MPICostRank] = x.downcast().unwrap();
             let y: &mut [MPICostRank] = y.downcast().unwrap();
+            println!("this was successful once!");
             // If y.cost < x.cost, we do nothing as the acc is better
             // If y.cost > x.cost, we set the y to x
             if y[0].0 > x[0].0 {
