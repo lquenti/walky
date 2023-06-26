@@ -80,13 +80,6 @@ fn improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries: usize)
     let mut rng = thread_rng();
 
     for _ in 0..tries {
-        //let mut edg01 = matching.choose(&mut rng).unwrap() as *const _ as *mut [usize; 2];
-        //let edg23 = matching.choose(&mut rng).unwrap() as *const _ as *mut [usize; 2];
-        //while edg01 == edg23 {
-        //    edg01 = matching.choose(&mut rng).unwrap() as *const _ as *mut [usize; 2];
-        //}
-        //debug_assert_ne!(edg01, edg23, "The pointers should be distinct");
-        //
         matching.shuffle(&mut rng);
 
         // look at consecutive pairs of edges in the matching
