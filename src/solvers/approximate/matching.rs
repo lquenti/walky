@@ -306,7 +306,7 @@ pub fn bootstrap_mpi_matching_calc<C: Communicator>(
     // broadcast the NAMatrix dim from the root process to all processes
     use crate::datastructures::AdjacencyMatrix;
     let mut dim = graph.dim();
-    broadcast_dim(root_process, dim);
+    broadcast_dim(root_process, &mut dim);
 
     // create storage for the incoming matching
     let mut matching_vec = vec![[0usize; 2]; matching_size];
@@ -320,7 +320,7 @@ pub fn bootstrap_mpi_matching_calc<C: Communicator>(
     if rank == crate::ROOT_RANK {
         matrix_vec.copy_from_slice(graph.data.as_vec())
     }
-    broadcast_matrix_vec(root_node, &mut matrix_vec);
+    broadcast_matrix_vec(root_process, &mut matrix_vec);
     let matrix = NAMatrix(Matrix::from_vec_generic(Dyn(dim), Dyn(dim), matrix_vec));
 
     (matching_vec, matrix)
@@ -329,7 +329,7 @@ pub fn bootstrap_mpi_matching_calc<C: Communicator>(
 /// broadcast the size of the matching to all processes
 #[cfg(feature = "mpi")]
 fn broaadcast_matching_size<C: Communicator>(root_process: &Process<C>, matching_size: &mut usize) {
-    root_process.broadcast_into(&mut matching_size);
+    root_process.broadcast_into(matching_size);
 }
 
 #[cfg(feature = "mpi")]
@@ -354,5 +354,5 @@ fn broadcast_matching<C: Communicator>(root_process: &Process<C>, matching: &mut
 
 #[cfg(feature = "mpi")]
 fn broadcast_matrix_vec<C: Communicator>(root_process: &Process<C>, matrix_vec: &mut Vec<f64>) {
-    root_process.broadcast_into(&mut matrix_vec);
+    root_process.broadcast_into(matrix_vec);
 }
