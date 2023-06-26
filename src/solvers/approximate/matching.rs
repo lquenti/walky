@@ -1,3 +1,9 @@
+#[cfg(feature = "mpi")]
+use std::{
+    mem::transmute,
+    slice::{from_raw_parts, from_raw_parts_mut},
+};
+
 use rand::{seq::SliceRandom, thread_rng};
 use rayon::prelude::*;
 
