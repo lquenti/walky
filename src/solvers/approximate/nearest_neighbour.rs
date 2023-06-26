@@ -5,6 +5,9 @@ use rand::seq::SliceRandom;
 use rayon::iter::ParallelIterator;
 use rayon::prelude::IntoParallelIterator;
 
+//#[cfg(feature="mpi")]
+use mpi::{traits::*, collective::UserOperation};
+
 use crate::{
     computation_mode::{panic_on_invaid_mode, PAR_COMPUTATION, SEQ_COMPUTATION},
     datastructures::{AdjacencyMatrix, NAMatrix, Solution},
@@ -92,6 +95,51 @@ pub fn n_nearest_neighbour<const MODE: usize>(graph_matrix: &NAMatrix, n: usize)
 pub fn nearest_neighbour<const MODE: usize>(graph_matrix: &NAMatrix) -> Solution {
     n_nearest_neighbour::<MODE>(graph_matrix, graph_matrix.dim())
 }
+
+// TODO refactor me into the structure
+//#[cfg(feature="mpi")]
+pub fn nearest_neighbour_mpi(graph_matrix: &NAMatrix) -> Solution {
+    let universe = mpi::initialize().unwrap();
+    let world = universe.world();
+    let size = world.size();
+    let rank = world.rank();
+
+    let n: i32 = graph_matrix.dim().try_into().unwrap();
+
+    // Divide the nodes into chunks
+    let chunk_size = n / size;
+    let start_node = chunk_size * rank;
+    let mut end_node = start_node + chunk_size;
+
+    // fix if it isnt divisible
+    if (rank == size - 1) && (n % size != 0) {
+        end_node = n;
+    }
+
+    // Do the solving for our local chunk
+    let local_solution = (start_node..end_node)
+        .map(|k| single_nearest_neighbour(graph_matrix, k.try_into().unwrap()))
+        .min_by_key(|&(distance, _)| OrderedFloat(distance))
+        .unwrap();
+
+    // TODO Custom reduce
+    let sendbuf = local_solution.0;
+    let mut recvbuf = f64::INFINITY;
+    world.all_reduce_into(
+        &sendbuf,
+        &mut recvbuf,
+        &UserOperation::commutative(|x, y| {
+            let x: &[f64] = x.downcast().unwrap();
+            let y: &mut [f64] = y.downcast().unwrap();
+            if x < y {
+                y[0]=x[0]; // TODO does this change the value?
+            }
+        })
+    );
+
+    (recvbuf, Vec::new())
+}
+
 
 #[cfg(test)]
 mod test {
