@@ -293,7 +293,7 @@ pub fn bootstrap_mpi_matching_calc<C: Communicator>(
     root_process.broadcast_into(tries);
 
     let mut matching_size = matching.len();
-    broaadcast_matching_size(root_process, &mut matching_size);
+    broadcast_matching_size(root_process, &mut matching_size);
 
     // broadcast the NAMatrix dim from the root process to all processes
     use crate::datastructures::AdjacencyMatrix;
@@ -320,7 +320,7 @@ pub fn bootstrap_mpi_matching_calc<C: Communicator>(
 
 /// broadcast the size of the matching to all processes
 #[cfg(feature = "mpi")]
-fn broaadcast_matching_size<C: Communicator>(root_process: &Process<C>, matching_size: &mut usize) {
+fn broadcast_matching_size<C: Communicator>(root_process: &Process<C>, matching_size: &mut usize) {
     root_process.broadcast_into(matching_size);
 }
 
