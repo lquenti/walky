@@ -728,7 +728,6 @@ pub fn mpi_solver(graph_matrix: &NAMatrix) -> Solution {
 #[cfg(feature = "mpi")]
 struct MPICostRank(f64, i32);
 
-
 // TODO comment
 #[cfg(feature = "mpi")]
 pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solution {
@@ -751,7 +750,7 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
         let mut number_of_finished_proceses = 0;
 
         // As long as somebody is not yet done, we still listen
-        while number_of_finished_proceses < size -1 {
+        while number_of_finished_proceses < size - 1 {
             // We accept any message.
             // Unfortunately, the type has to be known beforehand,
             // which is why we have to work with some magic numbers...
@@ -788,7 +787,12 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
                 // Now they know what the best known one is and can continue working...
             } else {
                 // This node just tells us that it is done.
-                println!("rank {} told that it finished. My count is {}/{}", msg.1, number_of_finished_proceses, size-1);
+                println!(
+                    "rank {} told that it finished. My count is {}/{}",
+                    msg.1,
+                    number_of_finished_proceses,
+                    size - 1
+                );
                 number_of_finished_proceses += 1;
             }
         }
@@ -800,12 +804,11 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
         // Save who won
         winner = current_winner;
     } else {
-
         // -1 because we subtract the root rank
         let (min_digits, max_digits) = split_up_b_ary_number_into_n_chunks(
             prefix_length,
             graph_matrix.dim(),
-            (size as usize) -1,
+            (size as usize) - 1,
             (rank as usize) - 1,
         );
         let mut local_solution = (f64::INFINITY, Vec::new());
@@ -840,7 +843,7 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
                 &mut current_prefix,
                 starting_cost,
                 &mut result,
-                global_best_cost
+                global_best_cost,
             );
 
             // clear prefix
@@ -884,7 +887,6 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
     let winner_process = world.process_at_rank(winner.1);
     winner_process.broadcast_into(&mut winner_path[..]);
 
-
     // After we all know the cost and path, we can finally return with the exact result
     (winner.0, winner_path)
 }
@@ -894,7 +896,7 @@ fn _mpi_improved_solver_rec(
     current_prefix: &mut Path,
     current_cost: f64,
     result: &mut Solution,
-    global_best_cost: f64
+    global_best_cost: f64,
 ) {
     let n = graph_matrix.dim();
     let mut current_cost = current_cost;
@@ -925,7 +927,13 @@ fn _mpi_improved_solver_rec(
         current_prefix.push(i);
         // If this is a single element, we do not have an edge yet
         if current_prefix.len() == 1 {
-            _mpi_improved_solver_rec(graph_matrix, current_prefix, current_cost, result, global_best_cost);
+            _mpi_improved_solver_rec(
+                graph_matrix,
+                current_prefix,
+                current_cost,
+                result,
+                global_best_cost,
+            );
             current_prefix.pop();
             continue;
         }
@@ -950,7 +958,13 @@ fn _mpi_improved_solver_rec(
         };
 
         if current_cost + lower_bound <= best_known_solution {
-            _mpi_improved_solver_rec(graph_matrix, current_prefix, current_cost, result, global_best_cost);
+            _mpi_improved_solver_rec(
+                graph_matrix,
+                current_prefix,
+                current_cost,
+                result,
+                global_best_cost,
+            );
         }
 
         // Remove the last edge

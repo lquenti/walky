@@ -50,22 +50,19 @@ fn exact_run(
 
     // TODO add mpi here
     let (best_cost, best_permutation) = match parallelism {
-        Parallelism::SingleThreaded =>
-    match algorithm {
-        ExactAlgorithm::V0 => exact::naive_solver(&m),
-        ExactAlgorithm::V1 => exact::first_improved_solver(&m),
-        ExactAlgorithm::V2 => exact::second_improved_solver(&m),
-        ExactAlgorithm::V3 => exact::third_improved_solver(&m),
-        ExactAlgorithm::V4 => exact::fourth_improved_solver(&m),
-        ExactAlgorithm::V5 => exact::fifth_improved_solver(&m),
-        ExactAlgorithm::V6 => exact::sixth_improved_solver(&m),
-        ExactAlgorithm::HeldKarp => unimplemented!(),
-    },
-    Parallelism::MultiThreaded => exact::threaded_solver(&m),
-                #[cfg(feature = "mpi")]
-                Parallelism::MPI =>
-                    exact::mpi_solver(&m)
-
+        Parallelism::SingleThreaded => match algorithm {
+            ExactAlgorithm::V0 => exact::naive_solver(&m),
+            ExactAlgorithm::V1 => exact::first_improved_solver(&m),
+            ExactAlgorithm::V2 => exact::second_improved_solver(&m),
+            ExactAlgorithm::V3 => exact::third_improved_solver(&m),
+            ExactAlgorithm::V4 => exact::fourth_improved_solver(&m),
+            ExactAlgorithm::V5 => exact::fifth_improved_solver(&m),
+            ExactAlgorithm::V6 => exact::sixth_improved_solver(&m),
+            ExactAlgorithm::HeldKarp => unimplemented!(),
+        },
+        Parallelism::MultiThreaded => exact::threaded_solver(&m),
+        #[cfg(feature = "mpi")]
+        Parallelism::MPI => exact::mpi_solver(&m),
     };
 
     println!("Best Cost: {}", best_cost);
