@@ -105,7 +105,28 @@ pub fn nearest_neighbour<const MODE: usize>(graph_matrix: &NAMatrix) -> Solution
     n_nearest_neighbour::<MODE>(graph_matrix, graph_matrix.dim())
 }
 
-// TODO refactor me into the structure
+/// This is the MPI based implementation for the NN algorithm.
+/// It works as follows:
+///
+/// As explained in [`nearest_neighbour`], it starts at a "random" node and then
+/// greedily visits the nearest previously unvisited node.
+/// This is still sequential, as it is too fast for parallelization to make sense.
+///
+/// Instead, since it is so cheap, we just try out every node as start node.
+/// This is the parallelized part.
+///
+/// First, it calculates even chunks of the node index space \[1..n\].
+/// Each chunk therefore knows, without communication, its own chunk. It can then process this
+/// chunk locally and indenpendent.
+///
+/// Once the minimum of that local chunk has been found, the MPI code starts.
+/// First, we do an ALL_REDUCE on the cost so that every node knows the best solution.
+/// In the same REDUCE, we also give every node the winning node.
+///
+/// After that, the winner process knows that it won. It then proceedes to broadcast the whole path
+/// to everyone. This is an optimization as we just lazily send whole arrays through the network.
+///
+/// Now every node knows the global minimum and can successfully return it.
 #[cfg(feature = "mpi")]
 pub fn nearest_neighbour_mpi(graph_matrix: &NAMatrix) -> Solution {
     let universe = mpi::initialize().unwrap();
