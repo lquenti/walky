@@ -13,7 +13,7 @@ use crate::{
 use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 
 #[cfg(feature = "mpi")]
-use mpi::traits::*;
+use mpi::{topology::SystemCommunicator, traits::*};
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
@@ -742,134 +742,10 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
     let mut winner_path = vec![0; graph_matrix.dim()];
 
     if rank == 0 {
-        let mut current_winner = MPICostRank(f64::INFINITY, 0);
-
-        // we keep track if any processes are not finished yet
-        // If they are finished, they have to tell us...
-        let mut number_of_finished_proceses = 0;
-
-        // As long as somebody is not yet done, we still listen
-        while number_of_finished_proceses < size - 1 {
-            // We accept any message.
-            // Unfortunately, the type has to be known beforehand,
-            // which is why we have to work with some magic numbers...
-            // What we expect are two types of messages:
-            //
-            // 1. I have computed a new prefix. Here is my cost and my rank.
-            //    Please update your global minimum accordingly and tell me the result.
-            //    Then, we just get a normal MPICostRank with a normal cost.
-            //    Once we recieved such a message, we then update our local minimum
-            //    and tell them the result
-            //
-            // 2. I have no more prefixes to compute.
-            //    I am done and idling at the barrier.
-            //    If my buddies are done as well, please come to the barrier as well.
-            //    Then, we get a Cost with -1.0.
-            //    There is no need to answer to that.
-
-            // First, get any message
-            // Unfortunately, we have to provide the same type
-            let (msg, _) = world.any_process().receive::<MPICostRank>();
-
-            // Check which type of message we have
-            if msg.0 >= 0.0 {
-                // We have the first type, as this is a legit length
-
-                // So first, we update our local one
-                if msg.0 < current_winner.0 {
-                    current_winner.0 = msg.0;
-                    current_winner.1 = msg.1;
-                }
-
-                // Then, we respond to that with our version
-                world.process_at_rank(msg.1).send(&(current_winner.0));
-                // Now they know what the best known one is and can continue working...
-            } else {
-                // This node just tells us that it is done.
-                number_of_finished_proceses += 1;
-            }
-        }
-
-        // Since all processes told us that they are done (message type 2)
-        // we can now also join the barrier, breaking it...
-        world.barrier();
-
-        // Save who won
-        winner = current_winner;
+        winner = mpi_solver_generic_root(&world);
     } else {
-        // -1 because we subtract the root rank
-        let (min_digits, max_digits) = split_up_b_ary_number_into_n_chunks(
-            prefix_length,
-            graph_matrix.dim(),
-            (size as usize) - 1,
-            (rank as usize) - 1,
-        );
-        let mut local_solution = (f64::INFINITY, Vec::new());
-        let mut global_best_cost = f64::INFINITY;
-
-        let mut min_digits = min_digits;
-        let mut current_prefix: Vec<usize> = Vec::new();
-        current_prefix.reserve(graph_matrix.dim());
-        while let Some(next_value) = get_next_value(&mut min_digits, graph_matrix.dim()) {
-            // early return if we have finished our chunk
-            if next_value == max_digits {
-                break;
-            }
-
-            // if it has at least two times the same digit, its not a valid path
-            let is_unique = next_value.len() == next_value.iter().collect::<FxHashSet<_>>().len();
-            if !is_unique {
-                continue;
-            }
-
-            // fill prefix
-            for i in &next_value {
-                current_prefix.push(*i);
-            }
-            // calculate cost of current prefix
-            let starting_cost = graph_matrix.evaluate_path(&current_prefix);
-
-            // use prefix
-            let mut result = (f64::INFINITY, Vec::new());
-            _mpi_improved_solver_rec(
-                graph_matrix,
-                &mut current_prefix,
-                starting_cost,
-                &mut result,
-                global_best_cost,
-            );
-
-            // clear prefix
-            current_prefix.clear();
-
-            // Now we evaluate...
-            // 1. We update the local best
-            if result.0 < local_solution.0 {
-                local_solution.0 = result.0;
-                local_solution.1 = result.1.clone();
-            }
-            // 2. We request a new solution
-            // In order to reduce amount of RTTs, we do not ask whether we are better.
-            // Instead, we just send our local_solution, which _is_ the request to send us a
-            // response of the best cost
-            let sendbuf = MPICostRank(local_solution.0, rank);
-            root.send(&sendbuf);
-
-            // 3. We recieve the best global result
-            let (msg, _) = root.receive::<f64>();
-            global_best_cost = msg;
-
-            // We can now compute with the globally best cost in mind.
-        }
-
-        // We tell the root that we are gone
-        root.send(&MPICostRank(-1.0, rank));
-
-        // Now that we have done all of our jobs, we wait for the other processes to complete
-        world.barrier();
-
-        // save the path
-        winner_path = local_solution.1;
+        // This is just the local winner path, look below on how the winner broadcasts its one.
+        winner_path = mpi_solver_generic_nonroot(&world, graph_matrix, prefix_length);
     }
 
     // After the barrier was broken we can broadcast the winner rank and cost
@@ -883,6 +759,152 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
     (winner.0, winner_path)
 }
 
+// TODO comment
+#[cfg(feature = "mpi")]
+fn mpi_solver_generic_root(world: &SystemCommunicator) -> MPICostRank {
+    let size = world.size();
+    let rank = world.rank();
+    let root = world.process_at_rank(0);
+
+    let mut current_winner = MPICostRank(f64::INFINITY, 0);
+
+    // we keep track if any processes are not finished yet
+    // If they are finished, they have to tell us...
+    let mut number_of_finished_proceses = 0;
+
+    // As long as somebody is not yet done, we still listen
+    while number_of_finished_proceses < size - 1 {
+        // We accept any message.
+        // Unfortunately, the type has to be known beforehand,
+        // which is why we have to work with some magic numbers...
+        // What we expect are two types of messages:
+        //
+        // 1. I have computed a new prefix. Here is my cost and my rank.
+        //    Please update your global minimum accordingly and tell me the result.
+        //    Then, we just get a normal MPICostRank with a normal cost.
+        //    Once we recieved such a message, we then update our local minimum
+        //    and tell them the result
+        //
+        // 2. I have no more prefixes to compute.
+        //    I am done and idling at the barrier.
+        //    If my buddies are done as well, please come to the barrier as well.
+        //    Then, we get a Cost with -1.0.
+        //    There is no need to answer to that.
+
+        // First, get any message
+        // Unfortunately, we have to provide the same type
+        let (msg, _) = world.any_process().receive::<MPICostRank>();
+
+        // Check which type of message we have
+        if msg.0 >= 0.0 {
+            // We have the first type, as this is a legit length
+
+            // So first, we update our local one
+            if msg.0 < current_winner.0 {
+                current_winner.0 = msg.0;
+                current_winner.1 = msg.1;
+            }
+
+            // Then, we respond to that with our version
+            world.process_at_rank(msg.1).send(&(current_winner.0));
+            // Now they know what the best known one is and can continue working...
+        } else {
+            // This node just tells us that it is done.
+            number_of_finished_proceses += 1;
+        }
+    }
+
+    // Since all processes told us that they are done (message type 2)
+    // we can now also join the barrier, breaking it...
+    world.barrier();
+
+    // reutrn who won
+    current_winner
+}
+
+// TODO comment
+#[cfg(feature = "mpi")]
+fn mpi_solver_generic_nonroot(world: &SystemCommunicator, graph_matrix: &NAMatrix, prefix_length: usize) -> Path {
+    let size = world.size();
+    let rank = world.rank();
+    let root = world.process_at_rank(0);
+
+    // -1 because we subtract the root rank
+    let (min_digits, max_digits) = split_up_b_ary_number_into_n_chunks(
+        prefix_length,
+        graph_matrix.dim(),
+        (size as usize) - 1,
+        (rank as usize) - 1,
+    );
+    let mut local_solution = (f64::INFINITY, Vec::new());
+    let mut global_best_cost = f64::INFINITY;
+
+    let mut min_digits = min_digits;
+    let mut current_prefix: Vec<usize> = Vec::new();
+    current_prefix.reserve(graph_matrix.dim());
+    while let Some(next_value) = get_next_value(&mut min_digits, graph_matrix.dim()) {
+        // early return if we have finished our chunk
+        if next_value == max_digits {
+            break;
+        }
+
+        // if it has at least two times the same digit, its not a valid path
+        let is_unique = next_value.len() == next_value.iter().collect::<FxHashSet<_>>().len();
+        if !is_unique {
+            continue;
+        }
+
+        // fill prefix
+        for i in &next_value {
+            current_prefix.push(*i);
+        }
+        // calculate cost of current prefix
+        let starting_cost = graph_matrix.evaluate_path(&current_prefix);
+
+        // use prefix
+        let mut result = (f64::INFINITY, Vec::new());
+        _mpi_improved_solver_rec(
+            graph_matrix,
+            &mut current_prefix,
+            starting_cost,
+            &mut result,
+            global_best_cost,
+        );
+
+        // clear prefix
+        current_prefix.clear();
+
+        // Now we evaluate...
+        // 1. We update the local best
+        if result.0 < local_solution.0 {
+            local_solution.0 = result.0;
+            local_solution.1 = result.1.clone();
+        }
+        // 2. We request a new solution
+        // In order to reduce amount of RTTs, we do not ask whether we are better.
+        // Instead, we just send our local_solution, which _is_ the request to send us a
+        // response of the best cost
+        let sendbuf = MPICostRank(local_solution.0, rank);
+        root.send(&sendbuf);
+
+        // 3. We recieve the best global result
+        let (msg, _) = root.receive::<f64>();
+        global_best_cost = msg;
+
+        // We can now compute with the globally best cost in mind.
+    }
+
+    // We tell the root that we are gone
+    root.send(&MPICostRank(-1.0, rank));
+
+    // Now that we have done all of our jobs, we wait for the other processes to complete
+    world.barrier();
+
+    // save the path
+    local_solution.1
+}
+
+#[cfg(feature = "mpi")]
 fn _mpi_improved_solver_rec(
     graph_matrix: &NAMatrix,
     current_prefix: &mut Path,
