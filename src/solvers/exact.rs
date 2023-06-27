@@ -680,7 +680,7 @@ pub fn threaded_solver_generic(
 
                     // use prefix
                     let mut result = (f64::INFINITY, Vec::new());
-                    _fifth_improved_solver_rec(graph_matrix, &mut current_prefix, f64::INFINITY, &mut result);
+                    _fifth_improved_solver_rec(graph_matrix, &mut current_prefix, 0.0, &mut result);
                     println!("{:?}", result);
 
                     // clear prefix
