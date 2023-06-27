@@ -10,26 +10,28 @@ authors = ["Lars Quentin <lars@lquenti.de>", "Johann Carl Meyer <info@johannc.de
 readme = "./README.md"
 
 [dependencies]
-clap = {version = "4.2.5", features = ["derive"]}          # for cli arg parsing
-quick-xml = {version = "0.28.2", features = ["serialize"]} # for xml-parsing
-serde = {version = "1.0.160", features = ["derive"]}       # for xml-parsing
-delegate = "0.9.0"                                         # for easy wrapper implementations
-rayon = "1.7.0"                                            # for parallel iterators
-ordered-float = {version = "3.7.0", features = ["serde"]}  # for Total Ordering on floats
-priority-queue = "1.3.1"                                   # for prims algorithm
-blossom = "0.4.0"                                          # for the blossom algorithm
-nalgebra = {version = "0.32", features = ["rayon"]}        # for fast matrices
-lazy_static = "1.4.0"                                      # for non-compile time global variables
-rustc-hash = "1.1.0"                                       # for cryptographically insecure, FAST hashing
-mpi = {version = "0.6", optional = true}                   # for MPI crate feature
+clap = {version = "4.2.5", features = ["derive"]}                                  # for cli arg parsing
+quick-xml = {version = "0.28.2", features = ["serialize"]}                         # for xml-parsing
+serde = {version = "1.0.160", features = ["derive"]}                               # for xml-parsing
+delegate = "0.9.0"                                                                 # for easy wrapper implementations
+rayon = "1.7.0"                                                                    # for parallel iterators
+ordered-float = {version = "3.7.0", features = ["serde"]}                          # for Total Ordering on floats
+priority-queue = "1.3.1"                                                           # for prims algorithm
+blossom = "0.4.0"                                                                  # for the blossom algorithm
+nalgebra = {version = "0.32", features = ["rayon"]}                                # for fast matrices
+lazy_static = "1.4.0"                                                              # for non-compile time global variables
+rustc-hash = "1.1.0"                                                               # for cryptographically insecure, FAST hashing
+mpi = {version = "0.6", optional = true, features = ["user-operations", "derive"]} # for MPI crate feature
+rand = "0.8"                                                                       # You wouldn't guess it
+
 
 [dev-dependencies]
-approx = "0.5.1"                # for assertions with float values
-quickcheck = "1.0.3"            # for property based testing
-quickcheck_macros = "1.0.0"     # for property based testing
+approx = "0.5.1"                                                                   # for assertions with float values
+quickcheck = "1.0.3"                                                               # for property based testing
+quickcheck_macros = "1.0.0"                                                        # for property based testing
 
 [profile.release]
-debug = true                    # enable profiling in release builds
-opt-level = 3                   # -O3
-lto = true                      # LLVM Link Time Optimization
-codegen-units = 1                # Slower compile time, better performance
+debug = true                                                                       # enable profiling in release builds
+opt-level = 3                                                                      # -O3
+lto = true                                                                         # LLVM Link Time Optimization
+codegen-units = 1                                                                  # Slower compile time, better performance
