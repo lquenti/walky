@@ -724,7 +724,7 @@ pub fn mpi_solver(graph_matrix: &NAMatrix) -> Solution {
 }
 
 // TODO merge with other
-#[derive(Default, Clone, Copy, Equivalence)]
+#[derive(Debug, Default, Clone, Copy, Equivalence)]
 //#[cfg(feature = "mpi")]
 struct MPICostRank(f64, i32);
 
@@ -743,7 +743,7 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
     // Will be used once the entire computation is done
     // Has to be available to both root and non-root as we broadcast into it
     let mut winner = MPICostRank(f64::INFINITY, 0);
-    let mut winner_path = Vec::new();
+    let mut winner_path = vec![0; graph_matrix.dim()];
 
     if rank == 0 {
         let mut current_winner = MPICostRank(f64::INFINITY, 0);
@@ -790,6 +790,7 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
                 // Now they know what the best known one is and can continue working...
             } else {
                 // This node just tells us that it is done.
+                println!("rank {} told that it finished. My count is {}/{}", msg.1, number_of_finished_proceses, size-1);
                 number_of_finished_proceses += 1;
             }
         }
@@ -867,7 +868,11 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
             // We can now compute with the globally best cost in mind.
         }
 
+        // We tell the root that we are gone
+        root.send(&MPICostRank(-1.0, rank));
+
         // Now that we have done all of our jobs, we wait for the other processes to complete
+        println!("rank {} touches barrier", rank);
         world.barrier();
 
         // save the path
@@ -878,7 +883,9 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
     root.broadcast_into(&mut winner);
 
     // Now the winner can broadcast to everyone the path
-    world.process_at_rank(winner.1).broadcast_into(&mut winner_path);
+    let winner_process = world.process_at_rank(winner.1);
+    winner_process.broadcast_into(&mut winner_path[..]);
+
 
     // After we all know the cost and path, we can finally return with the exact result
     (winner.0, winner_path)
