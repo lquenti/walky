@@ -24,6 +24,7 @@ rustc-hash = "1.1.0"                                                            
 mpi = {version = "0.6", optional = true, features = ["user-operations", "derive"]} # for MPI crate feature
 rand = "0.8"                                                                       # You wouldn't guess it
 
+
 [dev-dependencies]
 approx = "0.5.1"                                                                   # for assertions with float values
 quickcheck = "1.0.3"                                                               # for property based testing

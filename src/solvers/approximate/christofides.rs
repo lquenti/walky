@@ -6,7 +6,31 @@ use crate::{
     computation_mode::*,
     datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix, Solution},
     mst::prim,
+    solvers::approximate::matching::approx_min_cost_matching,
 };
+
+/// Computes an approximation to the TSP, using Christofides algorithm.
+/// This implementation uses for performance reasons a randomized approximation to
+/// the min-const matching problem (see [`super::matching::approx_min_cost_matching`].
+///
+/// For an implementation with exact min-cost matching implementation see [`christofides_exact`].
+///
+/// For further description, see also [`christofides_generic`].
+pub fn christofides<const MODE: usize>(graph: &Graph) -> Solution {
+    christofides_generic::<MODE>(graph, compute_approx_matching::<MODE>)
+}
+
+/// Computes an approximation to the TSP, using Christofides algorithm.
+/// This implementation is much slower than [`christofides`], since it uses
+/// an exact solution to the min-cost matching problem,
+/// which is also not parallelized.
+///
+/// For an implementation with approximated min-cost matching implementation see [`christofides_exact`].
+///
+/// For further description, see also [`christofides_generic`].
+pub fn christofides_exact<const MODE: usize>(graph: &Graph) -> Solution {
+    christofides_generic::<MODE>(graph, compute_exact_matching)
+}
 
 /// See [the original paper from
 /// Christofides](https://apps.dtic.mil/dtic/tr/fulltext/u2/a025602.pdf)
@@ -14,10 +38,22 @@ use crate::{
 ///
 /// `MODE`: constant parameter, choose one of the values from [`crate::computation_mode`]
 ///
-/// The algorithm should be performant, therefore instead of the generic [`datastructures::AdjacencyMatrix`]
+/// `matching_computer` does the following:
+///  1. compute subgraph of `graph` only with vertices that have odd degree in the MST,
+///  2. then compute a minimum-weight maximum matching for the subgraph
+///
+/// The algorithm should be performant, therefore instead of the generic [`crate::datastructures::AdjacencyMatrix`]
 /// trait,
-/// the type [`datastructures::NAMatrix`] is used.
-pub fn christofides<const MODE: usize>(graph: &Graph) -> Solution {
+/// the type [`NAMatrix`] is used.
+///
+/// When `MODE == MPI_COMPUTATION`, then the function expects that
+/// [mpi::initialize](https://rsmpi.github.io/rsmpi/mpi/fn.initialize.html) has been
+/// called before, and that the result of the MPI initialization will not be dropped until the
+/// function is finished. See als [this issue](https://github.com/lquenti/walky/issues/30)
+pub fn christofides_generic<const MODE: usize>(
+    graph: &Graph,
+    matching_computer: fn(&Graph, &NAMatrix) -> Vec<[usize; 2]>,
+) -> Solution {
     // create an adjacency matrix from the adjacency list
     let graph_matr: NAMatrix = graph.into();
 
@@ -33,18 +69,10 @@ pub fn christofides<const MODE: usize>(graph: &Graph) -> Solution {
 
     // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST,
     // then compute a minimum-weight maximum matching for the subgraph
-    let subgraph: WeightedGraph = Into::<WeightedGraph>::into(graph)
-        .filter_vertices(|&vertex| mst.vertex_degree(vertex) % 2 == 1);
-
-    // note: the maximal matching is perfect
-    let matching = subgraph
-        .maximin_matching()
-        .expect("Something went wrong: could not compute the maximal minimum weight matching");
+    let matching = matching_computer(&mst, &graph_matr);
 
     // 3. union the perfect matching with the MST into a multigraph
-    let matching_edges = matching.edges();
-    let multigraph =
-        fill_multigraph_with_mst_and_matching::<MODE>(&graph_matr, &mst, matching_edges);
+    let multigraph = fill_multigraph_with_mst_and_matching::<MODE>(&graph_matr, &mst, matching);
 
     // 4. compute a eulerian cycle through the multigraph
     let mut euler_cycle = eulerian_cycle_from_multigraph(multigraph);
@@ -57,6 +85,52 @@ pub fn christofides<const MODE: usize>(graph: &Graph) -> Solution {
         .map(|window| graph_matr[(window[0], window[1])])
         .sum();
     (sum_cost, hamilton_cycle)
+}
+
+/// This function is being passed to [`christofides_generic`] in the `matching_computer` argument,
+/// see there for more info on what this function does.
+///
+/// This function uses the [`blossom`] crate and it's function [`WeightedGraph::maximin_matching`]
+/// to calculate a perfect matching of minimal weight.
+#[inline]
+fn compute_exact_matching(mst: &Graph, graph: &NAMatrix) -> Vec<[usize; 2]> {
+    // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST,
+    // then compute a minimum-weight maximum matching for the subgraph
+    let subgraph: WeightedGraph = Into::<WeightedGraph>::into(graph)
+        .filter_vertices(|&vertex| mst.vertex_degree(vertex) % 2 == 1);
+
+    //note: the maximal matching is perfect
+    let matching = subgraph
+        .maximin_matching()
+        .expect("Something went wrong: could not compute the maximal minimum weight matching");
+
+    matching.edges().into_iter().map(|(a, b)| [a, b]).collect()
+}
+
+/// This function is being passed to [`christofides_generic`] in the `matching_computer` argument,
+/// see there for more info on what this function does.
+///
+/// The generated matching will be perfect, but it will not necessairily be the matching with
+/// minimal cost. This function uses [`approx_min_cost_matching`] to find a matching with
+/// approximately minimal cost.
+#[inline]
+fn compute_approx_matching<const MODE: usize>(mst: &Graph, graph: &NAMatrix) -> Vec<[usize; 2]> {
+    let subgraph: Vec<_> = mst
+        .iter()
+        .enumerate()
+        .filter_map(|(i, vertex)| {
+            if vertex.degree() % 2 == 1 {
+                Some(i)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    // make the algorithm at most linear, in terms of edges
+    let tries = subgraph.len().pow(2);
+
+    approx_min_cost_matching::<MODE>(graph, subgraph, tries)
 }
 
 /// finds a eulerian cycle in the given multigraph,
@@ -203,8 +277,13 @@ fn hamiltonian_from_eulerian_cycle(dim: usize, euler_cycle: &mut Vec<usize>) {
 fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
     base_graph: &NAMatrix,
     mst: &Graph,
-    matching: Vec<(usize, usize)>,
+    matching: Vec<[usize; 2]>,
 ) -> DMatrix<(f64, usize)> {
+    #[cfg(feature = "mpi")]
+    if MODE == MPI_COMPUTATION {
+        return fill_multigraph_with_mst_and_matching::<SEQ_COMPUTATION>(base_graph, mst, matching);
+    }
+
     // base the multigraph on the original graph
     let mut multigraph = base_graph.map(|cost| (cost, 0));
 
@@ -233,14 +312,14 @@ fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
                 });
         }
         #[cfg(feature = "mpi")]
-        MPI_COMPUTATION => todo!(),
+        MPI_COMPUTATION => unreachable!("On MPI the SEQ_COMPUTATION variant is used"),
         _ => panic_on_invaid_mode::<MODE>(),
     }
 
     // add into the multigraph the edges from the matching
     match MODE {
-        SEQ_COMPUTATION => matching.into_iter().for_each(|edge @ (i, j)| {
-            multigraph[edge].1 += 1;
+        SEQ_COMPUTATION => matching.into_iter().for_each(|[i, j]| {
+            multigraph[(i, j)].1 += 1;
             multigraph[(j, i)].1 += 1;
         }),
         PAR_COMPUTATION => {
@@ -251,7 +330,7 @@ fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
             // safety: each cell is only written to once,
             // since the matching contains each vertex at most once
             unsafe {
-                matching.into_par_iter().for_each(|(i, j)| {
+                matching.into_par_iter().for_each(|[i, j]| {
                     let multigraph_prt = multigraph_slice.as_ptr() as *mut (f64, usize);
                     //multigraph[edge].1 += 1;
                     (*multigraph_prt.add(j * dim + i)).1 += 1;
@@ -261,7 +340,7 @@ fn fill_multigraph_with_mst_and_matching<const MODE: usize>(
             }
         }
         #[cfg(feature = "mpi")]
-        MPI_COMPUTATION => todo!(),
+        MPI_COMPUTATION => unreachable!("On MPI the SEQ_COMPUTATION variant is used"),
         _ => panic_on_invaid_mode::<MODE>(),
     }
     multigraph
@@ -344,7 +423,7 @@ mod test {
     ///   2
     #[test]
     fn multigraph_can_represent_empty_mst_with_matching() {
-        let matching = vec![(1, 0), (2, 0)];
+        let matching = vec![[1, 0], [2, 0]];
         let graph = NAMatrix(DMatrix::from_row_slice(
             3,
             3,
@@ -399,7 +478,7 @@ mod test {
     /// with every edge existing twice
     #[test]
     fn multigraph_can_represent_the_mst_with_matching() {
-        let matching = vec![(1, 0), (2, 0)];
+        let matching = vec![[1, 0], [2, 0]];
         let graph = NAMatrix(DMatrix::from_row_slice(
             3,
             3,
@@ -454,7 +533,7 @@ mod test {
     /// with every edge existing twice
     #[test]
     fn fill_multigraph_with_mst_and_matching_seq_and_par_agree() {
-        let matching = vec![(1, 0), (2, 0)];
+        let matching = vec![[1, 0], [2, 0]];
         let graph = NAMatrix(DMatrix::from_row_slice(
             3,
             3,
