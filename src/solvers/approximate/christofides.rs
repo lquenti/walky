@@ -45,6 +45,11 @@ pub fn christofides_exact<const MODE: usize>(graph: &Graph) -> Solution {
 /// The algorithm should be performant, therefore instead of the generic [`crate::datastructures::AdjacencyMatrix`]
 /// trait,
 /// the type [`NAMatrix`] is used.
+///
+/// When `MODE == MPI_COMPUTATION`, then the function expects that
+/// [mpi::initialize](https://rsmpi.github.io/rsmpi/mpi/fn.initialize.html) has been
+/// called before, and that the result of the MPI initialization will not be dropped until the
+/// function is finished. See als [this issue](https://github.com/lquenti/walky/issues/30)
 pub fn christofides_generic<const MODE: usize>(
     graph: &Graph,
     matching_computer: fn(&Graph, &NAMatrix) -> Vec<[usize; 2]>,
@@ -82,6 +87,11 @@ pub fn christofides_generic<const MODE: usize>(
     (sum_cost, hamilton_cycle)
 }
 
+/// This function is being passed to [`christofides_generic`] in the `matching_computer` argument,
+/// see there for more info on what this function does.
+///
+/// This function uses the [`blossom`] crate and it's function [`WeightedGraph::maximin_matching`]
+/// to calculate a perfect matching of minimal weight.
 #[inline]
 fn compute_exact_matching(mst: &Graph, graph: &NAMatrix) -> Vec<[usize; 2]> {
     // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST,
@@ -97,6 +107,12 @@ fn compute_exact_matching(mst: &Graph, graph: &NAMatrix) -> Vec<[usize; 2]> {
     matching.edges().into_iter().map(|(a, b)| [a, b]).collect()
 }
 
+/// This function is being passed to [`christofides_generic`] in the `matching_computer` argument,
+/// see there for more info on what this function does.
+///
+/// The generated matching will be perfect, but it will not necessairily be the matching with
+/// minimal cost. This function uses [`approx_min_cost_matching`] to find a matching with
+/// approximately minimal cost.
 #[inline]
 fn compute_approx_matching<const MODE: usize>(mst: &Graph, graph: &NAMatrix) -> Vec<[usize; 2]> {
     let subgraph: Vec<_> = mst
