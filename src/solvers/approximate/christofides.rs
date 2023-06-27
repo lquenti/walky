@@ -46,11 +46,6 @@ pub fn christofides_exact<const MODE: usize>(graph: &Graph) -> Solution {
 /// The algorithm should be performant, therefore instead of the generic [`crate::datastructures::AdjacencyMatrix`]
 /// trait,
 /// the type [`NAMatrix`] is used.
-///
-/// When `MODE == MPI_COMPUTATION`, then the function expects that
-/// [mpi::initialize](https://rsmpi.github.io/rsmpi/mpi/fn.initialize.html) has been
-/// called before, and that the result of the MPI initialization will not be dropped until the
-/// function is finished. See als [this issue](https://github.com/lquenti/walky/issues/30)
 pub fn christofides_generic<const MODE: usize>(
     graph: &Graph,
     matching_computer: fn(&Graph, &NAMatrix) -> Vec<[usize; 2]>,

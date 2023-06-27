@@ -105,7 +105,7 @@ fn approx_run(
                             &mut tries,
                             &graph,
                         );
-                        mpi_improve_matching(&graph, matching.as_mut_slice(), tries);
+                        mpi_improve_matching(&graph, matching.as_mut_slice(), tries, world);
                         // non-root process is done here
                         return Ok(());
                     }
