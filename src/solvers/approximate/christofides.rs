@@ -14,9 +14,9 @@ use crate::{
 ///
 /// `MODE`: constant parameter, choose one of the values from [`crate::computation_mode`]
 ///
-/// The algorithm should be performant, therefore instead of the generic [`datastructures::AdjacencyMatrix`]
+/// The algorithm should be performant, therefore instead of the generic [`crate::datastructures::AdjacencyMatrix`]
 /// trait,
-/// the type [`datastructures::NAMatrix`] is used.
+/// the type [`crate::datastructures::NAMatrix`] is used.
 pub fn christofides<const MODE: usize>(graph: &Graph) -> Solution {
     // create an adjacency matrix from the adjacency list
     let graph_matr: NAMatrix = graph.into();
