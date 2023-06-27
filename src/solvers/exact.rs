@@ -13,9 +13,9 @@ use crate::{
 use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 
 #[cfg(feature = "mpi")]
-use mpi::{topology::SystemCommunicator, traits::*};
-#[cfg(feature = "mpi")]
 use crate::datastructures::MPICostRank;
+#[cfg(feature = "mpi")]
+use mpi::{topology::SystemCommunicator, traits::*};
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
@@ -563,7 +563,7 @@ pub fn next_permutation<T: Ord>(array: &mut [T]) -> bool {
 
 /// Splits the `basis`-ary space from 0...0 to (basis-1)..(basis-1) into `n` chunks of `number_digits` digits.
 /// Returns the minimum and maximum (exclusive) values for the `k`-th chunk.
-fn split_up_b_ary_number_into_n_chunks(
+pub fn split_up_b_ary_number_into_n_chunks(
     number_digits: usize,
     basis: usize,
     n: usize,
@@ -598,7 +598,7 @@ fn convert_to_b_ary_digits(value: usize, basis: usize, number_digits: usize) -> 
 
 /// Get the next value for a given prefix
 /// Returns None iff it overflows
-fn get_next_value(current_digits: &mut [usize], basis: usize) -> Option<Vec<usize>> {
+pub fn get_next_value(current_digits: &mut [usize], basis: usize) -> Option<Vec<usize>> {
     let mut carry = 1;
     for digit in current_digits.iter_mut().rev() {
         *digit += carry;
@@ -627,12 +627,12 @@ fn get_next_value(current_digits: &mut [usize], basis: usize) -> Option<Vec<usiz
 ///
 /// If `number_of_threads` is not specified it defaults to `std::thread::available_parallelism`.
 /// If that fails we assume that parallelism is not available.
-
 pub fn threaded_solver(graph_matrix: &NAMatrix) -> Solution {
     threaded_solver_generic(graph_matrix, 3, None)
 }
 
-pub fn threaded_solver_generic(
+/// See [`threaded_solver`] for a high level explaination
+fn threaded_solver_generic(
     graph_matrix: &NAMatrix,
     prefix_length: usize,
     number_of_threads: Option<usize>,
@@ -718,12 +718,68 @@ pub fn threaded_solver_generic(
         .unwrap()
 }
 
+/// Alias to `mpi_solver_generic(graph_matrix, 3)`. See [`mpi_solver_generic`].
 #[cfg(feature = "mpi")]
 pub fn mpi_solver(graph_matrix: &NAMatrix) -> Solution {
     mpi_solver_generic(graph_matrix, 3)
 }
 
-// TODO comment
+/// Calculating an exact solution parallelized using MPI.
+///
+/// The high level strategy follows [`fifth_improved_solver`], which means that we
+/// - go through all possible solutions we can't prune away
+/// - we generate all possible paths through recursive enumeration
+/// - we cache the sum of our partial path throughout the recursion
+/// - we prune iff the partial sum + an MST of the unused nodes is already bigger than previous
+/// best. Note that this works since MSTs are a lower bound for TSPs.
+///
+/// Now on the parallelization.
+///
+/// We divide the MPI world communicator into one root coordinator and n-1 worker.
+///
+/// First we use the same trick as in [`threaded_solver`] to split up the prefixes without any
+/// communication. We intepret the prefix of `prefix_length` digits as a number of base
+/// `graph_matrix.dim()`. Then, we can split it up into chunks using [`split_up_b_ary_number_into_n_chunks`].
+/// This way, each process can just process its `rank`-th chunk without any problems.
+///
+/// Now, we also want to prune. Thus, we have to somehow tell the other nodes what our previous
+/// best was, so we can all use tightest possible bound. This is where we need the root
+/// coordinator.
+///
+/// The root coordinator keeps an variable which tracks the current cost minimum and which rank it
+/// got sent from. By just storing the rank, we do not have to transfer the whole path every time,
+/// improving network efficiency.
+///
+/// So everytime a worker node finishes a prefix (which was not completely pruned), it sends its
+/// current lowest cost it every encountered to the host together with its rank.
+/// This is done even if it was not improved during that prefix.
+///
+/// That is because this message also used as an update request for the newest globally known one
+/// from the coordinator. After taking the current processes lowest path into account, it then
+/// responds with the lowest one it globally knows so far. This way, the worker node can then
+/// continue to compute the next prefix with the best known global minimum as a bound.
+/// After all prefixes were computed, the worker node waits at a barrier for the other nodes to
+/// complete.
+///
+///
+/// Because we prune, the coordinator process does not know how many requests it can expect.
+/// Thus we have to tell the coordinator when the worker node is done, otherwise it will deadlock
+/// waiting for yet another processed prefix.
+///
+/// We do that by sending another message with a negative cost, being obviously impossible to
+/// archive. The coodinator tracks how many of those messages were recieved. Once it recieved
+/// `COMM_WORLD_SIZE - 1` messages (since it doesnt send a message to itself) it then stops
+/// listening.
+///
+/// Receiving `COMM_WORLD_SIZE - 1` finish-messages implies that all worker nodes are already
+/// waiting at the barrier. Thus, the coordinator joins the barrier node, breaking the barrier and
+/// starting the wrapup.
+///
+/// Wrapup:
+/// After the barrier was broken the coordinator broadcasts who won and its cost.
+/// Everybody now knows who won. The winner then finally broadcasts the winning tour to every node.
+/// Thus, at the end, every node knows the best cost (from the root) and the best path (from the
+/// winner). Remember that this path-sending was done lazily as an network efficiency optimization.
 #[cfg(feature = "mpi")]
 pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solution {
     let universe = mpi::initialize().unwrap();
@@ -754,7 +810,7 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
     (winner.0, winner_path)
 }
 
-// TODO comment
+/// As it is a very interconnected logic, see [`mpi_solver_generic`] for a thorough explaination.
 #[cfg(feature = "mpi")]
 fn mpi_solver_generic_root(world: &SystemCommunicator) -> MPICostRank {
     let size = world.size();
@@ -815,7 +871,7 @@ fn mpi_solver_generic_root(world: &SystemCommunicator) -> MPICostRank {
     current_winner
 }
 
-// TODO comment
+/// As it is a very interconnected logic, see [`mpi_solver_generic`] for a thorough explaination.
 #[cfg(feature = "mpi")]
 fn mpi_solver_generic_nonroot(
     world: &SystemCommunicator,
@@ -901,6 +957,8 @@ fn mpi_solver_generic_nonroot(
     local_solution.1
 }
 
+/// Works like [`_fifth_improved_solver_rec`] but we also prune against the `global_best_cost`.
+/// See [`mpi_solver_generic`] to understand how we get that.
 #[cfg(feature = "mpi")]
 fn _mpi_improved_solver_rec(
     graph_matrix: &NAMatrix,
