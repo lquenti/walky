@@ -13,7 +13,7 @@ use crate::{
 use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 
 #[cfg(feature = "mpi")]
-use mpi::{collective::UserOperation, traits::*};
+use mpi::traits::*;
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
@@ -874,7 +874,7 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
         world.barrier();
 
         // save the path
-        winner_path = local_solution.1.clone();
+        winner_path = local_solution.1;
     }
 
     // After the barrier was broken we can broadcast the winner rank and cost
