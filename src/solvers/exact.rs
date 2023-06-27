@@ -718,8 +718,7 @@ pub fn threaded_solver_generic(
 
 #[cfg(feature = "mpi")]
 pub fn mpi_solver(graph_matrix: &NAMatrix) -> Solution {
-    let res = mpi_solver_generic(graph_matrix, 3);
-    res
+    mpi_solver_generic(graph_matrix, 3)
 }
 
 // TODO merge with other
@@ -732,7 +731,6 @@ struct MPICostRank(f64, i32);
 pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solution {
     let universe = mpi::initialize().unwrap();
     let world = universe.world();
-    let size = world.size();
     let rank = world.rank();
     let root = world.process_at_rank(0);
 
@@ -763,8 +761,6 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
 #[cfg(feature = "mpi")]
 fn mpi_solver_generic_root(world: &SystemCommunicator) -> MPICostRank {
     let size = world.size();
-    let rank = world.rank();
-    let root = world.process_at_rank(0);
 
     let mut current_winner = MPICostRank(f64::INFINITY, 0);
 
@@ -824,7 +820,11 @@ fn mpi_solver_generic_root(world: &SystemCommunicator) -> MPICostRank {
 
 // TODO comment
 #[cfg(feature = "mpi")]
-fn mpi_solver_generic_nonroot(world: &SystemCommunicator, graph_matrix: &NAMatrix, prefix_length: usize) -> Path {
+fn mpi_solver_generic_nonroot(
+    world: &SystemCommunicator,
+    graph_matrix: &NAMatrix,
+    prefix_length: usize,
+) -> Path {
     let size = world.size();
     let rank = world.rank();
     let root = world.process_at_rank(0);
