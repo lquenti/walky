@@ -12,7 +12,7 @@ use crate::{
 
 use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 
-//#[cfg(feature = "mpi")]
+#[cfg(feature = "mpi")]
 use mpi::{collective::UserOperation, traits::*};
 
 /// Simplest possible solution: just go through all the nodes in order.
@@ -716,7 +716,7 @@ pub fn threaded_solver_generic(
         .unwrap()
 }
 
-//#[cfg(feature = "mpi")]
+#[cfg(feature = "mpi")]
 pub fn mpi_solver(graph_matrix: &NAMatrix) -> Solution {
     let res = mpi_solver_generic(graph_matrix, 3);
     println!("end res {:?}", res);
@@ -725,14 +725,12 @@ pub fn mpi_solver(graph_matrix: &NAMatrix) -> Solution {
 
 // TODO merge with other
 #[derive(Debug, Default, Clone, Copy, Equivalence)]
-//#[cfg(feature = "mpi")]
+#[cfg(feature = "mpi")]
 struct MPICostRank(f64, i32);
-
-const UPDATE_REQUEST_TAG: mpi::Tag = 0;
 
 
 // TODO comment
-//#[cfg(feature = "mpi")]
+#[cfg(feature = "mpi")]
 pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solution {
     let universe = mpi::initialize().unwrap();
     let world = universe.world();

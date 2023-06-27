@@ -18,14 +18,14 @@ pub mod preconditions;
 pub mod solvers;
 
 /// rank 0 is the main node
-//#[cfg(feature = "mpi")]
+#[cfg(feature = "mpi")]
 const ROOT_RANK: mpi::Rank = 0;
 
-//#[cfg(feature = "mpi")]
+#[cfg(feature = "mpi")]
 use crate::datastructures::AdjacencyMatrix;
 #[cfg(feature = "mpi")]
 use crate::solvers::approximate::matching::{bootstrap_mpi_matching_calc, mpi_improve_matching};
-//#[cfg(feature = "mpi")]
+#[cfg(feature = "mpi")]
 use mpi::topology::*;
 
 /// Extracts the TSP instance from a TSPLIB-XML file.
@@ -48,14 +48,7 @@ fn exact_run(
     let tsp_instance = get_tsp_instance(input_file)?;
     let m: NAMatrix = (&tsp_instance.graph).into();
 
-    // TODO fix me once we have tested everything
-    if parallelism == Parallelism::MultiThreaded {
-        let (best_cost, best_permutation) = exact::mpi_solver(&m);
-    println!("Best Cost: {}", best_cost);
-    println!("Best Permutation: {:?}", best_permutation);
-    return Ok(());
-    }
-
+    // TODO add mpi here
     let (best_cost, best_permutation) = match parallelism {
         Parallelism::SingleThreaded =>
     match algorithm {
