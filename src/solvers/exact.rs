@@ -644,7 +644,7 @@ pub fn threaded_solver_generic(
     };
 
     // Spawn all threads
-    crossbeam::thread::scope(|s| {
+    rayon::scope(|s| {
         for i in 0..number_of_threads {
             // get a ref to the best known result
             let bkr = Arc::clone(&best_known_result);
@@ -696,8 +696,7 @@ pub fn threaded_solver_generic(
                 }
             });
         }
-    })
-    .unwrap();
+    });
 
     // scary stuff...
     Arc::try_unwrap(best_known_result)
