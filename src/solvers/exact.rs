@@ -660,7 +660,6 @@ pub fn threaded_solver_generic(
                     i,
                 );
                 let mut min_digits = min_digits;
-
                 let mut current_prefix: Vec<usize> = Vec::new();
                 current_prefix.reserve(graph_matrix.dim());
 
@@ -683,10 +682,12 @@ pub fn threaded_solver_generic(
                     for i in &next_value {
                         current_prefix.push(*i);
                     }
+                    // calculate cost of current prefix
+                    let starting_cost = graph_matrix.evaluate_path(&current_prefix);
 
                     // use prefix
                     let mut result = (f64::INFINITY, Vec::new());
-                    _fifth_improved_solver_rec(graph_matrix, &mut current_prefix, 0.0, &mut result);
+                    _fifth_improved_solver_rec(graph_matrix, &mut current_prefix, starting_cost, &mut result);
 
                     // clear prefix
                     current_prefix.clear();
@@ -1321,6 +1322,7 @@ mod exact_solver {
             fourth_improved_solver,
             fifth_improved_solver,
             sixth_improved_solver,
+            threaded_solver
         ]
         .iter()
         {
@@ -1365,6 +1367,7 @@ mod exact_solver {
             fourth_improved_solver,
             fifth_improved_solver,
             sixth_improved_solver,
+            threaded_solver
         ]
         .iter()
         {
