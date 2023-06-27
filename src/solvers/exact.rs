@@ -619,7 +619,7 @@ pub fn get_next_value(current_digits: &mut [usize], basis: usize) -> Option<Vec<
 /// - take `prefix_length` digits from the front
 /// - split it up into `number_of_threads` chunks of equal size (if possible)
 /// - Work on one prefix at a time in each thread
-/// - Update the best known solution in a Arc<Mutex<Solution>> if better
+/// - Update the best known solution in a `Arc<Mutex<Solution>>` if better
 /// - Do the next prefix
 ///
 /// We do not cache the MSTs as the performance boost was negligible at best and results in a lot
