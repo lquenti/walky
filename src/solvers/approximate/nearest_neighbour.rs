@@ -15,10 +15,8 @@ use crate::{
 
 #[cfg(feature = "mpi")]
 use crate::computation_mode::MPI_COMPUTATION;
-
-#[derive(Default, Clone, Copy, Equivalence)]
 #[cfg(feature = "mpi")]
-struct MPICostRank(f64, i32);
+use crate::datastructures::MPICostRank;
 
 /// Using the nearest neighbour algorithm for a single starting node.
 ///

@@ -48,7 +48,6 @@ fn exact_run(
     let tsp_instance = get_tsp_instance(input_file)?;
     let m: NAMatrix = (&tsp_instance.graph).into();
 
-    // TODO add mpi here
     let (best_cost, best_permutation) = match parallelism {
         Parallelism::SingleThreaded => match algorithm {
             ExactAlgorithm::V0 => exact::naive_solver(&m),

@@ -14,6 +14,8 @@ use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 
 #[cfg(feature = "mpi")]
 use mpi::{topology::SystemCommunicator, traits::*};
+#[cfg(feature = "mpi")]
+use crate::datastructures::MPICostRank;
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
@@ -720,11 +722,6 @@ pub fn threaded_solver_generic(
 pub fn mpi_solver(graph_matrix: &NAMatrix) -> Solution {
     mpi_solver_generic(graph_matrix, 3)
 }
-
-// TODO merge with other
-#[derive(Debug, Default, Clone, Copy, Equivalence)]
-#[cfg(feature = "mpi")]
-struct MPICostRank(f64, i32);
 
 // TODO comment
 #[cfg(feature = "mpi")]
