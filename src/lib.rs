@@ -180,7 +180,16 @@ fn lower_bound_run(
                 }
                 #[cfg(feature = "mpi")]
                 Parallelism::MPI => {
-                    one_tree_lower_bound::<{ computation_mode::MPI_COMPUTATION }>(&na_matrix)
+                    let universe = mpi::initialize().unwrap();
+                    let world = universe.world();
+                    let rank = world.rank();
+                    let result =
+                        one_tree_lower_bound::<{ computation_mode::MPI_COMPUTATION }>(&na_matrix);
+                    // only the root process shall write to stdout
+                    if rank != ROOT_RANK {
+                        return Ok(());
+                    }
+                    result
                 }
             };
             println!("1-tree lower bound: {}", lower_bound);
