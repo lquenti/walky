@@ -1,6 +1,9 @@
 //! Exact methods to solve the TSP problem.
 
-use std::hash::{Hash, Hasher};
+use std::{
+    hash::{Hash, Hasher},
+    sync::{Arc, Mutex},
+};
 
 use crate::{
     datastructures::{AdjacencyMatrix, NAMatrix, Path, Solution},
@@ -290,7 +293,6 @@ fn _fourth_improved_solver_rec<T>(
         // If our current sub-tour, together with a lower bound, is already bigger than the whole
         // tour the whole tour will definitely be bigger than our previous best version
         let lower_bound = compute_nn_of_remaining_vertices(graph_matrix, current_prefix, n);
-        //println!("{:?}, {}, {}", current_prefix, current_cost, lower_bound);
         if current_cost + lower_bound <= result.0 {
             _fourth_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
         }
@@ -552,6 +554,156 @@ fn next_permutation<T: Ord>(array: &mut [T]) -> bool {
     // Reverse suffix
     array[i..].reverse();
     true
+}
+
+/// Splits the `basis`-ary space from 0...0 to (basis-1)..(basis-1) into `n` chunks of `number_digits` digits.
+/// Returns the minimum and maximum (exclusive) values for the `k`-th chunk.
+fn split_up_b_ary_number_into_n_chunks(
+    number_digits: usize,
+    basis: usize,
+    n: usize,
+    k: usize,
+) -> (Vec<usize>, Vec<usize>) {
+    let total_values = basis.pow(number_digits as u32);
+    assert!(total_values > n);
+    let chunk_size = total_values / n;
+
+    let min_value = k * chunk_size;
+    let max_value = min_value + chunk_size - 1;
+
+    let min_digits = convert_to_b_ary_digits(min_value, basis, number_digits);
+    let max_digits = convert_to_b_ary_digits(max_value, basis, number_digits);
+
+    (min_digits, max_digits)
+}
+
+/// Converts a decimal value into its corresponding digits in a `basis`-ary system.
+fn convert_to_b_ary_digits(value: usize, basis: usize, number_digits: usize) -> Vec<usize> {
+    let mut digits = Vec::with_capacity(number_digits);
+    let mut remainder = value;
+
+    for _ in 0..number_digits {
+        digits.push(remainder % basis);
+        remainder /= basis;
+    }
+
+    digits.reverse();
+    digits
+}
+
+/// Get the next value for a given prefix
+/// Returns None iff it overflows
+fn get_next_value(current_digits: &mut [usize], basis: usize) -> Option<Vec<usize>> {
+    let mut carry = 1;
+    for digit in current_digits.iter_mut().rev() {
+        *digit += carry;
+        carry = *digit / basis;
+        *digit %= basis;
+
+        if carry == 0 {
+            return Some(current_digits.to_vec());
+        }
+    }
+
+    None
+}
+
+/// The idea is as follows: Our path can be seen as a dim() digit number in a dim()-base.
+///
+/// Thus, we can
+/// - take `prefix_length` digits from the front
+/// - split it up into `number_of_threads` chunks of equal size (if possible)
+/// - Work on one prefix at a time in each thread
+/// - Update the best known solution in a Arc<Mutex<Solution>> if better
+/// - Do the next prefix
+///
+/// We do not cache the MSTs as the performance boost was negligible at best and results in a lot
+/// of locking
+///
+/// If `number_of_threads` is not specified it defaults to `std::thread::available_parallelism`.
+/// If that fails we assume that parallelism is not available.
+
+pub fn threaded_solver(graph_matrix: &NAMatrix) -> Solution {
+    let res = threaded_solver_generic(graph_matrix, 3, None);
+    println!("end res {:?}", res);
+    res
+}
+
+pub fn threaded_solver_generic(
+    graph_matrix: &NAMatrix,
+    prefix_length: usize,
+    number_of_threads: Option<usize>,
+) -> Solution {
+    let best_known_result = Arc::new(Mutex::new((f64::INFINITY, Vec::<usize>::new())));
+
+    let number_of_threads = match number_of_threads {
+        Some(n) => n,
+        None => std::thread::available_parallelism()
+            .expect("Could not determine number of threads!")
+            .into(),
+    };
+
+    // Spawn all threads
+    crossbeam::thread::scope(|s| {
+        for i in 0..number_of_threads {
+            // get a ref to the best known result
+            let bkr = Arc::clone(&best_known_result);
+
+            s.spawn(move |_| {
+                // The actual logic
+
+                // First, calculate the prefix space for our solution
+                let (min_digits, max_digits) = split_up_b_ary_number_into_n_chunks(
+                    prefix_length,
+                    graph_matrix.dim(),
+                    number_of_threads,
+                    i,
+                );
+                let mut min_digits = min_digits;
+
+                let mut current_prefix: Vec<usize> = Vec::new();
+                current_prefix.reserve(graph_matrix.dim());
+
+
+                // For each prefix
+                while let Some(next_value) = get_next_value(&mut min_digits, graph_matrix.dim())
+                {
+                    // early return if we have finished our chunk
+                    if next_value == max_digits {
+                        break;
+                    }
+
+                    // fill prefix
+                    for i in &next_value {
+                        current_prefix.push(*i);
+                    }
+
+                    // use prefix
+                    let mut result = (f64::INFINITY, Vec::new());
+                    _fifth_improved_solver_rec(graph_matrix, &mut current_prefix, f64::INFINITY, &mut result);
+                    println!("{:?}", result);
+
+                    // clear prefix
+                    current_prefix.clear();
+
+                    // update global best path
+                    let mut global_solution = bkr.lock().unwrap();
+                    if result.0 < global_solution.0 {
+                        global_solution.0 = result.0;
+                        global_solution.1 = result.1.clone();
+                    }
+                    // implicitly drop mutex guard
+                }
+            });
+        }
+    })
+    .unwrap();
+
+    // scary stuff...
+    Arc::try_unwrap(best_known_result)
+        .unwrap()
+        .into_inner()
+        .unwrap()
 }
 
 #[cfg(test)]
@@ -1120,6 +1272,7 @@ mod exact_solver {
             fourth_improved_solver,
             fifth_improved_solver,
             sixth_improved_solver,
+            threaded_solver
         ]
         .iter()
         {
