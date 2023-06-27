@@ -10,7 +10,7 @@ use crate::{
     mst,
 };
 
-use rustc_hash::{FxHashMap, FxHasher};
+use rustc_hash::{FxHashMap, FxHasher, FxHashSet};
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
@@ -673,6 +673,12 @@ pub fn threaded_solver_generic(
                         break;
                     }
 
+                    // if it has at least two times the same digit, its not a valid path
+                    let is_unique = next_value.len() == next_value.iter().collect::<FxHashSet<_>>().len();
+                    if !is_unique {
+                        continue;
+                    }
+
                     // fill prefix
                     for i in &next_value {
                         current_prefix.push(*i);
@@ -681,7 +687,6 @@ pub fn threaded_solver_generic(
                     // use prefix
                     let mut result = (f64::INFINITY, Vec::new());
                     _fifth_improved_solver_rec(graph_matrix, &mut current_prefix, 0.0, &mut result);
-                    println!("{:?}", result);
 
                     // clear prefix
                     current_prefix.clear();
