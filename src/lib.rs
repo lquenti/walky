@@ -1,14 +1,12 @@
 use crate::{
-    datastructures::{NAMatrix, VecMatrix},
-    mst::prim,
-    parser::TravellingSalesmanProblemInstance,
+    datastructures::NAMatrix, mst::prim, parser::TravellingSalesmanProblemInstance,
     solvers::approximate::christofides::christofides,
 };
 use std::{error::Error, fs::File, io::Read, path::PathBuf};
 
 use cli::{ApproxAlgorithm, Cli, ExactAlgorithm, LowerBoundAlgorithm, MSTAlgorithm, Parallelism};
 use one_tree::one_tree_lower_bound;
-use solvers::exact;
+use solvers::{approximate::nearest_neighbour::nearest_neighbour, exact};
 
 pub mod cli;
 pub mod computation_mode;
@@ -53,14 +51,16 @@ fn exact_run(
         unimplemented!()
     }
 
-    let m: VecMatrix = tsp_instance.graph.into();
+    // TODO replace me with nalgebra
+    let m: NAMatrix = (&tsp_instance.graph).into();
     let (best_cost, best_permutation) = match algorithm {
-        ExactAlgorithm::V1 => exact::naive_solver(&m),
-        ExactAlgorithm::V2 => exact::first_improved_solver(&m),
-        ExactAlgorithm::V3 => unimplemented!(),
-        ExactAlgorithm::V4 => unimplemented!(),
-        ExactAlgorithm::V5 => unimplemented!(),
-        ExactAlgorithm::V6 => unimplemented!(),
+        ExactAlgorithm::V0 => exact::naive_solver(&m),
+        ExactAlgorithm::V1 => exact::first_improved_solver(&m),
+        ExactAlgorithm::V2 => exact::second_improved_solver(&m),
+        ExactAlgorithm::V3 => exact::third_improved_solver(&m),
+        ExactAlgorithm::V4 => exact::fourth_improved_solver(&m),
+        ExactAlgorithm::V5 => exact::fifth_improved_solver(&m),
+        ExactAlgorithm::V6 => exact::sixth_improved_solver(&m),
         ExactAlgorithm::HeldKarp => unimplemented!(),
     };
     println!("Best Cost: {}", best_cost);
@@ -113,7 +113,22 @@ fn approx_run(
             };
             println!("Christofides solution weight: {}", solution.0);
         }
-        ApproxAlgorithm::NearestNeighbour => todo!(),
+        ApproxAlgorithm::NearestNeighbour => {
+            let solution = match parallelism {
+                Parallelism::SingleThreaded => nearest_neighbour::<
+                    { computation_mode::SEQ_COMPUTATION },
+                >(&(&tsp_instance.graph).into()),
+                Parallelism::MultiThreaded => nearest_neighbour::<
+                    { computation_mode::PAR_COMPUTATION },
+                >(&(&tsp_instance.graph).into()),
+                #[cfg(feature = "mpi")]
+                Parallelism::MPI => nearest_neighbour::<{ computation_mode::MPI_COMPUTATION }>(
+                    &(&tsp_instance.graph).into(),
+                ),
+            };
+            println!("Nearest Neighbour solution weight: {}", solution.0);
+            println!("Nearest Neighbour solution: {:?}", solution.1);
+        }
     };
 
     if let Some(lower_bound_algo) = lower_bound {
