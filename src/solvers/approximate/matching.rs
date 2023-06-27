@@ -20,9 +20,9 @@ fn randomized_matching(vertices: &mut [usize]) {
     vertices.shuffle(&mut thread_rng())
 }
 
-// constructs a randomly selected matching and
-// does `tries` many local-search optimizations
-// on randomly selected pairs of edges
+/// constructs a randomly selected matching and
+/// does `tries` many local-search optimizations
+/// on randomly selected pairs of edges
 pub fn approx_min_cost_matching<const MODE: usize>(
     graph: &NAMatrix,
     mut vertices: Vec<usize>,
