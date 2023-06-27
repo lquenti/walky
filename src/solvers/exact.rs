@@ -719,7 +719,6 @@ pub fn threaded_solver_generic(
 #[cfg(feature = "mpi")]
 pub fn mpi_solver(graph_matrix: &NAMatrix) -> Solution {
     let res = mpi_solver_generic(graph_matrix, 3);
-    println!("end res {:?}", res);
     res
 }
 
@@ -787,12 +786,6 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
                 // Now they know what the best known one is and can continue working...
             } else {
                 // This node just tells us that it is done.
-                println!(
-                    "rank {} told that it finished. My count is {}/{}",
-                    msg.1,
-                    number_of_finished_proceses,
-                    size - 1
-                );
                 number_of_finished_proceses += 1;
             }
         }
@@ -873,7 +866,6 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
         root.send(&MPICostRank(-1.0, rank));
 
         // Now that we have done all of our jobs, we wait for the other processes to complete
-        println!("rank {} touches barrier", rank);
         world.barrier();
 
         // save the path
