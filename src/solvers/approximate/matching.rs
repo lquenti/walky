@@ -38,7 +38,16 @@ pub fn approx_min_cost_matching<const MODE: usize>(
         SEQ_COMPUTATION => improve_matching(graph, matching.as_mut_slice(), tries),
         PAR_COMPUTATION => par_improve_matching(graph, matching.as_mut_slice(), tries),
         #[cfg(feature = "mpi")]
-        MPI_COMPUTATION => mpi_improve_matching(graph, matching.as_mut_slice(), tries),
+        MPI_COMPUTATION => {
+            if let Some(universe) = mpi::initialize() {
+                // do not drop the universe until the call to mpi_improve_matching has finished!
+                let world = universe.world();
+                mpi_improve_matching(graph, matching.as_mut_slice(), tries, world)
+            } else {
+                let world = SystemCommunicator::world();
+                mpi_improve_matching(graph, matching.as_mut_slice(), tries, world)
+            }
+        }
         _ => panic_on_invaid_mode::<MODE>(),
     }
     matching
@@ -193,10 +202,14 @@ fn par_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries: us
 }
 
 #[cfg(feature = "mpi")]
-pub fn mpi_improve_matching(graph: &NAMatrix, matching: &mut [[usize; 2]], tries: usize) {
+pub fn mpi_improve_matching<C: Communicator>(
+    graph: &NAMatrix,
+    matching: &mut [[usize; 2]],
+    tries: usize,
+    world: C,
+) {
     use mpi::traits::*;
 
-    let world = SystemCommunicator::world();
     let size = world.size();
     let rank = world.rank();
     let root_process = world.process_at_rank(crate::ROOT_RANK);
