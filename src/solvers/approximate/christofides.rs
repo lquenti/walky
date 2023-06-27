@@ -38,6 +38,7 @@ pub fn christofides_exact<const MODE: usize>(graph: &Graph) -> Solution {
 ///
 /// `MODE`: constant parameter, choose one of the values from [`crate::computation_mode`]
 ///
+
 /// `matching_computer` does the following:
 ///  1. compute subgraph of `graph` only with vertices that have odd degree in the MST,
 ///  2. then compute a minimum-weight maximum matching for the subgraph

@@ -21,7 +21,7 @@ use rayon::prelude::*;
 ///
 /// `MODE`: constant parameter, choose one of the values from [`crate::computation_mode`]
 ///
-/// See [`prim_with_excluded_node`] for more details.
+/// See [`prim_with_excluded_node_single_threaded`] for more details.
 pub fn prim<const MODE: usize>(graph: &NAMatrix) -> Graph {
     match MODE {
         SEQ_COMPUTATION => prim_with_excluded_node_single_threaded(graph, &[]),
@@ -46,6 +46,13 @@ pub fn prim_with_excluded_node_multi_threaded(
     prim_with_excluded_node::<MultiThreadedVecWrapper>(graph, excluded_vertices)
 }
 
+/// greedy algorithm:
+/// start at the first vertex in the graph and build an MST step by step.
+///
+/// `excluded_vertices`: option to exclude vertices from the graph and thus the MST computation.
+///     If you do not want to exclude a vertex from the computation, chose
+///     `excluded_vertex = &[])` (the function [`prim`] does this for you).
+///
 /// naive version using only vectors as data structures.
 /// For small enough (might not have to be very small) inputs
 /// this is faster than a priority queue due to
@@ -58,7 +65,8 @@ pub fn prim_with_excluded_node_single_threaded(
     prim_with_excluded_node::<Vec<(Edge, bool)>>(graph, excluded_vertices)
 }
 
-/// improve asymptotic performance by using a priority queue
+/// improve asymptotic performance (compared to [`prim_with_excluded_node_single_threaded`])
+/// by using a priority queue
 pub fn prim_with_excluded_node_priority_queue(
     graph: &NAMatrix,
     excluded_vertices: &[usize],
@@ -69,15 +77,9 @@ pub fn prim_with_excluded_node_priority_queue(
 /// greedy algorithm:
 /// start at the first vertex in the graph and build an MST step by step.
 ///
-/// `excluded_vertex`: option to exclude one vertex from the graph and thus the MST computation.
+/// `excluded_vertices`: option to exclude vertices from the graph and thus the MST computation.
 ///     If you do not want to exclude a vertex from the computation, chose
-///     `excluded_vertex >= graph.num_vertices()` ([`prim`] does this for you).
-///
-/// complexity: O(N^2)
-///
-/// todo: add source for the algorithm
-///
-/// todo: make the implementation more pretty and more rust ideomatic
+///     `excluded_vertex = &[])` (the function [`prim`] does this for you).
 fn prim_with_excluded_node<D: FindMinCostEdge>(
     graph: &NAMatrix,
     excluded_vertices: &[usize],
