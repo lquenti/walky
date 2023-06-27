@@ -97,7 +97,7 @@ fn one_tree_lower_bound_seq(graph: &NAMatrix) -> f64 {
         .expect("Cannot compute the 1-tree lower bound of the empty graph")
 }
 
-/// cumputes the 1-tree lower bound in parallel
+/// cumputes the 1-tree lower bound in parallel using rayon
 ///
 /// # Panics
 /// if the graph is empty.
@@ -112,7 +112,7 @@ fn one_tree_lower_bound_par(graph: &NAMatrix) -> f64 {
         .expect("Cannot compute the 1-tree lower bound of the empty graph")
 }
 
-/// cumputes the 1-tree lower bound in parallel
+/// computes the 1-tree lower bound in parallel using MPI
 ///
 /// # Panics
 /// if the graph is empty.
