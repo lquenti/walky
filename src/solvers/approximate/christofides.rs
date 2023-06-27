@@ -60,8 +60,8 @@ pub fn christofides_generic<const MODE: usize>(
 
     // validate that the triangle ineq. holds
     debug_assert!(
-        graph_matr.is_euclidean(),
-        "The given Graph is not euclidean, but Christofides Algorithm
+        graph_matr.is_metric(),
+        "The given Graph is not metric, but Christofides Algorithm
     // requires the triangle inequality"
     );
 
@@ -222,7 +222,7 @@ fn find_cycle(
     cycle
 }
 
-/// assumption: the underlying graph is complete and euclidean
+/// assumption: the underlying graph is complete and metric (the triangle inequality holds)
 ///
 /// computes from an euclidean cycle the hamiltonian cycle, by skipping
 /// already visited vertices
@@ -676,7 +676,7 @@ mod test {
         assert_eq!(expected, euler_cycle);
     }
 
-    /// euclidean graph:
+    /// metric graph:
     /// 0-----1
     /// |\   /|
     /// | \ / |
