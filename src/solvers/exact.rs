@@ -533,8 +533,8 @@ fn _sixth_improved_solver_rec(
 /// Based on [Nayuki](https://www.nayuki.io/page/next-lexicographical-permutation-algorithm)
 ///
 /// It ends when the array is only decreasing.
-/// Thus, in order to get all permutations of [n], start with (1,2,...,n)
-fn next_permutation<T: Ord>(array: &mut [T]) -> bool {
+/// Thus, in order to get all permutations of \[n\], start with (1,2,...,n)
+pub fn next_permutation<T: Ord>(array: &mut [T]) -> bool {
     // Find non-increasing suffix
     if array.is_empty() {
         return false;

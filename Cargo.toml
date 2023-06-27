@@ -28,6 +28,7 @@ rand = "0.8"                                                                    
 # Explaination for scoped threads: <https://docs.rs/crossbeam/latest/crossbeam/thread/index.html#why-scoped-threads>
 # in our case, it reduces the need to copy everything in order to provide a sufficient lifetime
 
+
 [dev-dependencies]
 approx = "0.5.1"                                                                   # for assertions with float values
 quickcheck = "1.0.3"                                                               # for property based testing

@@ -1,6 +1,10 @@
 use crate::datastructures::Graph;
+use blossom::WeightedGraph;
 use nalgebra::{DMatrix, DVector};
-use std::ops::{Deref, DerefMut};
+use std::{
+    collections::HashMap,
+    ops::{Deref, DerefMut},
+};
 
 use super::{AdjacencyMatrix, Edge};
 
@@ -57,6 +61,27 @@ impl AdjacencyMatrix for NAMatrix {
 
     fn set(&mut self, row: usize, col: usize, cost: f64) {
         self[(row, col)] = cost;
+    }
+}
+
+impl From<&NAMatrix> for WeightedGraph {
+    /// This implementation is not optimized for performance.
+    fn from(value: &NAMatrix) -> Self {
+        let dim = value.dim();
+        let mut hash_map = HashMap::new();
+        for i in 0..dim {
+            let mut neighbours = Vec::with_capacity(dim);
+            let mut cost = Vec::with_capacity(dim);
+            for j in 0..dim {
+                if i == j {
+                    continue;
+                }
+                neighbours.push(j);
+                cost.push(value[(i, j)]);
+            }
+            hash_map.insert(i, (neighbours, cost));
+        }
+        WeightedGraph::new(hash_map)
     }
 }
 

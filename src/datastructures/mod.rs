@@ -45,7 +45,7 @@ pub trait AdjacencyMatrix {
 
     /// checks, if the triangle inequality holds:
     /// `cost(i,j) <= cost(i,k) + cost(k,j)` for all i,j,k
-    fn is_euclidean(&self) -> bool {
+    fn is_metric(&self) -> bool {
         let dim = self.dim();
         for i in 0..dim {
             for j in i..dim {
