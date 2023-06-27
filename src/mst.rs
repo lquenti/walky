@@ -27,7 +27,10 @@ pub fn prim<const MODE: usize>(graph: &NAMatrix) -> Graph {
         SEQ_COMPUTATION => prim_with_excluded_node_single_threaded(graph, graph.dim()),
         PAR_COMPUTATION => prim_with_excluded_node_multi_threaded(graph, graph.dim()),
         #[cfg(feature = "mpi")]
-        MPI_COMPUTATION => prim::<SEQ_COMPUTATION>(graph),
+        MPI_COMPUTATION => {
+            eprintln!("Warning: defaulting to sequential implementation of prims algorithm");
+            prim::<SEQ_COMPUTATION>(graph)
+        }
         _ => panic_on_invaid_mode::<MODE>(),
     }
 }
