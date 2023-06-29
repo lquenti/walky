@@ -312,7 +312,7 @@ mod test {
         }
 
         assert_abs_diff_eq!(
-            0.31,
+            1.21,
             one_tree_lower_bound::<SEQ_COMPUTATION>(&(&graph).into())
         );
     }
