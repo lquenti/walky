@@ -77,4 +77,4 @@ pub use crate::datastructures::nalgebra::NAMatrix;
 /// helper for MPI calls to send both some accumulated cost and the rank who calculated it
 #[derive(Default, Clone, Copy, Equivalence)]
 #[cfg(feature = "mpi")]
-pub struct MPICostRank(pub f64, pub i32);
+pub struct MPICostRank(pub f64, pub mpi::topology::Rank);
