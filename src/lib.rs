@@ -80,12 +80,13 @@ fn approx_run(
 
     match algorithm {
         ApproxAlgorithm::Christofides => {
+            let graph = (&tsp_instance.graph).into();
             let solution = match parallelism {
                 Parallelism::SingleThreaded => {
-                    christofides::<{ computation_mode::SEQ_COMPUTATION }>(&tsp_instance.graph)
+                    christofides::<{ computation_mode::SEQ_COMPUTATION }>(&graph)
                 }
                 Parallelism::MultiThreaded => {
-                    christofides::<{ computation_mode::PAR_COMPUTATION }>(&tsp_instance.graph)
+                    christofides::<{ computation_mode::PAR_COMPUTATION }>(&graph)
                 }
                 #[cfg(feature = "mpi")]
                 Parallelism::MPI => {
@@ -95,7 +96,7 @@ fn approx_run(
                     let root_process = world.process_at_rank(0);
 
                     if rank == ROOT_RANK {
-                        christofides::<{ computation_mode::MPI_COMPUTATION }>(&tsp_instance.graph)
+                        christofides::<{ computation_mode::MPI_COMPUTATION }>(&graph)
                     } else {
                         let mut tries = 0;
                         let graph = NAMatrix::from_dim(1);
