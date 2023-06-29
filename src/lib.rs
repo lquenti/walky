@@ -50,6 +50,8 @@ fn exact_run(
 ) -> Result<(), Box<dyn Error>> {
     let tsp_instance = get_tsp_instance(input_file)?;
     let m: NAMatrix = (&tsp_instance.graph).into();
+    #[cfg(feature = "benchmarking")]
+    let now = Instant::now();
 
     let (best_cost, best_permutation) = match parallelism {
         Parallelism::SingleThreaded => match algorithm {
@@ -69,6 +71,8 @@ fn exact_run(
 
     println!("Best Cost: {}", best_cost);
     println!("Best Permutation: {:?}", best_permutation);
+    #[cfg(feature = "benchmarking")]
+    println!("elapsed seconds: {}", now.elapsed().as_secs_f64());
     Ok(())
 }
 
@@ -161,6 +165,8 @@ fn mst_run(
 ) -> Result<(), Box<dyn Error>> {
     let tsp_instance = get_tsp_instance(input_file)?;
     let na_matrix: NAMatrix = (&tsp_instance.graph).into();
+    #[cfg(feature = "benchmarking")]
+    let now = Instant::now();
 
     let mst = match algorithm {
         MSTAlgorithm::Prim => match parallelism {
@@ -173,6 +179,8 @@ fn mst_run(
         },
     };
     println!("MST weight: {}", mst.undirected_edge_weight());
+    #[cfg(feature = "benchmarking")]
+    println!("elapsed seconds: {}", now.elapsed().as_secs_f64());
     Ok(())
 }
 
@@ -184,6 +192,8 @@ fn lower_bound_run(
 ) -> Result<(), Box<dyn Error>> {
     let tsp_instance = get_tsp_instance(input_file)?;
     let na_matrix: NAMatrix = (&tsp_instance.graph).into();
+    #[cfg(feature = "benchmarking")]
+    let now = Instant::now();
 
     match algorithm {
         LowerBoundAlgorithm::OneTree => {
@@ -211,6 +221,8 @@ fn lower_bound_run(
             println!("1-tree lower bound: {}", lower_bound);
         }
     }
+    #[cfg(feature = "benchmarking")]
+    println!("elapsed seconds: {}", now.elapsed().as_secs_f64());
     Ok(())
 }
 
