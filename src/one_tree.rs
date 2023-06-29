@@ -138,7 +138,7 @@ fn one_tree_lower_bound_mpi(graph: &NAMatrix) -> f64 {
             root_process.reduce_into_root(
                 &local_lower_bound,
                 &mut global_lower_bound,
-                SystemOperation::min(),
+                SystemOperation::max(),
             );
         } else {
             root_process.reduce_into(&local_lower_bound, SystemOperation::max());
