@@ -1,13 +1,21 @@
 //! Exact methods to solve the TSP problem.
 
-use std::hash::{Hash, Hasher};
+use std::{
+    hash::{Hash, Hasher},
+    sync::{Arc, Mutex},
+};
 
 use crate::{
     datastructures::{AdjacencyMatrix, NAMatrix, Path, Solution},
     mst,
 };
 
-use rustc_hash::{FxHashMap, FxHasher};
+use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
+
+#[cfg(feature = "mpi")]
+use crate::datastructures::MPICostRank;
+#[cfg(feature = "mpi")]
+use mpi::{topology::SystemCommunicator, traits::*};
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
@@ -290,7 +298,6 @@ fn _fourth_improved_solver_rec<T>(
         // If our current sub-tour, together with a lower bound, is already bigger than the whole
         // tour the whole tour will definitely be bigger than our previous best version
         let lower_bound = compute_nn_of_remaining_vertices(graph_matrix, current_prefix, n);
-        //println!("{:?}, {}, {}", current_prefix, current_cost, lower_bound);
         if current_cost + lower_bound <= result.0 {
             _fourth_improved_solver_rec(graph_matrix, current_prefix, current_cost, result);
         }
@@ -552,6 +559,487 @@ pub fn next_permutation<T: Ord>(array: &mut [T]) -> bool {
     // Reverse suffix
     array[i..].reverse();
     true
+}
+
+/// Splits the `basis`-ary space from 0...0 to (basis-1)..(basis-1) into `n` chunks of `number_digits` digits.
+/// Returns the minimum and maximum (exclusive) values for the `k`-th chunk.
+pub fn split_up_b_ary_number_into_n_chunks(
+    number_digits: usize,
+    basis: usize,
+    n: usize,
+    k: usize,
+) -> (Vec<usize>, Vec<usize>) {
+    let total_values = basis.pow(number_digits as u32);
+    assert!(total_values > n);
+    let chunk_size = total_values / n;
+
+    let min_value = k * chunk_size;
+    let max_value = min_value + chunk_size - 1;
+
+    let min_digits = convert_to_b_ary_digits(min_value, basis, number_digits);
+    let max_digits = convert_to_b_ary_digits(max_value, basis, number_digits);
+
+    (min_digits, max_digits)
+}
+
+/// Converts a decimal value into its corresponding digits in a `basis`-ary system.
+fn convert_to_b_ary_digits(value: usize, basis: usize, number_digits: usize) -> Vec<usize> {
+    let mut digits = Vec::with_capacity(number_digits);
+    let mut remainder = value;
+
+    for _ in 0..number_digits {
+        digits.push(remainder % basis);
+        remainder /= basis;
+    }
+
+    digits.reverse();
+    digits
+}
+
+/// Get the next value for a given prefix
+/// Returns None iff it overflows
+pub fn get_next_value(current_digits: &mut [usize], basis: usize) -> Option<Vec<usize>> {
+    let mut carry = 1;
+    for digit in current_digits.iter_mut().rev() {
+        *digit += carry;
+        carry = *digit / basis;
+        *digit %= basis;
+
+        if carry == 0 {
+            return Some(current_digits.to_vec());
+        }
+    }
+
+    None
+}
+
+/// The idea is as follows: Our path can be seen as a dim() digit number in a dim()-base.
+///
+/// Thus, we can
+/// - take `prefix_length` digits from the front
+/// - split it up into `number_of_threads` chunks of equal size (if possible)
+/// - Work on one prefix at a time in each thread
+/// - Update the best known solution in a `Arc<Mutex<Solution>>` if better
+/// - Do the next prefix
+///
+/// We do not cache the MSTs as the performance boost was negligible at best and results in a lot
+/// of locking
+///
+/// If `number_of_threads` is not specified it defaults to `std::thread::available_parallelism`.
+/// If that fails we assume that parallelism is not available.
+pub fn threaded_solver(graph_matrix: &NAMatrix) -> Solution {
+    threaded_solver_generic(graph_matrix, 3, None)
+}
+
+/// See [`threaded_solver`] for a high level explaination
+fn threaded_solver_generic(
+    graph_matrix: &NAMatrix,
+    prefix_length: usize,
+    number_of_threads: Option<usize>,
+) -> Solution {
+    let best_known_result = Arc::new(Mutex::new((f64::INFINITY, Vec::<usize>::new())));
+
+    let number_of_threads = match number_of_threads {
+        Some(n) => n,
+        None => std::thread::available_parallelism()
+            .expect("Could not determine number of threads!")
+            .into(),
+    };
+
+    // Spawn all threads
+    rayon::scope(|s| {
+        for i in 0..number_of_threads {
+            // get a ref to the best known result
+            let bkr = Arc::clone(&best_known_result);
+
+            s.spawn(move |_| {
+                // The actual logic
+
+                // First, calculate the prefix space for our solution
+                let (min_digits, max_digits) = split_up_b_ary_number_into_n_chunks(
+                    prefix_length,
+                    graph_matrix.dim(),
+                    number_of_threads,
+                    i,
+                );
+                let mut min_digits = min_digits;
+                let mut current_prefix: Vec<usize> = Vec::new();
+                current_prefix.reserve(graph_matrix.dim());
+
+                // For each prefix
+                while let Some(next_value) = get_next_value(&mut min_digits, graph_matrix.dim()) {
+                    // early return if we have finished our chunk
+                    if next_value == max_digits {
+                        break;
+                    }
+
+                    // if it has at least two times the same digit, its not a valid path
+                    let is_unique =
+                        next_value.len() == next_value.iter().collect::<FxHashSet<_>>().len();
+                    if !is_unique {
+                        continue;
+                    }
+
+                    // fill prefix
+                    for i in &next_value {
+                        current_prefix.push(*i);
+                    }
+                    // calculate cost of current prefix
+                    let starting_cost = graph_matrix.evaluate_path(&current_prefix);
+
+                    // use prefix
+                    let mut result = (f64::INFINITY, Vec::new());
+                    _fifth_improved_solver_rec(
+                        graph_matrix,
+                        &mut current_prefix,
+                        starting_cost,
+                        &mut result,
+                    );
+
+                    // clear prefix
+                    current_prefix.clear();
+
+                    // update global best path
+                    let mut global_solution = bkr.lock().unwrap();
+                    if result.0 < global_solution.0 {
+                        global_solution.0 = result.0;
+                        global_solution.1 = result.1.clone();
+                    }
+                    // implicitly drop mutex guard
+                }
+            });
+        }
+    });
+
+    // scary stuff...
+    Arc::try_unwrap(best_known_result)
+        .unwrap()
+        .into_inner()
+        .unwrap()
+}
+
+/// Alias to `mpi_solver_generic(graph_matrix, 3)`. See [`mpi_solver_generic`].
+#[cfg(feature = "mpi")]
+pub fn mpi_solver(graph_matrix: &NAMatrix) -> Solution {
+    mpi_solver_generic(graph_matrix, 3)
+}
+
+/// Calculating an exact solution parallelized using MPI.
+///
+/// The high level strategy follows [`fifth_improved_solver`], which means that we
+/// - go through all possible solutions we can't prune away
+/// - we generate all possible paths through recursive enumeration
+/// - we cache the sum of our partial path throughout the recursion
+/// - we prune iff the partial sum + an MST of the unused nodes is already bigger than previous
+/// best. Note that this works since MSTs are a lower bound for TSPs.
+///
+/// Now on the parallelization.
+///
+/// We divide the MPI world communicator into one root coordinator and n-1 worker.
+///
+/// First we use the same trick as in [`threaded_solver`] to split up the prefixes without any
+/// communication. We intepret the prefix of `prefix_length` digits as a number of base
+/// `graph_matrix.dim()`. Then, we can split it up into chunks using [`split_up_b_ary_number_into_n_chunks`].
+/// This way, each process can just process its `rank`-th chunk without any problems.
+///
+/// Now, we also want to prune. Thus, we have to somehow tell the other nodes what our previous
+/// best was, so we can all use tightest possible bound. This is where we need the root
+/// coordinator.
+///
+/// The root coordinator keeps an variable which tracks the current cost minimum and which rank it
+/// got sent from. By just storing the rank, we do not have to transfer the whole path every time,
+/// improving network efficiency.
+///
+/// So everytime a worker node finishes a prefix (which was not completely pruned), it sends its
+/// current lowest cost it every encountered to the host together with its rank.
+/// This is done even if it was not improved during that prefix.
+///
+/// That is because this message also used as an update request for the newest globally known one
+/// from the coordinator. After taking the current processes lowest path into account, it then
+/// responds with the lowest one it globally knows so far. This way, the worker node can then
+/// continue to compute the next prefix with the best known global minimum as a bound.
+/// After all prefixes were computed, the worker node waits at a barrier for the other nodes to
+/// complete.
+///
+///
+/// Because we prune, the coordinator process does not know how many requests it can expect.
+/// Thus we have to tell the coordinator when the worker node is done, otherwise it will deadlock
+/// waiting for yet another processed prefix.
+///
+/// We do that by sending another message with a negative cost, being obviously impossible to
+/// archive. The coodinator tracks how many of those messages were recieved. Once it recieved
+/// `COMM_WORLD_SIZE - 1` messages (since it doesnt send a message to itself) it then stops
+/// listening.
+///
+/// Receiving `COMM_WORLD_SIZE - 1` finish-messages implies that all worker nodes are already
+/// waiting at the barrier. Thus, the coordinator joins the barrier node, breaking the barrier and
+/// starting the wrapup.
+///
+/// Wrapup:
+/// After the barrier was broken the coordinator broadcasts who won and its cost.
+/// Everybody now knows who won. The winner then finally broadcasts the winning tour to every node.
+/// Thus, at the end, every node knows the best cost (from the root) and the best path (from the
+/// winner). Remember that this path-sending was done lazily as an network efficiency optimization.
+#[cfg(feature = "mpi")]
+pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solution {
+    let universe = mpi::initialize().unwrap();
+    let world = universe.world();
+    let rank = world.rank();
+    let root = world.process_at_rank(0);
+
+    // Will be used once the entire computation is done
+    // Has to be available to both root and non-root as we broadcast into it
+    let mut winner = MPICostRank(f64::INFINITY, 0);
+    let mut winner_path = vec![0; graph_matrix.dim()];
+
+    if rank == 0 {
+        winner = mpi_solver_generic_root(&world);
+    } else {
+        // This is just the local winner path, look below on how the winner broadcasts its one.
+        winner_path = mpi_solver_generic_nonroot(&world, graph_matrix, prefix_length);
+    }
+
+    // After the barrier was broken we can broadcast the winner rank and cost
+    root.broadcast_into(&mut winner);
+
+    // Now the winner can broadcast to everyone the path
+    let winner_process = world.process_at_rank(winner.1);
+    winner_process.broadcast_into(&mut winner_path[..]);
+
+    // After we all know the cost and path, we can finally return with the exact result
+    (winner.0, winner_path)
+}
+
+/// As it is a very interconnected logic, see [`mpi_solver_generic`] for a thorough explaination.
+#[cfg(feature = "mpi")]
+fn mpi_solver_generic_root(world: &SystemCommunicator) -> MPICostRank {
+    let size = world.size();
+
+    let mut current_winner = MPICostRank(f64::INFINITY, 0);
+
+    // we keep track if any processes are not finished yet
+    // If they are finished, they have to tell us...
+    let mut number_of_finished_proceses = 0;
+
+    // As long as somebody is not yet done, we still listen
+    while number_of_finished_proceses < size - 1 {
+        // We accept any message.
+        // Unfortunately, the type has to be known beforehand,
+        // which is why we have to work with some magic numbers...
+        // What we expect are two types of messages:
+        //
+        // 1. I have computed a new prefix. Here is my cost and my rank.
+        //    Please update your global minimum accordingly and tell me the result.
+        //    Then, we just get a normal MPICostRank with a normal cost.
+        //    Once we recieved such a message, we then update our local minimum
+        //    and tell them the result
+        //
+        // 2. I have no more prefixes to compute.
+        //    I am done and idling at the barrier.
+        //    If my buddies are done as well, please come to the barrier as well.
+        //    Then, we get a Cost with -1.0.
+        //    There is no need to answer to that.
+
+        // First, get any message
+        // Unfortunately, we have to provide the same type
+        let (msg, _) = world.any_process().receive::<MPICostRank>();
+
+        // Check which type of message we have
+        if msg.0 >= 0.0 {
+            // We have the first type, as this is a legit length
+
+            // So first, we update our local one
+            if msg.0 < current_winner.0 {
+                current_winner.0 = msg.0;
+                current_winner.1 = msg.1;
+            }
+
+            // Then, we respond to that with our version
+            world.process_at_rank(msg.1).send(&(current_winner.0));
+            // Now they know what the best known one is and can continue working...
+        } else {
+            // This node just tells us that it is done.
+            number_of_finished_proceses += 1;
+        }
+    }
+
+    // Since all processes told us that they are done (message type 2)
+    // we can now also join the barrier, breaking it...
+    world.barrier();
+
+    // reutrn who won
+    current_winner
+}
+
+/// As it is a very interconnected logic, see [`mpi_solver_generic`] for a thorough explaination.
+#[cfg(feature = "mpi")]
+fn mpi_solver_generic_nonroot(
+    world: &SystemCommunicator,
+    graph_matrix: &NAMatrix,
+    prefix_length: usize,
+) -> Path {
+    let size = world.size();
+    let rank = world.rank();
+    let root = world.process_at_rank(0);
+
+    // -1 because we subtract the root rank
+    let (min_digits, max_digits) = split_up_b_ary_number_into_n_chunks(
+        prefix_length,
+        graph_matrix.dim(),
+        (size as usize) - 1,
+        (rank as usize) - 1,
+    );
+    let mut local_solution = (f64::INFINITY, Vec::new());
+    let mut global_best_cost = f64::INFINITY;
+
+    let mut min_digits = min_digits;
+    let mut current_prefix: Vec<usize> = Vec::new();
+    current_prefix.reserve(graph_matrix.dim());
+    while let Some(next_value) = get_next_value(&mut min_digits, graph_matrix.dim()) {
+        // early return if we have finished our chunk
+        if next_value == max_digits {
+            break;
+        }
+
+        // if it has at least two times the same digit, its not a valid path
+        let is_unique = next_value.len() == next_value.iter().collect::<FxHashSet<_>>().len();
+        if !is_unique {
+            continue;
+        }
+
+        // fill prefix
+        for i in &next_value {
+            current_prefix.push(*i);
+        }
+        // calculate cost of current prefix
+        let starting_cost = graph_matrix.evaluate_path(&current_prefix);
+
+        // use prefix
+        let mut result = (f64::INFINITY, Vec::new());
+        _mpi_improved_solver_rec(
+            graph_matrix,
+            &mut current_prefix,
+            starting_cost,
+            &mut result,
+            global_best_cost,
+        );
+
+        // clear prefix
+        current_prefix.clear();
+
+        // Now we evaluate...
+        // 1. We update the local best
+        if result.0 < local_solution.0 {
+            local_solution.0 = result.0;
+            local_solution.1 = result.1.clone();
+        }
+        // 2. We request a new solution
+        // In order to reduce amount of RTTs, we do not ask whether we are better.
+        // Instead, we just send our local_solution, which _is_ the request to send us a
+        // response of the best cost
+        let sendbuf = MPICostRank(local_solution.0, rank);
+        root.send(&sendbuf);
+
+        // 3. We recieve the best global result
+        let (msg, _) = root.receive::<f64>();
+        global_best_cost = msg;
+
+        // We can now compute with the globally best cost in mind.
+    }
+
+    // We tell the root that we are gone
+    root.send(&MPICostRank(-1.0, rank));
+
+    // Now that we have done all of our jobs, we wait for the other processes to complete
+    world.barrier();
+
+    // save the path
+    local_solution.1
+}
+
+/// Works like [`_fifth_improved_solver_rec`] but we also prune against the `global_best_cost`.
+/// See [`mpi_solver_generic`] to understand how we get that.
+#[cfg(feature = "mpi")]
+fn _mpi_improved_solver_rec(
+    graph_matrix: &NAMatrix,
+    current_prefix: &mut Path,
+    current_cost: f64,
+    result: &mut Solution,
+    global_best_cost: f64,
+) {
+    let n = graph_matrix.dim();
+    let mut current_cost = current_cost;
+
+    // Base case: Is this one better?
+    if current_prefix.len() == n {
+        // Add the last edge, finishing the circle
+        current_cost += graph_matrix.get(
+            *current_prefix.last().unwrap(),
+            *current_prefix.first().unwrap(),
+        );
+
+        let best_cost = result.0;
+        if current_cost < best_cost {
+            result.0 = current_cost;
+            result.1 = current_prefix.clone();
+        }
+        return;
+    }
+
+    // Branch down with branching factor n-k, where k is the length of current_prefix
+    for i in 0..n {
+        // We do not visit twice
+        if current_prefix.contains(&i) {
+            continue;
+        }
+
+        current_prefix.push(i);
+        // If this is a single element, we do not have an edge yet
+        if current_prefix.len() == 1 {
+            _mpi_improved_solver_rec(
+                graph_matrix,
+                current_prefix,
+                current_cost,
+                result,
+                global_best_cost,
+            );
+            current_prefix.pop();
+            continue;
+        }
+
+        // Calculate the cost of our new edge
+        let from = current_prefix.len() - 2;
+        let to = from + 1;
+        let cost_last_edge = graph_matrix.get(current_prefix[from], current_prefix[to]);
+        current_cost += cost_last_edge;
+
+        // If our current sub-tour, together with a lower bound, is already bigger than the whole
+        // tour the whole tour will definitely be bigger than our previous best version
+        let lower_bound_graph =
+            mst::prim_with_excluded_node_single_threaded(graph_matrix, current_prefix);
+        let lower_bound = lower_bound_graph.directed_edge_weight();
+
+        // TODO comment me
+        let best_known_solution = if global_best_cost < result.0 {
+            global_best_cost
+        } else {
+            result.0
+        };
+
+        if current_cost + lower_bound <= best_known_solution {
+            _mpi_improved_solver_rec(
+                graph_matrix,
+                current_prefix,
+                current_cost,
+                result,
+                global_best_cost,
+            );
+        }
+
+        // Remove the last edge
+        current_cost -= cost_last_edge;
+        current_prefix.pop();
+    }
 }
 
 #[cfg(test)]
@@ -1120,6 +1608,7 @@ mod exact_solver {
             fourth_improved_solver,
             fifth_improved_solver,
             sixth_improved_solver,
+            threaded_solver,
         ]
         .iter()
         {
@@ -1164,6 +1653,7 @@ mod exact_solver {
             fourth_improved_solver,
             fifth_improved_solver,
             sixth_improved_solver,
+            threaded_solver,
         ]
         .iter()
         {
@@ -1208,6 +1698,7 @@ mod exact_solver {
             fourth_improved_solver,
             fifth_improved_solver,
             sixth_improved_solver,
+            threaded_solver,
         ]
         .iter()
         {
