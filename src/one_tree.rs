@@ -134,7 +134,7 @@ fn one_tree_lower_bound_mpi(graph: &NAMatrix) -> f64 {
             .expect("Cannot compute the 1-tree lower bound of the empty graph");
 
         let mut global_lower_bound = f64::INFINITY;
-        if rank as i32 == ROOT_RANK {
+        if rank as mpi::topology::Rank == ROOT_RANK {
             root_process.reduce_into_root(
                 &local_lower_bound,
                 &mut global_lower_bound,
