@@ -16,7 +16,7 @@ use crate::{
 /// For an implementation with exact min-cost matching implementation see [`christofides_exact`].
 ///
 /// For further description, see also [`christofides_generic`].
-pub fn christofides<const MODE: usize>(graph: &Graph) -> Solution {
+pub fn christofides<const MODE: usize>(graph: &NAMatrix) -> Solution {
     christofides_generic::<MODE>(graph, compute_approx_matching::<MODE>)
 }
 
@@ -28,7 +28,7 @@ pub fn christofides<const MODE: usize>(graph: &Graph) -> Solution {
 /// For an implementation with approximated min-cost matching implementation see [`christofides_exact`].
 ///
 /// For further description, see also [`christofides_generic`].
-pub fn christofides_exact<const MODE: usize>(graph: &Graph) -> Solution {
+pub fn christofides_exact<const MODE: usize>(graph: &NAMatrix) -> Solution {
     christofides_generic::<MODE>(graph, compute_exact_matching)
 }
 
@@ -47,11 +47,12 @@ pub fn christofides_exact<const MODE: usize>(graph: &Graph) -> Solution {
 /// trait,
 /// the type [`NAMatrix`] is used.
 pub fn christofides_generic<const MODE: usize>(
-    graph: &Graph,
+    graph: &NAMatrix,
     matching_computer: fn(&Graph, &NAMatrix) -> Vec<[usize; 2]>,
 ) -> Solution {
     // create an adjacency matrix from the adjacency list
-    let graph_matr: NAMatrix = graph.into();
+    //let graph_matr: NAMatrix = graph.into();
+    let graph_matr = graph;
 
     // validate that the triangle ineq. holds
     debug_assert!(
@@ -716,7 +717,7 @@ mod test {
         .into();
 
         let exact_solution = solvers::exact::first_improved_solver::<NAMatrix>(&(&graph).into());
-        let result = christofides::<SEQ_COMPUTATION>(&graph);
+        let result = christofides::<SEQ_COMPUTATION>(&(&graph).into());
         assert!(
             exact_solution.0 <= result.0,
             "Christofides algorithm cannot outperfrom the exact solution"
