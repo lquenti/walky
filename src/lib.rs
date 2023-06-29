@@ -28,6 +28,9 @@ use crate::solvers::approximate::matching::{bootstrap_mpi_matching_calc, mpi_imp
 #[cfg(feature = "mpi")]
 use mpi::topology::*;
 
+#[cfg(feature = "benchmarking")]
+use std::time::Instant;
+
 /// Extracts the TSP instance from a TSPLIB-XML file.
 fn get_tsp_instance(
     input_file: PathBuf,
@@ -81,6 +84,9 @@ fn approx_run(
     match algorithm {
         ApproxAlgorithm::Christofides => {
             let graph = (&tsp_instance.graph).into();
+            #[cfg(feature = "benchmarking")]
+            let now = Instant::now();
+
             let solution = match parallelism {
                 Parallelism::SingleThreaded => {
                     christofides::<{ computation_mode::SEQ_COMPUTATION }>(&graph)
@@ -114,22 +120,30 @@ fn approx_run(
                 }
             };
             println!("Christofides solution weight: {}", solution.0);
+            #[cfg(feature = "benchmarking")]
+            println!("elapsed seconds: {}", now.elapsed().as_secs_f64());
         }
         ApproxAlgorithm::NearestNeighbour => {
+            let graph = (&tsp_instance.graph).into();
+            #[cfg(feature = "benchmarking")]
+            let now = Instant::now();
+
             let solution = match parallelism {
-                Parallelism::SingleThreaded => nearest_neighbour::<
-                    { computation_mode::SEQ_COMPUTATION },
-                >(&(&tsp_instance.graph).into()),
-                Parallelism::MultiThreaded => nearest_neighbour::<
-                    { computation_mode::PAR_COMPUTATION },
-                >(&(&tsp_instance.graph).into()),
+                Parallelism::SingleThreaded => {
+                    nearest_neighbour::<{ computation_mode::SEQ_COMPUTATION }>(&graph)
+                }
+                Parallelism::MultiThreaded => {
+                    nearest_neighbour::<{ computation_mode::PAR_COMPUTATION }>(&graph)
+                }
                 #[cfg(feature = "mpi")]
-                Parallelism::MPI => nearest_neighbour::<{ computation_mode::MPI_COMPUTATION }>(
-                    &(&tsp_instance.graph).into(),
-                ),
+                Parallelism::MPI => {
+                    nearest_neighbour::<{ computation_mode::MPI_COMPUTATION }>(&graph)
+                }
             };
             println!("Nearest Neighbour solution weight: {}", solution.0);
             println!("Nearest Neighbour solution: {:?}", solution.1);
+            #[cfg(feature = "benchmarking")]
+            println!("elapsed seconds: {}", now.elapsed().as_secs_f64());
         }
     };
 
