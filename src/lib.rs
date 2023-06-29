@@ -46,23 +46,24 @@ fn exact_run(
     parallelism: Parallelism,
 ) -> Result<(), Box<dyn Error>> {
     let tsp_instance = get_tsp_instance(input_file)?;
-
-    if parallelism != Parallelism::SingleThreaded {
-        unimplemented!()
-    }
-
-    // TODO replace me with nalgebra
     let m: NAMatrix = (&tsp_instance.graph).into();
-    let (best_cost, best_permutation) = match algorithm {
-        ExactAlgorithm::V0 => exact::naive_solver(&m),
-        ExactAlgorithm::V1 => exact::first_improved_solver(&m),
-        ExactAlgorithm::V2 => exact::second_improved_solver(&m),
-        ExactAlgorithm::V3 => exact::third_improved_solver(&m),
-        ExactAlgorithm::V4 => exact::fourth_improved_solver(&m),
-        ExactAlgorithm::V5 => exact::fifth_improved_solver(&m),
-        ExactAlgorithm::V6 => exact::sixth_improved_solver(&m),
-        ExactAlgorithm::HeldKarp => unimplemented!(),
+
+    let (best_cost, best_permutation) = match parallelism {
+        Parallelism::SingleThreaded => match algorithm {
+            ExactAlgorithm::V0 => exact::naive_solver(&m),
+            ExactAlgorithm::V1 => exact::first_improved_solver(&m),
+            ExactAlgorithm::V2 => exact::second_improved_solver(&m),
+            ExactAlgorithm::V3 => exact::third_improved_solver(&m),
+            ExactAlgorithm::V4 => exact::fourth_improved_solver(&m),
+            ExactAlgorithm::V5 => exact::fifth_improved_solver(&m),
+            ExactAlgorithm::V6 => exact::sixth_improved_solver(&m),
+            ExactAlgorithm::HeldKarp => unimplemented!(),
+        },
+        Parallelism::MultiThreaded => exact::threaded_solver(&m),
+        #[cfg(feature = "mpi")]
+        Parallelism::MPI => exact::mpi_solver(&m),
     };
+
     println!("Best Cost: {}", best_cost);
     println!("Best Permutation: {:?}", best_permutation);
     Ok(())

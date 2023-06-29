@@ -4,6 +4,9 @@ mod vecmatrix;
 /// Adjacency list based on TSPLIB-XML
 pub use crate::parser::{Edge, Graph, Vertex};
 
+#[cfg(feature = "mpi")]
+use mpi::traits::*;
+
 pub trait AdjacencyMatrix {
     /// Creates an unconnected graph with `dim` many vertices
     fn from_dim(dim: usize) -> Self;
@@ -70,3 +73,8 @@ pub use crate::datastructures::vecmatrix::VecMatrix;
 
 /// nalgebra DMatrix based implementation
 pub use crate::datastructures::nalgebra::NAMatrix;
+
+/// helper for MPI calls to send both some accumulated cost and the rank who calculated it
+#[derive(Default, Clone, Copy, Equivalence)]
+#[cfg(feature = "mpi")]
+pub struct MPICostRank(pub f64, pub mpi::topology::Rank);
