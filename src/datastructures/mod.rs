@@ -55,7 +55,10 @@ pub trait AdjacencyMatrix {
                 let direct_cost = self.get(i, j);
                 for k in 0..dim {
                     let indirect_cost = self.get(i, k) + self.get(k, j);
-                    if direct_cost > indirect_cost {
+                    // sometimes due to rounding errors a metric graph would be rejected.
+                    // By adding 1e-10 to indirect_costs,
+                    // small rounding errors are being ignored
+                    if direct_cost > indirect_cost + 1e-10 {
                         return false;
                     }
                 }
@@ -78,3 +81,47 @@ pub use crate::datastructures::nalgebra::NAMatrix;
 #[derive(Default, Clone, Copy, Equivalence)]
 #[cfg(feature = "mpi")]
 pub struct MPICostRank(pub f64, pub mpi::topology::Rank);
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use ::nalgebra::DMatrix;
+
+    /// 1 -3.- 2
+    /// |     /
+    /// |    /
+    /// 1.  1.
+    /// |  /
+    /// | /
+    /// 3
+    ///
+    /// violates the triangle inequality: 1 - 3 - 2 is shorter than 1 - 2
+    #[test]
+    fn test_triangle_inequality_check_fails() {
+        let graph = NAMatrix(DMatrix::from_row_slice(
+            3,
+            3,
+            &[0., 3., 1., 3., 0., 1., 1., 1., 0.],
+        ));
+        assert!(!graph.is_metric());
+    }
+
+    /// 1 -0.3- 2
+    /// |     /
+    /// |    /
+    /// 0.1  0.2
+    /// |  /
+    /// | /
+    /// 3
+    ///
+    /// triangle inequality holds
+    #[test]
+    fn test_triangle_inequality_check_succedes() {
+        let graph = NAMatrix(DMatrix::from_row_slice(
+            3,
+            3,
+            &[0., 0.3, 0.1, 0.3, 0., 0.2, 0.1, 0.2, 0.],
+        ));
+        assert!(graph.is_metric());
+    }
+}
