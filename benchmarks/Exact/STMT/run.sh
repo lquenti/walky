@@ -1,20 +1,21 @@
 # cluster conf
-#PROGRAM="/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky/target/release/walky"
-#XML_PATH="/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky/utils/gen_matrix_fast/results"
+PROGRAM="/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky/target/release/walky"
+XML_PATH="/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky/utils/gen_matrix_fast/results"
 #v0...
 
 # local testing
-PROGRAM="/home/lquenti/code/walky/target/release/walky"
-XML_PATH="/home/lquenti/code/walky/utils/gen_matrix_fast/results/"
+#PROGRAM="/home/lquenti/code/walky/target/release/walky"
+#XML_PATH="/home/lquenti/code/walky/utils/gen_matrix_fast/results/"
+
 # tested via find_maximum.sh
-MAXv0=12
-MAXv1=13
-MAXv2=11
-MAXv3=12
-MAXv4=18
-MAXv5=46
-MAXv6=46
-MAXthreaded=15
+MAXv0=11
+MAXv1=12
+MAXv2=10
+MAXv3=11
+MAXv4=17
+MAXv5=45
+MAXv6=45
+MAXthreaded=14
 
 echo "cleanup"
 rm -rf results

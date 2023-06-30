@@ -8,14 +8,14 @@ algorithm = sys.argv[1]
 parallelism = sys.argv[2]
 
 # cluster conf
-#PROGRAM = "/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky/target/release/walky"
-#XML_PATH = "/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky/utils/gen_matrix_fast/results"
-#MAX_TIME = 5*60
+PROGRAM = "/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky/target/release/walky"
+XML_PATH = "/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky/utils/gen_matrix_fast/results"
+MAX_TIME = 5*60
 
 # local testing
-PROGRAM = "/home/lquenti/code/walky/target/release/walky"
-XML_PATH = "/home/lquenti/code/walky/utils/gen_matrix_fast/results/"
-MAX_TIME = .2
+#PROGRAM = "/home/lquenti/code/walky/target/release/walky"
+#XML_PATH = "/home/lquenti/code/walky/utils/gen_matrix_fast/results/"
+#MAX_TIME = .2
 
 OUTPUT_FILE = f"minimum_{algorithm}_{parallelism}.txt"
 
