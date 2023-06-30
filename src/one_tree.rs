@@ -127,7 +127,7 @@ fn one_tree_lower_bound_mpi(graph: &NAMatrix) -> f64 {
         let local_lower_bound = (rank..graph.dim())
             .step_by(size)
             .map(|special_vertex| one_tree(graph, special_vertex).undirected_edge_weight())
-            .min_by(|x, y| {
+            .max_by(|x, y| {
                 x.partial_cmp(y)
                     .expect("Tried to compare NaN value. Your data seems currupt.")
             })
