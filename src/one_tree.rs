@@ -90,7 +90,7 @@ pub fn one_tree_lower_bound<const MODE: usize>(graph: &NAMatrix) -> f64 {
 fn one_tree_lower_bound_seq(graph: &NAMatrix) -> f64 {
     (0..graph.dim())
         .map(|special_vertex| one_tree(graph, special_vertex).undirected_edge_weight())
-        .min_by(|x, y| {
+        .max_by(|x, y| {
             x.partial_cmp(y)
                 .expect("Tried to compare NaN value. Your data seems currupt.")
         })
@@ -105,7 +105,7 @@ fn one_tree_lower_bound_par(graph: &NAMatrix) -> f64 {
     (0..graph.dim())
         .into_par_iter()
         .map(|special_vertex| one_tree(graph, special_vertex).undirected_edge_weight())
-        .min_by(|x, y| {
+        .max_by(|x, y| {
             x.partial_cmp(y)
                 .expect("Tried to compare NaN value. Your data seems currupt.")
         })
@@ -127,21 +127,21 @@ fn one_tree_lower_bound_mpi(graph: &NAMatrix) -> f64 {
         let local_lower_bound = (rank..graph.dim())
             .step_by(size)
             .map(|special_vertex| one_tree(graph, special_vertex).undirected_edge_weight())
-            .min_by(|x, y| {
+            .max_by(|x, y| {
                 x.partial_cmp(y)
                     .expect("Tried to compare NaN value. Your data seems currupt.")
             })
             .expect("Cannot compute the 1-tree lower bound of the empty graph");
 
         let mut global_lower_bound = f64::INFINITY;
-        if rank as i32 == ROOT_RANK {
+        if rank as mpi::topology::Rank == ROOT_RANK {
             root_process.reduce_into_root(
                 &local_lower_bound,
                 &mut global_lower_bound,
-                SystemOperation::min(),
+                SystemOperation::max(),
             );
         } else {
-            root_process.reduce_into(&local_lower_bound, SystemOperation::min());
+            root_process.reduce_into(&local_lower_bound, SystemOperation::max());
         }
         global_lower_bound
     }
@@ -312,7 +312,7 @@ mod test {
         }
 
         assert_abs_diff_eq!(
-            0.31,
+            1.21,
             one_tree_lower_bound::<SEQ_COMPUTATION>(&(&graph).into())
         );
     }
