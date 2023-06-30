@@ -1,9 +1,8 @@
-rm -rf big
-mkdir big
+mkdir results
 
-for ((i=200;i<=2500;i+=100))
+for ((i=200;i<=3000;i+=100))
 do
-  echo "$i/2500"
-  ./target/release/gen_matrix_fast $i > ./big/$i.xml &
+  echo "$i/3000"
+  ./target/release/gen_matrix_fast $i > ./results/$i.xml &
 done
 
