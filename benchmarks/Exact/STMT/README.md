@@ -6,3 +6,5 @@
 2. Write the results into `run.sh`
 3. Run `run.sh`
 4. Visualize using `plot_results.py`
+
+btw since the data is so small we just test e2e with loading, but again the overhead should be neligable
