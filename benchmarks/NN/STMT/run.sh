@@ -14,7 +14,7 @@ mkdir results
 for ((N=100; N<=3000; N+=100)); do
   echo "${N}/3000"
   for PARALLELISM in "single-threaded" "multi-threaded"; do
-    command="python3 run_often.py \"$PROGRAM approx nearest-neighbour -p $PARALLELISM ${XML_PATH}/$N.xml\" ./results/result_${N}_${PARALLELISM}.json"
+    command="python3 ../../run_often.py \"$PROGRAM approx nearest-neighbour -p $PARALLELISM ${XML_PATH}/$N.xml\" ./results/result_${N}_${PARALLELISM}.json"
     eval "$command"
   done
 done
