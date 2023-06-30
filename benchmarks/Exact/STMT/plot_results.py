@@ -19,7 +19,7 @@ for algorithm in ["v0", "v1", "v2", "v3", "v4", "v5", "v6", "multithreaded"]:
 
 plt.ylim(y_min, y_max)
 plt.xlabel('Graph Size')
-plt.ylabel('t')
+plt.ylabel('time in seconds')
 plt.title('Exact Solver Single Node')
 plt.legend()
 plt.show()
