@@ -1,4 +1,5 @@
 import json
+import numpy as np
 import matplotlib.pyplot as plt
 
 y_min = 0
@@ -19,20 +20,24 @@ for (algorithm, label) in [
         ("v2", "Prefix Sum Caching"),
         ("v3", "Naive prune"),
         ("v4", "NN prune"),
-        #("v5", "MST prune"),
-        #("v6", "MST cache"),
-        #("multithreaded", "Multithreaded")
+        ("v5", "MST prune"),
+        ("v6", "MST cache"),
+        ("multithreaded", "Multithreaded")
         ]:
     xs,ys = load_from_file(f"./results/results_{algorithm}.json")
-    plt.plot(xs,ys, label=label)
+    if algorithm == "v4": # TODO fix me
+        xs = xs[:18]
+        ys = ys[:18]
+    plt.plot(xs,ys, label=algorithm)
+
 
 plt.ylim(y_min, y_max)
 plt.xlabel('Graph Size')
 plt.ylabel('t')
 plt.title('Exact Solver Single Node')
 ax = plt.gca()
-ax.set_xlim([0,20])
-ax.set_ylim([0,100])
+ax.set_ylim([0, 10])
+ax.set_xticks(np.round(np.linspace(0, 50, 11), 2))
 plt.legend()
 #plt.show()
 plt.savefig("exact-stmt.pdf")
