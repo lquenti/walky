@@ -28,7 +28,7 @@ for (algorithm, label) in [
     if algorithm == "v4": # TODO fix me
         xs = xs[:18]
         ys = ys[:18]
-    plt.plot(xs,ys, label=algorithm)
+    plt.plot(xs,ys, label=label)
 
 
 plt.ylim(y_min, y_max)

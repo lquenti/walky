@@ -14,8 +14,8 @@ def load_from_file(path):
     return xs,ys
 
 for (algorithm, label) in [
-        ("v0", "naive"),
-        ("v1", "Fixed Stating Node"),
+        ("v0", "Naive"),
+        ("v1", "Fixed Starting Node"),
         ("v2", "Prefix Sum Caching"),
         ("v3", "Naive prune"),
         ("v4", "NN prune"),
@@ -31,7 +31,8 @@ plt.xlabel('Graph Size')
 plt.ylabel('t')
 plt.title('Exact Solver Single Node')
 ax = plt.gca()
-ax.set_xlim([0,20])
+ax.set_xlim([0,13])
+#ax.set_xlim([0,20])
 ax.set_ylim([0,100])
 plt.legend()
 #plt.show()
