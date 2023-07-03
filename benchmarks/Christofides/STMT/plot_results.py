@@ -29,5 +29,6 @@ plt.xlabel('Graph Size')
 plt.ylabel('time in seconds')
 plt.title('Exact Solver Single Node')
 plt.legend()
-plt.show()
+#plt.show()
+plt.savefig("christofides-stmt.pdf")
 

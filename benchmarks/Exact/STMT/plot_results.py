@@ -22,5 +22,5 @@ plt.xlabel('Graph Size')
 plt.ylabel('t')
 plt.title('Exact Solver Single Node')
 plt.legend()
-plt.show()
-
+#plt.show()
+plt.savefig("exact-stmt.pdf")

@@ -60,4 +60,5 @@ plt.plot(*map(list, zip(*single_process_per_node)), label = "single node", c="bl
 plt.plot(*map(list, zip(*multi_processes_per_node)), label = "multi nodes", c="red")
 plt.legend()
 
-plt.show()
+#plt.show()
+plt.savefig("1-tree-mpi.pdf")

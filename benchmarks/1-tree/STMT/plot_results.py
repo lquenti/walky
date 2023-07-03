@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 BASE_FOLDER = "results"
 MIN_SIZE = 100
-MAX_SIZE = 3000
+MAX_SIZE = 2500
 STEP = 100
 
 single_threaded = ([], [])
@@ -29,5 +29,6 @@ plt.xlabel('Graph Size')
 plt.ylabel('time in seconds')
 plt.title('Exact Solver Single Node')
 plt.legend()
-plt.show()
+#plt.show()
+plt.savefig("1-tree-stmt.pdf")
 
