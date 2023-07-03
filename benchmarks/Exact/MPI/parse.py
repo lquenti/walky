@@ -57,7 +57,7 @@ plt.plot(*map(list, zip(*multi_processes_per_node)), label = "multi nodes", c="r
 plt.legend()
 plt.xlabel("number of processes")
 plt.ylabel("t")
-plt.title("Exact Solver MPI")
+plt.title("Exact Solver MPI (n=50)")
 
 #plt.show()
 plt.savefig("exact-mpi.pdf")

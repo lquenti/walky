@@ -57,7 +57,7 @@ plt.plot(*map(list, zip(*multi_processes_per_node)), label = "multi nodes", c="r
 plt.legend()
 plt.xlabel("number of processes")
 plt.ylabel("t")
-plt.title("Nearest Neighbour MPI")
+plt.title("Nearest Neighbour MPI (n=3000)")
 
 #plt.show()
 plt.savefig("nn-mpi.pdf")

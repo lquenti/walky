@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     plt.xticks(num_tasks)
 
-    plt.title("Christofides randomized solution weight, parallelized with MPI")
+    plt.title("Christofides randomized solution weight, parallelized with MPI (n=2500)")
     plt.xlabel("number of MPI tasks")
     plt.ylabel("solution weight")
     plt.legend()

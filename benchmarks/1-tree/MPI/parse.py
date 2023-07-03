@@ -61,7 +61,7 @@ plt.plot(*map(list, zip(*multi_processes_per_node)), label = "multi nodes", c="r
 plt.legend()
 plt.xlabel("number of processes")
 plt.ylabel("t")
-plt.title("1-tree Lower Bound MPI")
+plt.title("1-tree Lower Bound MPI (n=3000)")
 
 #plt.show()
 plt.savefig("1-tree-mpi.pdf")
