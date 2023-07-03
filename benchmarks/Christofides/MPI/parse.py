@@ -36,10 +36,11 @@ def find_matched_files(folder_path):
 
     return matched_files
 
-xs = find_matched_files(FOLDER_PATH)
-
-# do plot logic here
-
-print(xs)
+if __name__ == "__main__":
+    xs = find_matched_files(FOLDER_PATH)
+    
+    # do plot logic here
+    
+    print(xs)
 
 
