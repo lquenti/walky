@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -N 1
-#SBATCH --ntasks-per-node=16
+#SBATCH --ntasks-per-node=1
 #SBATCH -t 6:00:00
 
 # Your milage may vary
 NUMBER_OF_NODES=1
-NUMBER_OF_TASKS_PER_NODE=16
+NUMBER_OF_TASKS_PER_NODE=1
 
 # This are sane defaults
 NUMBER_OF_WARMUP_RUNS=3
