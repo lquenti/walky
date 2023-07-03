@@ -33,4 +33,4 @@ if __name__ == "__main__":
     plt.ylabel("solution weight")
     plt.legend()
     #plt.show()
-    plt.savefig("plot_chrsitofides.pdf")
+    plt.savefig("christofides-mpi.pdf")
