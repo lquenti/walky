@@ -1,0 +1,56 @@
+================================================================================
+JobID = 16068474
+User = lars.quentin01, Account = all
+Partition = medium, Nodelist = amp051
+================================================================================
+v0
+Benchmark 1: /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky exact -p single-threaded v0 /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results/3.xml
+  Time (mean ± σ):     120.2 ms ±   0.5 ms    [User: 4.4 ms, System: 9.2 ms]
+  Range (min … max):   119.8 ms … 120.6 ms    2 runs
+ 
+Benchmark 1: /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky exact -p single-threaded v0 /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results/4.xml
+  Time (mean ± σ):     122.4 ms ±   0.0 ms    [User: 3.9 ms, System: 9.9 ms]
+  Range (min … max):   122.4 ms … 122.4 ms    2 runs
+ 
+Benchmark 1: /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky exact -p single-threaded v0 /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results/5.xml
+  Time (mean ± σ):     121.2 ms ±   2.1 ms    [User: 6.1 ms, System: 7.5 ms]
+  Range (min … max):   119.7 ms … 122.6 ms    2 runs
+ 
+Benchmark 1: /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky exact -p single-threaded v0 /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results/6.xml
+  Time (mean ± σ):     119.9 ms ±   0.0 ms    [User: 3.2 ms, System: 10.3 ms]
+  Range (min … max):   119.9 ms … 120.0 ms    2 runs
+ 
+Benchmark 1: /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky exact -p single-threaded v0 /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results/7.xml
+  Time (mean ± σ):     120.9 ms ±   0.5 ms    [User: 5.8 ms, System: 7.8 ms]
+  Range (min … max):   120.6 ms … 121.3 ms    2 runs
+ 
+Benchmark 1: /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky exact -p single-threaded v0 /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results/8.xml
+  Time (mean ± σ):     122.0 ms ±   0.3 ms    [User: 6.4 ms, System: 7.8 ms]
+  Range (min … max):   121.8 ms … 122.2 ms    2 runs
+ 
+Benchmark 1: /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky exact -p single-threaded v0 /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results/9.xml
+  Time (mean ± σ):     126.5 ms ±   0.6 ms    [User: 11.3 ms, System: 8.1 ms]
+  Range (min … max):   126.1 ms … 126.9 ms    2 runs
+ 
+Benchmark 1: /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky exact -p single-threaded v0 /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results/10.xml
+  Time (mean ± σ):     179.6 ms ±   0.1 ms    [User: 64.1 ms, System: 8.1 ms]
+  Range (min … max):   179.6 ms … 179.7 ms    2 runs
+ 
+Benchmark 1: /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky exact -p single-threaded v0 /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results/11.xml
+  Time (mean ± σ):     855.9 ms ±   0.6 ms    [User: 737.1 ms, System: 10.5 ms]
+  Range (min … max):   855.5 ms … 856.4 ms    2 runs
+ 
+Benchmark 1: /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky exact -p single-threaded v0 /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results/12.xml
+  Time (mean ± σ):      9.576 s ±  0.012 s    [User: 9.438 s, System: 0.008 s]
+  Range (min … max):    9.567 s …  9.584 s    2 runs
+ 
+Benchmark 1: /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky exact -p single-threaded v0 /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results/13.xml
+  Time (mean ± σ):     128.254 s ±  0.042 s    [User: 127.779 s, System: 0.011 s]
+  Range (min … max):   128.224 s … 128.284 s    2 runs
+ 
+Benchmark 1: /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky exact -p single-threaded v0 /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results/14.xml
+  Time (mean ± σ):     1901.954 s ±  0.936 s    [User: 1896.777 s, System: 0.131 s]
+  Range (min … max):   1901.292 s … 1902.616 s    2 runs
+ 
+Benchmark 1: /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky exact -p single-threaded v0 /home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results/15.xml
+slurmstepd: error: *** JOB 16068474 ON amp051 CANCELLED AT 2023-07-01T15:23:13 DUE TO TIME LIMIT ***

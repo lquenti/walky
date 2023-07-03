@@ -8,8 +8,8 @@ algorithm = sys.argv[1]
 parallelism = sys.argv[2]
 
 # cluster conf
-PROGRAM = "/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky/target/release/walky"
-XML_PATH = "/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky/utils/gen_matrix_fast/results"
+PROGRAM = "/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/target/release/walky"
+XML_PATH = "/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-exact-stmt/utils/gen_matrix_fast/results"
 MAX_TIME = 5*60
 
 # local testing
