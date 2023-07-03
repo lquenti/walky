@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # cluster conf
-PROGRAM="/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-stmt/target/release/walky"
-XML_PATH="/home/uni11/gwdg1/GWDG/lars.quentin01/code/playground/walky-stmt/utils/gen_matrix_fast/results"
+PROGRAM="/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky"
+XML_PATH="/home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results"
 
 # local testing
 #PROGRAM="/home/lquenti/code/walky/target/release/walky"
