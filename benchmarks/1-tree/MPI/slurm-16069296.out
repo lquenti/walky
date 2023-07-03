@@ -1,0 +1,23 @@
+================================================================================
+JobID = 16069296
+User = lars.quentin01, Account = all
+Partition = medium, Nodelist = amp090
+================================================================================
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 120.037466569
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 119.031234304
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 119.356081107
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 119.899992668
+============ Job Information ===================================================
+Submitted: 2023-06-30T19:29:10
+Started: 2023-06-30T19:29:28
+Ended: 2023-06-30T20:00:55
+Elapsed: 32 min, Limit: 720 min, Difference: 688 min
+CPUs: 4, Nodes: 1
+============= ProfiT-HPC =======================================================
+To generate the ProfiT-HPC text report, run the following command
+profit-hpc 16069296
+================================================================================
