@@ -1,0 +1,44 @@
+run 0/10
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1203.3301912254776
+elapsed seconds: 29.780373779
+run 1/10
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1200.671956224629
+elapsed seconds: 31.302332017
+run 2/10
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1223.5868159163292
+elapsed seconds: 31.372948896
+run 3/10
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1241.3479524975567
+elapsed seconds: 31.081522362
+run 4/10
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1214.8345182344021
+elapsed seconds: 31.564649068
+run 5/10
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1208.6814917733416
+elapsed seconds: 29.817116439
+run 6/10
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1198.7528630576296
+elapsed seconds: 30.903809672
+run 7/10
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1205.818331563187
+elapsed seconds: 30.516889185
+run 8/10
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1206.9916654459282
+elapsed seconds: 30.733936789
+run 9/10
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1216.8740785026457
+elapsed seconds: 31.527340199
+run 10/10
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1219.4503228698838
+elapsed seconds: 29.580915512
