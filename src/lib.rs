@@ -28,6 +28,9 @@ use crate::solvers::approximate::matching::{bootstrap_mpi_matching_calc, mpi_imp
 #[cfg(feature = "mpi")]
 use mpi::topology::*;
 
+#[cfg(feature = "benchmarking")]
+use std::time::Instant;
+
 /// Extracts the TSP instance from a TSPLIB-XML file.
 fn get_tsp_instance(
     input_file: PathBuf,
@@ -47,6 +50,8 @@ fn exact_run(
 ) -> Result<(), Box<dyn Error>> {
     let tsp_instance = get_tsp_instance(input_file)?;
     let m: NAMatrix = (&tsp_instance.graph).into();
+    #[cfg(feature = "benchmarking")]
+    let now = Instant::now();
 
     let (best_cost, best_permutation) = match parallelism {
         Parallelism::SingleThreaded => match algorithm {
@@ -66,6 +71,8 @@ fn exact_run(
 
     println!("Best Cost: {}", best_cost);
     println!("Best Permutation: {:?}", best_permutation);
+    #[cfg(feature = "benchmarking")]
+    println!("elapsed seconds: {}", now.elapsed().as_secs_f64());
     Ok(())
 }
 
@@ -81,6 +88,9 @@ fn approx_run(
     match algorithm {
         ApproxAlgorithm::Christofides => {
             let graph = (&tsp_instance.graph).into();
+            #[cfg(feature = "benchmarking")]
+            let now = Instant::now();
+
             let solution = match parallelism {
                 Parallelism::SingleThreaded => {
                     christofides::<{ computation_mode::SEQ_COMPUTATION }>(&graph)
@@ -114,22 +124,30 @@ fn approx_run(
                 }
             };
             println!("Christofides solution weight: {}", solution.0);
+            #[cfg(feature = "benchmarking")]
+            println!("elapsed seconds: {}", now.elapsed().as_secs_f64());
         }
         ApproxAlgorithm::NearestNeighbour => {
+            let graph = (&tsp_instance.graph).into();
+            #[cfg(feature = "benchmarking")]
+            let now = Instant::now();
+
             let solution = match parallelism {
-                Parallelism::SingleThreaded => nearest_neighbour::<
-                    { computation_mode::SEQ_COMPUTATION },
-                >(&(&tsp_instance.graph).into()),
-                Parallelism::MultiThreaded => nearest_neighbour::<
-                    { computation_mode::PAR_COMPUTATION },
-                >(&(&tsp_instance.graph).into()),
+                Parallelism::SingleThreaded => {
+                    nearest_neighbour::<{ computation_mode::SEQ_COMPUTATION }>(&graph)
+                }
+                Parallelism::MultiThreaded => {
+                    nearest_neighbour::<{ computation_mode::PAR_COMPUTATION }>(&graph)
+                }
                 #[cfg(feature = "mpi")]
-                Parallelism::MPI => nearest_neighbour::<{ computation_mode::MPI_COMPUTATION }>(
-                    &(&tsp_instance.graph).into(),
-                ),
+                Parallelism::MPI => {
+                    nearest_neighbour::<{ computation_mode::MPI_COMPUTATION }>(&graph)
+                }
             };
             println!("Nearest Neighbour solution weight: {}", solution.0);
             println!("Nearest Neighbour solution: {:?}", solution.1);
+            #[cfg(feature = "benchmarking")]
+            println!("elapsed seconds: {}", now.elapsed().as_secs_f64());
         }
     };
 
@@ -147,6 +165,8 @@ fn mst_run(
 ) -> Result<(), Box<dyn Error>> {
     let tsp_instance = get_tsp_instance(input_file)?;
     let na_matrix: NAMatrix = (&tsp_instance.graph).into();
+    #[cfg(feature = "benchmarking")]
+    let now = Instant::now();
 
     let mst = match algorithm {
         MSTAlgorithm::Prim => match parallelism {
@@ -159,6 +179,8 @@ fn mst_run(
         },
     };
     println!("MST weight: {}", mst.undirected_edge_weight());
+    #[cfg(feature = "benchmarking")]
+    println!("elapsed seconds: {}", now.elapsed().as_secs_f64());
     Ok(())
 }
 
@@ -170,6 +192,8 @@ fn lower_bound_run(
 ) -> Result<(), Box<dyn Error>> {
     let tsp_instance = get_tsp_instance(input_file)?;
     let na_matrix: NAMatrix = (&tsp_instance.graph).into();
+    #[cfg(feature = "benchmarking")]
+    let now = Instant::now();
 
     match algorithm {
         LowerBoundAlgorithm::OneTree => {
@@ -197,6 +221,8 @@ fn lower_bound_run(
             println!("1-tree lower bound: {}", lower_bound);
         }
     }
+    #[cfg(feature = "benchmarking")]
+    println!("elapsed seconds: {}", now.elapsed().as_secs_f64());
     Ok(())
 }
 

@@ -1,12 +1,24 @@
 import numpy as np
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
+
+def calculate_distance(point1, point2):
+    return np.linalg.norm(point1 - point2)
+
 def create_matrix(size):
-    """Creates random symmetric fully connected graph with diagonal cost zero."""
-    matrix = np.random.rand(size, size) * 20
-    matrix = np.triu(matrix, 1) + np.triu(matrix, 1).T
-    np.fill_diagonal(matrix, 0)
-    return matrix
+    """Creates metric fully connected graph with diagonal cost zero."""
+    points = np.random.rand(size, 2)
+    n = len(points)
+    graph_matrix = np.zeros((n, n))
+
+    for i in range(n):
+        for j in range(i + 1, n):
+            distance = calculate_distance(points[i], points[j])
+            graph_matrix[i, j] = distance
+            graph_matrix[j, i] = distance
+
+    return graph_matrix
+
 
 def convert_to_rust_code(cost_matrix):
     """Convert a numpy cost matrix to rust code"""

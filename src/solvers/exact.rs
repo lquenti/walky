@@ -646,6 +646,11 @@ fn threaded_solver_generic(
             .into(),
     };
 
+    // if (number of threads >= n) we do seq
+    if number_of_threads >= graph_matrix.dim() {
+        return fifth_improved_solver(graph_matrix);
+    }
+
     // Spawn all threads
     rayon::scope(|s| {
         for i in 0..number_of_threads {

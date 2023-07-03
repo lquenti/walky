@@ -1,0 +1,1780 @@
+{
+  "results": [
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/3.xml",
+      "mean": 0.1212962165,
+      "stddev": 0.001522753265229669,
+      "median": 0.12099259750000001,
+      "user": 0.0042911,
+      "system": 0.007406399999999999,
+      "min": 0.11936571300000001,
+      "max": 0.12395670600000001,
+      "times": [
+        0.12395670600000001,
+        0.11936571300000001,
+        0.12261075900000001,
+        0.12293879,
+        0.121269344,
+        0.120063187,
+        0.120453427,
+        0.119661581,
+        0.12071585100000001,
+        0.12192680700000001
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "3"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/4.xml",
+      "mean": 0.1183631812,
+      "stddev": 0.0014471519792858126,
+      "median": 0.11828453800000001,
+      "user": 0.0040391,
+      "system": 0.0070615999999999995,
+      "min": 0.11643135900000001,
+      "max": 0.12169073300000001,
+      "times": [
+        0.12169073300000001,
+        0.11836049400000001,
+        0.118379864,
+        0.11942691200000001,
+        0.118208582,
+        0.11643135900000001,
+        0.11763588700000001,
+        0.117323728,
+        0.118837513,
+        0.11733674000000001
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "4"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/5.xml",
+      "mean": 0.1176811904,
+      "stddev": 0.0014595263523679489,
+      "median": 0.1170406335,
+      "user": 0.0045921,
+      "system": 0.0062058,
+      "min": 0.116392675,
+      "max": 0.120379936,
+      "times": [
+        0.118319117,
+        0.117031749,
+        0.117049518,
+        0.116879677,
+        0.116392675,
+        0.116560804,
+        0.11734714500000001,
+        0.120379936,
+        0.120140726,
+        0.116710557
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "5"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/6.xml",
+      "mean": 0.11710041400000001,
+      "stddev": 0.0007972514910272088,
+      "median": 0.116844838,
+      "user": 0.0042058,
+      "system": 0.0065490999999999995,
+      "min": 0.11613851100000001,
+      "max": 0.118712281,
+      "times": [
+        0.116800942,
+        0.11688873400000001,
+        0.11672505100000001,
+        0.116559911,
+        0.11715415500000001,
+        0.116998876,
+        0.11831165,
+        0.11613851100000001,
+        0.11671402900000001,
+        0.118712281
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "6"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/7.xml",
+      "mean": 0.1186709207,
+      "stddev": 0.0006527973306462728,
+      "median": 0.11860402550000002,
+      "user": 0.0041614,
+      "system": 0.007077700000000001,
+      "min": 0.11766092600000001,
+      "max": 0.119676772,
+      "times": [
+        0.11766092600000001,
+        0.118051996,
+        0.117944482,
+        0.11919372900000001,
+        0.11905916200000001,
+        0.11934124800000001,
+        0.118623052,
+        0.11857284100000001,
+        0.11858499900000001,
+        0.119676772
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "7"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/8.xml",
+      "mean": 0.1176545672,
+      "stddev": 0.0014991497562759262,
+      "median": 0.11735517300000001,
+      "user": 0.0042233,
+      "system": 0.0068554,
+      "min": 0.11615871900000001,
+      "max": 0.121265094,
+      "times": [
+        0.11890465,
+        0.117682751,
+        0.117863799,
+        0.11724292100000001,
+        0.11690364600000001,
+        0.11667176100000001,
+        0.11638490600000001,
+        0.11615871900000001,
+        0.11746742500000001,
+        0.121265094
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "8"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/9.xml",
+      "mean": 0.1176641995,
+      "stddev": 0.0011048271284970108,
+      "median": 0.1173438125,
+      "user": 0.0041665999999999995,
+      "system": 0.00716,
+      "min": 0.116477568,
+      "max": 0.11948712400000001,
+      "times": [
+        0.116745471,
+        0.11786065500000001,
+        0.117875714,
+        0.119186147,
+        0.118574785,
+        0.11682697,
+        0.116812683,
+        0.116794878,
+        0.116477568,
+        0.11948712400000001
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "9"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/10.xml",
+      "mean": 0.11844153180000001,
+      "stddev": 0.0019505427081497552,
+      "median": 0.117946415,
+      "user": 0.0040633,
+      "system": 0.0074059,
+      "min": 0.116368076,
+      "max": 0.12335330400000001,
+      "times": [
+        0.11673641300000001,
+        0.11770490600000001,
+        0.119379782,
+        0.11825221500000001,
+        0.117715099,
+        0.11771574900000001,
+        0.118177081,
+        0.116368076,
+        0.119012693,
+        0.12335330400000001
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "10"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/11.xml",
+      "mean": 0.11975881429999999,
+      "stddev": 0.0020448724392453247,
+      "median": 0.1192591925,
+      "user": 0.0055127,
+      "system": 0.006976100000000001,
+      "min": 0.11764139200000001,
+      "max": 0.12457593200000001,
+      "times": [
+        0.11809159400000001,
+        0.12100469200000001,
+        0.120161815,
+        0.11764139200000001,
+        0.119371419,
+        0.11813545600000001,
+        0.120799423,
+        0.11865945400000001,
+        0.12457593200000001,
+        0.119146966
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "11"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/12.xml",
+      "mean": 0.12141785950000002,
+      "stddev": 0.005909020386436638,
+      "median": 0.11934982400000001,
+      "user": 0.0050573,
+      "system": 0.007665899999999999,
+      "min": 0.11829073200000001,
+      "max": 0.137720706,
+      "times": [
+        0.137720706,
+        0.120023561,
+        0.118892173,
+        0.11982118100000001,
+        0.11877780700000001,
+        0.119100306,
+        0.11829073200000001,
+        0.123402986,
+        0.11854980100000001,
+        0.11959934200000001
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "12"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/13.xml",
+      "mean": 0.11956966200000001,
+      "stddev": 0.002242126248986586,
+      "median": 0.11870566950000001,
+      "user": 0.0039751000000000005,
+      "system": 0.0073537,
+      "min": 0.11736043700000001,
+      "max": 0.12481584800000001,
+      "times": [
+        0.11736043700000001,
+        0.11816174500000001,
+        0.11802063800000001,
+        0.12008682300000001,
+        0.11865214600000001,
+        0.119768728,
+        0.12481584800000001,
+        0.121798976,
+        0.11875919300000001,
+        0.11827208600000001
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "13"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/14.xml",
+      "mean": 0.12508419,
+      "stddev": 0.01247672849140563,
+      "median": 0.12075455000000002,
+      "user": 0.005846699999999999,
+      "system": 0.0062282,
+      "min": 0.11835484600000001,
+      "max": 0.159886005,
+      "times": [
+        0.12189822200000001,
+        0.12073788,
+        0.11946786100000001,
+        0.11835484600000001,
+        0.118888219,
+        0.126787497,
+        0.159886005,
+        0.12077122000000001,
+        0.12366444100000001,
+        0.12038570900000001
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "14"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/15.xml",
+      "mean": 0.13793785470000003,
+      "stddev": 0.001906646125354909,
+      "median": 0.13695696200000002,
+      "user": 0.021528399999999996,
+      "system": 0.0078684,
+      "min": 0.13583556300000002,
+      "max": 0.141628942,
+      "times": [
+        0.136885959,
+        0.138585281,
+        0.13691604300000002,
+        0.139990832,
+        0.139587512,
+        0.141628942,
+        0.136419439,
+        0.13653109500000002,
+        0.13699788100000002,
+        0.13583556300000002
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "15"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/16.xml",
+      "mean": 0.12002207060000003,
+      "stddev": 0.0013707943892207737,
+      "median": 0.1194210175,
+      "user": 0.006122999999999999,
+      "system": 0.006362,
+      "min": 0.11842168700000001,
+      "max": 0.12259937600000001,
+      "times": [
+        0.12156428000000001,
+        0.119331716,
+        0.121581541,
+        0.11936492800000001,
+        0.12259937600000001,
+        0.11910997400000001,
+        0.119541063,
+        0.11947710700000001,
+        0.11922903400000001,
+        0.11842168700000001
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "16"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/17.xml",
+      "mean": 0.1254953385,
+      "stddev": 0.005966662089607709,
+      "median": 0.123347446,
+      "user": 0.0083289,
+      "system": 0.006935099999999998,
+      "min": 0.12151224100000001,
+      "max": 0.14064619,
+      "times": [
+        0.122823308,
+        0.125952695,
+        0.13030666600000002,
+        0.14064619,
+        0.12163059400000001,
+        0.122075104,
+        0.123871584,
+        0.12437874700000001,
+        0.12175625600000001,
+        0.12151224100000001
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "17"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/18.xml",
+      "mean": 0.12062352760000002,
+      "stddev": 0.001043502962616056,
+      "median": 0.12039413650000001,
+      "user": 0.007443,
+      "system": 0.0059464,
+      "min": 0.119451994,
+      "max": 0.123073782,
+      "times": [
+        0.12078071400000001,
+        0.123073782,
+        0.12012575800000001,
+        0.12041267100000001,
+        0.12037560200000001,
+        0.11960126200000001,
+        0.12129859600000001,
+        0.12107511700000001,
+        0.12003978000000001,
+        0.119451994
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "18"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/19.xml",
+      "mean": 0.12310719590000001,
+      "stddev": 0.001732043702930501,
+      "median": 0.12223413300000001,
+      "user": 0.0094662,
+      "system": 0.006297399999999999,
+      "min": 0.121459781,
+      "max": 0.125720841,
+      "times": [
+        0.122280491,
+        0.125720841,
+        0.121459781,
+        0.125524772,
+        0.125520142,
+        0.12183890200000001,
+        0.12218777500000001,
+        0.12208954300000001,
+        0.122394663,
+        0.12205504900000001
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "19"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/20.xml",
+      "mean": 0.12181949669999999,
+      "stddev": 0.0004519819375737265,
+      "median": 0.12185258100000002,
+      "user": 0.009274899999999999,
+      "system": 0.0060606,
+      "min": 0.121164039,
+      "max": 0.122318835,
+      "times": [
+        0.12225595500000001,
+        0.121852651,
+        0.12185251100000001,
+        0.121699072,
+        0.122206271,
+        0.12139298700000001,
+        0.12117697300000001,
+        0.122275673,
+        0.121164039,
+        0.122318835
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "20"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/21.xml",
+      "mean": 0.12440160670000003,
+      "stddev": 0.0018238437157156791,
+      "median": 0.123781209,
+      "user": 0.0109425,
+      "system": 0.006365899999999999,
+      "min": 0.12311100400000001,
+      "max": 0.12916381600000001,
+      "times": [
+        0.123275015,
+        0.12380308400000001,
+        0.12375933400000001,
+        0.12490254,
+        0.12531361700000002,
+        0.12916381600000001,
+        0.12405048900000001,
+        0.12329073700000001,
+        0.12311100400000001,
+        0.123346431
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "21"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/22.xml",
+      "mean": 0.12469370290000001,
+      "stddev": 0.000837959202843624,
+      "median": 0.1247027765,
+      "user": 0.0111157,
+      "system": 0.006753300000000001,
+      "min": 0.12345501,
+      "max": 0.126338943,
+      "times": [
+        0.125542868,
+        0.12500112600000002,
+        0.126338943,
+        0.12345501,
+        0.12384871000000001,
+        0.124894055,
+        0.124515914,
+        0.124222885,
+        0.12488963900000001,
+        0.12422787900000001
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "22"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/23.xml",
+      "mean": 0.1609594836,
+      "stddev": 0.001164807973133309,
+      "median": 0.160931384,
+      "user": 0.04749700000000001,
+      "system": 0.006342599999999999,
+      "min": 0.159321011,
+      "max": 0.162588331,
+      "times": [
+        0.161696261,
+        0.16070962700000002,
+        0.160234973,
+        0.161692833,
+        0.159321011,
+        0.162588331,
+        0.159501626,
+        0.16017810400000002,
+        0.162518929,
+        0.161153141
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "23"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/24.xml",
+      "mean": 0.125989437,
+      "stddev": 0.006825531753688192,
+      "median": 0.1235440515,
+      "user": 0.0108363,
+      "system": 0.006735199999999999,
+      "min": 0.12323787800000001,
+      "max": 0.145270206,
+      "times": [
+        0.12339198200000001,
+        0.123895557,
+        0.123324392,
+        0.145270206,
+        0.12367422800000001,
+        0.125976682,
+        0.12329313600000001,
+        0.12323787800000001,
+        0.123413875,
+        0.124416434
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "24"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/25.xml",
+      "mean": 0.1272755248,
+      "stddev": 0.007489918262538846,
+      "median": 0.12482247,
+      "user": 0.0114188,
+      "system": 0.006575699999999999,
+      "min": 0.12346735,
+      "max": 0.14841373100000002,
+      "times": [
+        0.12455223500000001,
+        0.126836682,
+        0.12542993700000002,
+        0.14841373100000002,
+        0.125092705,
+        0.124416838,
+        0.12346735,
+        0.124205962,
+        0.124356715,
+        0.12598309300000002
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "25"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/26.xml",
+      "mean": 0.12996265180000002,
+      "stddev": 0.0011773753421998366,
+      "median": 0.12979303650000001,
+      "user": 0.0145359,
+      "system": 0.0084618,
+      "min": 0.12846659100000002,
+      "max": 0.132077983,
+      "times": [
+        0.131226052,
+        0.128998679,
+        0.129189271,
+        0.129714686,
+        0.12846659100000002,
+        0.128973274,
+        0.12988692400000001,
+        0.132077983,
+        0.131221671,
+        0.129871387
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "26"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/27.xml",
+      "mean": 0.1422364747,
+      "stddev": 0.00969759353845854,
+      "median": 0.13731582200000003,
+      "user": 0.0193091,
+      "system": 0.0079483,
+      "min": 0.13290125800000002,
+      "max": 0.158511112,
+      "times": [
+        0.15321094600000001,
+        0.145079931,
+        0.158511112,
+        0.154114721,
+        0.13690944100000002,
+        0.13432597400000001,
+        0.133639752,
+        0.13290125800000002,
+        0.13772220300000002,
+        0.13594940900000002
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "27"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/28.xml",
+      "mean": 0.3386926226,
+      "stddev": 0.000996812679547181,
+      "median": 0.33851921700000004,
+      "user": 0.22112149999999997,
+      "system": 0.009993199999999997,
+      "min": 0.337370512,
+      "max": 0.340890953,
+      "times": [
+        0.337370512,
+        0.337506108,
+        0.338291074,
+        0.340890953,
+        0.33847754100000005,
+        0.33856089300000003,
+        0.33841089500000004,
+        0.33896401800000003,
+        0.33917699900000003,
+        0.339277233
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "28"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/29.xml",
+      "mean": 0.1991322342,
+      "stddev": 0.0025623240279018297,
+      "median": 0.19846477950000002,
+      "user": 0.0827656,
+      "system": 0.008265499999999999,
+      "min": 0.19638170300000002,
+      "max": 0.20413625600000002,
+      "times": [
+        0.19921931,
+        0.19890874,
+        0.20413625600000002,
+        0.197833202,
+        0.202945978,
+        0.19971377,
+        0.196758801,
+        0.19638170300000002,
+        0.19802081900000001,
+        0.197403763
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "29"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/30.xml",
+      "mean": 0.23654033090000004,
+      "stddev": 0.001142790978321199,
+      "median": 0.23635579050000002,
+      "user": 0.12055400000000001,
+      "system": 0.008765,
+      "min": 0.23508276500000003,
+      "max": 0.23819777700000003,
+      "times": [
+        0.23611662600000002,
+        0.23819777700000003,
+        0.235727299,
+        0.23508276500000003,
+        0.238194027,
+        0.236674607,
+        0.23762344200000002,
+        0.235190421,
+        0.23600139,
+        0.23659495500000002
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "30"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/31.xml",
+      "mean": 0.1381324626,
+      "stddev": 0.0017138315261401372,
+      "median": 0.137833502,
+      "user": 0.0244144,
+      "system": 0.0062364000000000005,
+      "min": 0.13654496800000002,
+      "max": 0.14135270800000002,
+      "times": [
+        0.138165374,
+        0.13654496800000002,
+        0.13805656,
+        0.137813663,
+        0.136659103,
+        0.140995055,
+        0.13785334100000002,
+        0.137223429,
+        0.14135270800000002,
+        0.136660425
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "31"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/32.xml",
+      "mean": 0.1665713653,
+      "stddev": 0.000947418334109898,
+      "median": 0.166299732,
+      "user": 0.05260889999999999,
+      "system": 0.0069114,
+      "min": 0.165431886,
+      "max": 0.168813697,
+      "times": [
+        0.166180493,
+        0.166077582,
+        0.166601264,
+        0.168813697,
+        0.167207152,
+        0.165431886,
+        0.166418971,
+        0.16701779600000002,
+        0.166112707,
+        0.165852105
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "32"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/33.xml",
+      "mean": 0.17122940720000002,
+      "stddev": 0.0014588032065107914,
+      "median": 0.170862874,
+      "user": 0.057939399999999995,
+      "system": 0.006053899999999999,
+      "min": 0.16977811,
+      "max": 0.17381753,
+      "times": [
+        0.17114104200000002,
+        0.17381753,
+        0.169900814,
+        0.170584706,
+        0.172909014,
+        0.17139838100000002,
+        0.16997382800000002,
+        0.16977811,
+        0.170039126,
+        0.17275152100000002
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "33"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/34.xml",
+      "mean": 0.152947106,
+      "stddev": 0.0016431939633534808,
+      "median": 0.15220175800000002,
+      "user": 0.037712999999999997,
+      "system": 0.0078845,
+      "min": 0.15173993200000002,
+      "max": 0.156889216,
+      "times": [
+        0.15457220700000002,
+        0.15333496200000002,
+        0.15173993200000002,
+        0.15185631000000002,
+        0.152314143,
+        0.156889216,
+        0.15197917600000002,
+        0.151832772,
+        0.15286296900000002,
+        0.152089373
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "34"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/35.xml",
+      "mean": 0.4703043224,
+      "stddev": 0.003810424088097118,
+      "median": 0.4691471145,
+      "user": 0.3484224,
+      "system": 0.012507899999999999,
+      "min": 0.46768549000000004,
+      "max": 0.48055918500000006,
+      "times": [
+        0.468489401,
+        0.46789160500000004,
+        0.467981044,
+        0.48055918500000006,
+        0.471491441,
+        0.47041353900000005,
+        0.46928275300000005,
+        0.47023729000000003,
+        0.46901147600000004,
+        0.46768549000000004
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "35"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/36.xml",
+      "mean": 0.16953652530000002,
+      "stddev": 0.000703548299931155,
+      "median": 0.16952810100000001,
+      "user": 0.05481179999999999,
+      "system": 0.0075742000000000006,
+      "min": 0.16821981,
+      "max": 0.17034796600000002,
+      "times": [
+        0.169237425,
+        0.16821981,
+        0.168932186,
+        0.168995366,
+        0.16949551100000002,
+        0.169560691,
+        0.170100515,
+        0.170311806,
+        0.17016397700000002,
+        0.17034796600000002
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "36"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/37.xml",
+      "mean": 0.5075517395,
+      "stddev": 0.0016569677903209678,
+      "median": 0.5072671445000001,
+      "user": 0.38623299999999994,
+      "system": 0.0133781,
+      "min": 0.505768195,
+      "max": 0.511676852,
+      "times": [
+        0.507404815,
+        0.5083279070000001,
+        0.506342641,
+        0.5075936240000001,
+        0.5071294740000001,
+        0.508111242,
+        0.511676852,
+        0.505768195,
+        0.506423477,
+        0.5067391680000001
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "37"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/38.xml",
+      "mean": 0.17798249370000002,
+      "stddev": 0.002061018481007876,
+      "median": 0.177053444,
+      "user": 0.0639763,
+      "system": 0.006693199999999999,
+      "min": 0.17667790500000002,
+      "max": 0.18263667700000003,
+      "times": [
+        0.17667790500000002,
+        0.17729080900000002,
+        0.180904428,
+        0.17720106400000002,
+        0.17686083800000002,
+        0.17690582400000002,
+        0.176816521,
+        0.17679913400000002,
+        0.177731737,
+        0.18263667700000003
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "38"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/39.xml",
+      "mean": 0.20819595149999998,
+      "stddev": 0.0009862549351817098,
+      "median": 0.20794183300000002,
+      "user": 0.09286449999999999,
+      "system": 0.0083114,
+      "min": 0.206977659,
+      "max": 0.21033405400000002,
+      "times": [
+        0.209342053,
+        0.207910532,
+        0.20841874200000002,
+        0.207560088,
+        0.21033405400000002,
+        0.207973134,
+        0.20755372800000002,
+        0.20758330100000003,
+        0.208306224,
+        0.206977659
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "39"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/40.xml",
+      "mean": 0.17857028219999999,
+      "stddev": 0.0022680501395646617,
+      "median": 0.17754784150000003,
+      "user": 0.0634759,
+      "system": 0.0074404,
+      "min": 0.17687308000000002,
+      "max": 0.18422282,
+      "times": [
+        0.18422282,
+        0.17911063400000002,
+        0.177913012,
+        0.17687308000000002,
+        0.17709348600000002,
+        0.18000917000000002,
+        0.17716947600000002,
+        0.177182671,
+        0.179086388,
+        0.17704208500000002
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "40"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/41.xml",
+      "mean": 0.25651121320000003,
+      "stddev": 0.007777228823400429,
+      "median": 0.25295892350000004,
+      "user": 0.1375652,
+      "system": 0.007518300000000001,
+      "min": 0.250498958,
+      "max": 0.271593326,
+      "times": [
+        0.25162708,
+        0.253403504,
+        0.251739139,
+        0.25767497,
+        0.25251434300000003,
+        0.271593326,
+        0.25551337900000004,
+        0.250844318,
+        0.250498958,
+        0.269703115
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "41"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/42.xml",
+      "mean": 0.2437381645,
+      "stddev": 0.0024755352283980627,
+      "median": 0.24286427650000003,
+      "user": 0.1277331,
+      "system": 0.008111499999999999,
+      "min": 0.240661604,
+      "max": 0.24795321,
+      "times": [
+        0.240661604,
+        0.243062354,
+        0.242130321,
+        0.24748723200000003,
+        0.24171002300000002,
+        0.24795321,
+        0.24488853000000002,
+        0.241992375,
+        0.24482979700000002,
+        0.24266619900000003
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "42"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/43.xml",
+      "mean": 0.7627920038,
+      "stddev": 0.006724740267117859,
+      "median": 0.7588958775000001,
+      "user": 0.6408517999999999,
+      "system": 0.0104762,
+      "min": 0.757288654,
+      "max": 0.774538805,
+      "times": [
+        0.774538805,
+        0.7578962,
+        0.7579393910000001,
+        0.758065086,
+        0.76605849,
+        0.757288654,
+        0.7581222700000001,
+        0.76441377,
+        0.773927887,
+        0.7596694850000001
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "43"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/44.xml",
+      "mean": 0.34408810990000005,
+      "stddev": 0.0032709733148100248,
+      "median": 0.34270772000000005,
+      "user": 0.2254504,
+      "system": 0.009783499999999999,
+      "min": 0.34075355,
+      "max": 0.34986767900000004,
+      "times": [
+        0.34622394500000003,
+        0.34191734,
+        0.341701878,
+        0.34986767900000004,
+        0.34075355,
+        0.34241003200000003,
+        0.34948915900000005,
+        0.34310207600000003,
+        0.34283433100000005,
+        0.342581109
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "44"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/45.xml",
+      "mean": 0.26162171970000003,
+      "stddev": 0.0022870205513182457,
+      "median": 0.2607689175,
+      "user": 0.1462189,
+      "system": 0.007166400000000001,
+      "min": 0.25891864000000003,
+      "max": 0.26587882300000004,
+      "times": [
+        0.25891864000000003,
+        0.26587882300000004,
+        0.259696963,
+        0.262790274,
+        0.26019612200000003,
+        0.259700223,
+        0.260354861,
+        0.263733469,
+        0.263764848,
+        0.261182974
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "45"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/46.xml",
+      "mean": 0.2899011034,
+      "stddev": 0.0034237009303051055,
+      "median": 0.28845803400000003,
+      "user": 0.1751358,
+      "system": 0.0068012,
+      "min": 0.28732044700000003,
+      "max": 0.29867929200000004,
+      "times": [
+        0.292159306,
+        0.288333035,
+        0.28821429200000004,
+        0.28732044700000003,
+        0.288002038,
+        0.28775246800000004,
+        0.290820678,
+        0.28858303300000004,
+        0.28914644500000003,
+        0.29867929200000004
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "46"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/47.xml",
+      "mean": 0.3778676401,
+      "stddev": 0.003264883144095073,
+      "median": 0.37655150600000004,
+      "user": 0.26044049999999996,
+      "system": 0.0086942,
+      "min": 0.37502071000000003,
+      "max": 0.38517199700000004,
+      "times": [
+        0.375507374,
+        0.37710755100000004,
+        0.378659381,
+        0.378262335,
+        0.37502071000000003,
+        0.37552194,
+        0.37579057600000004,
+        0.381639076,
+        0.38517199700000004,
+        0.37599546100000003
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "47"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/48.xml",
+      "mean": 0.32767239670000003,
+      "stddev": 0.003973099058120229,
+      "median": 0.3266948885,
+      "user": 0.21131039999999998,
+      "system": 0.0078858,
+      "min": 0.324447894,
+      "max": 0.33826305300000004,
+      "times": [
+        0.326915446,
+        0.324447894,
+        0.324591248,
+        0.326442534,
+        0.33826305300000004,
+        0.326136921,
+        0.329477018,
+        0.32706007600000003,
+        0.326819162,
+        0.326570615
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "48"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/49.xml",
+      "mean": 0.30312594389999997,
+      "stddev": 0.0027023100943825698,
+      "median": 0.3019638545,
+      "user": 0.18710079999999998,
+      "system": 0.007590499999999998,
+      "min": 0.300570014,
+      "max": 0.30887900100000004,
+      "times": [
+        0.300570014,
+        0.305025486,
+        0.30887900100000004,
+        0.301444973,
+        0.303290177,
+        0.301830421,
+        0.300960722,
+        0.301152437,
+        0.302097288,
+        0.30600892
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "49"
+      }
+    },
+    {
+      "command": "/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky exact -p single-threaded v6 /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/50.xml",
+      "mean": 2.6811898916000003,
+      "stddev": 0.005026353770431705,
+      "median": 2.6802320215,
+      "user": 2.5407699,
+      "system": 0.0262431,
+      "min": 2.673999278,
+      "max": 2.693435874,
+      "times": [
+        2.673999278,
+        2.693435874,
+        2.677731513,
+        2.68199594,
+        2.68018128,
+        2.679060044,
+        2.679774113,
+        2.680282763,
+        2.6828630010000003,
+        2.68257511
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "parameters": {
+        "N": "50"
+      }
+    }
+  ]
+}

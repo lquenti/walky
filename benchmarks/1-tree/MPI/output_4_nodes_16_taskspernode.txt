@@ -1,0 +1,33 @@
+run 0/10
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 9.649846107
+run 1/10
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 9.596936277
+run 2/10
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 9.550257512
+run 3/10
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 9.727822006
+run 4/10
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 9.629620057
+run 5/10
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 9.531186132
+run 6/10
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 9.578739916
+run 7/10
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 9.610798123
+run 8/10
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 9.596769526
+run 9/10
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 9.616953977
+run 10/10
+1-tree lower bound: 716.9309513663443
+elapsed seconds: 9.633119004
