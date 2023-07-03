@@ -1,0 +1,27 @@
+================================================================================
+JobID = 16072176
+User = lars.quentin01, Account = all
+Partition = medium, Nodelist = amp001
+================================================================================
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1112.3675648177145
+elapsed seconds: 12.411729563
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1096.6297185175638
+elapsed seconds: 12.744796627
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1112.9659650986005
+elapsed seconds: 12.490768606
+Warning: defaulting to sequential implementation of prims algorithm
+Christofides solution weight: 1101.9786209091042
+elapsed seconds: 12.552132677
+============ Job Information ===================================================
+Submitted: 2023-07-03T12:07:14
+Started: 2023-07-03T12:07:33
+Ended: 2023-07-03T12:16:18
+Elapsed: 9 min, Limit: 360 min, Difference: 351 min
+CPUs: 4, Nodes: 1
+============= ProfiT-HPC =======================================================
+To generate the ProfiT-HPC text report, run the following command
+profit-hpc 16072176
+================================================================================
