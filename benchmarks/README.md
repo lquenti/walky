@@ -1,17 +1,14 @@
-# Walky Benchmarks
+# All benchmarks
 
-As we are mainly interested in end2end performance and do not necessarily monitor the performance regression of single testing we chose against an integrated microbenchmarking solution such as [`criterion`](https://github.com/bheisler/criterion.rs). Instead, we use the great [`Hyperfine`](https://github.com/sharkdp/hyperfine) for benchmarking. This also makes benchmarking the MPI-algorithms easier.
-
-## Dependencies
-
+The structure is
 ```
-cargo install hyperfine
+<folder_of_benchmark_type>/<STMT> -> Single and Multithreaded single node
+<folder_of_benchmark_type>/<MPI> -> MPI distributed memory
 ```
 
-## How to run
+`run_often.py` just runs it and extracts the internal time, which is only visible if compiled with the benchmarking flag
 
-TODO create shell scripts
-
-## Analysis
-
-The `scripts` folder contains several scripts for further analysis provided by the Hyperfine developers licensed under MIT. In order to use those, hyperfine has to be called with the `--export-json` parameter.
+build with
+```
+cargo build --release --features mpi,benchmarking
+```

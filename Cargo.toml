@@ -38,3 +38,6 @@ debug = true                                                                    
 opt-level = 3                                                                      # -O3
 lto = true                                                                         # LLVM Link Time Optimization
 codegen-units = 1                                                                  # Slower compile time, better performance
+
+[features]
+benchmarking = []

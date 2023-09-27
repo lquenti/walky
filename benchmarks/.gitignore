@@ -1,2 +1,1 @@
-# probably benchmark results
-*.json
+__pycache__/
