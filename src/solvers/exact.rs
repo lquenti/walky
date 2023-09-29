@@ -725,8 +725,8 @@ fn threaded_solver_generic(
 
 /// Alias to `mpi_solver_generic(graph_matrix, 3)`. See [`mpi_solver_generic`].
 #[cfg(feature = "mpi")]
-pub fn mpi_solver(graph_matrix: &NAMatrix) -> Solution {
-    mpi_solver_generic(graph_matrix, 3)
+pub fn static_mpi_solver(graph_matrix: &NAMatrix) -> Solution {
+    static_mpi_solver_generic(graph_matrix, 3)
 }
 
 /// Calculating an exact solution parallelized using MPI.
@@ -786,7 +786,7 @@ pub fn mpi_solver(graph_matrix: &NAMatrix) -> Solution {
 /// Thus, at the end, every node knows the best cost (from the root) and the best path (from the
 /// winner). Remember that this path-sending was done lazily as an network efficiency optimization.
 #[cfg(feature = "mpi")]
-pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solution {
+pub fn static_mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solution {
     let universe = mpi::initialize().unwrap();
     let world = universe.world();
     let rank = world.rank();
@@ -798,10 +798,10 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
     let mut winner_path = vec![0; graph_matrix.dim()];
 
     if rank == 0 {
-        winner = mpi_solver_generic_root(&world);
+        winner = static_mpi_solver_generic_root(&world);
     } else {
         // This is just the local winner path, look below on how the winner broadcasts its one.
-        winner_path = mpi_solver_generic_nonroot(&world, graph_matrix, prefix_length);
+        winner_path = static_mpi_solver_generic_nonroot(&world, graph_matrix, prefix_length);
     }
 
     // After the barrier was broken we can broadcast the winner rank and cost
@@ -817,7 +817,7 @@ pub fn mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solu
 
 /// As it is a very interconnected logic, see [`mpi_solver_generic`] for a thorough explaination.
 #[cfg(feature = "mpi")]
-fn mpi_solver_generic_root(world: &SystemCommunicator) -> MPICostRank {
+fn static_mpi_solver_generic_root(world: &SystemCommunicator) -> MPICostRank {
     let size = world.size();
 
     let mut current_winner = MPICostRank(f64::INFINITY, 0);
@@ -878,7 +878,7 @@ fn mpi_solver_generic_root(world: &SystemCommunicator) -> MPICostRank {
 
 /// As it is a very interconnected logic, see [`mpi_solver_generic`] for a thorough explaination.
 #[cfg(feature = "mpi")]
-fn mpi_solver_generic_nonroot(
+fn static_mpi_solver_generic_nonroot(
     world: &SystemCommunicator,
     graph_matrix: &NAMatrix,
     prefix_length: usize,
@@ -921,7 +921,7 @@ fn mpi_solver_generic_nonroot(
 
         // use prefix
         let mut result = (f64::INFINITY, Vec::new());
-        _mpi_improved_solver_rec(
+        _static_mpi_improved_solver_rec(
             graph_matrix,
             &mut current_prefix,
             starting_cost,
@@ -965,7 +965,7 @@ fn mpi_solver_generic_nonroot(
 /// Works like [`_fifth_improved_solver_rec`] but we also prune against the `global_best_cost`.
 /// See [`mpi_solver_generic`] to understand how we get that.
 #[cfg(feature = "mpi")]
-fn _mpi_improved_solver_rec(
+fn _static_mpi_improved_solver_rec(
     graph_matrix: &NAMatrix,
     current_prefix: &mut Path,
     current_cost: f64,
@@ -1001,7 +1001,7 @@ fn _mpi_improved_solver_rec(
         current_prefix.push(i);
         // If this is a single element, we do not have an edge yet
         if current_prefix.len() == 1 {
-            _mpi_improved_solver_rec(
+            _static_mpi_improved_solver_rec(
                 graph_matrix,
                 current_prefix,
                 current_cost,
@@ -1032,7 +1032,7 @@ fn _mpi_improved_solver_rec(
         };
 
         if current_cost + lower_bound <= best_known_solution {
-            _mpi_improved_solver_rec(
+            _static_mpi_improved_solver_rec(
                 graph_matrix,
                 current_prefix,
                 current_cost,
@@ -1045,6 +1045,76 @@ fn _mpi_improved_solver_rec(
         current_cost -= cost_last_edge;
         current_prefix.pop();
     }
+}
+
+/// Alias to `dynamic_mpi_solver_generic(graph_matrix, 3)`. See [`dynamic_mpi_solver_generic`].
+#[cfg(feature = "mpi")]
+pub fn dynamic_mpi_solver(graph_matrix: &NAMatrix) -> Solution {
+    dynamic_mpi_solver_generic(graph_matrix, 3)
+}
+
+/// Calculating an exact solution parallelized using MPI and dynamic work allocation.
+///
+/// See [`static_mpi_solver_generic`] for an alternative solution with static work allocation.
+///
+/// The high level strategy follows [`fifth_improved_solver`], which means that we
+/// - go through all possible solutions we can't prune away
+/// - we generate all possible paths through recursive enumeration
+/// - we cache the sum of our partial path throughout the recursion
+/// - we prune iff the partial sum + an MST of the unused nodes is already bigger than previous
+/// best. Note that this works since MSTs are a lower bound for TSPs.
+///
+/// This is the same as the static solver.
+/// But now, we have to divide the load on the several nodes.
+///
+/// High-Level Idea:
+///
+/// We divide the MPI world communicator into one root coordinator and n-1 worker.
+///
+/// In the static solver, we predivided the load locally through the rank
+/// (i.e. `[(full_range/n)*(k-1), (full_range/n)*k[`, `k` being the local rank).
+/// More specifically, we divided up the prefix space by viewing it as a `b`-ary number, `b`
+/// being the number of cities. A specific prefix of 3 means the first 3 cities in a possible path
+/// are fixed. This is easy to compute, since one can just do division with `b`-ary numbers.
+///
+/// But, especially since the problem is factorial, we want to prune as much as possible.
+/// In the static version, this was done by telling the root the node the local minimum it
+/// currently knows, and as an answer recieving the global current minimum with that answer in
+/// mind. **Note that this requires one bidirectional communication per prefix.**
+///
+/// This approach has one disadvantage. Note that, while our pruning greatly optimizes the average
+/// case scenario, it does not improve the worst case scenario. Our algorithm performs great, but
+/// the performance is very dependent on the graph and its pruneability. The same logic applies for
+/// all subgraphs with fixed prefix.
+///
+/// Thus, our worker nodes have (potentially) vastly different workloads, depending on how well
+/// they can prune. Since we have to wait for all nodes to finish before we know the global best
+/// solution, all other nodes have to idle, wasting precious compute! Even more important, a global
+/// work coordination wouldn't even increase the amount of communications done, since we do one
+/// bi-directional send/recv per prefix anyways!
+/// 
+/// Thus, instead of predividing it statically, the computation workflow is as follows:
+/// 1. The worker asks the root for a new prefix to compute.
+/// 2. The root answers with the next non-computed prefix as well as the current minimum.
+///    If all prefixes are computed, the worker recieves a zero-ed prefix, which means that it
+///    waits at a barrier for the others to finish.
+/// 3. The worker computes the current prefix given to it.
+///    It uses the current global minimum given with the prefix to prune accordingly.
+/// 4. The worker returns the minimum of that prefix to the root node.
+///    This is an implicit ask for more work, thus GOTO 1.
+///    The root node can use that path-specific minimum to update the global minimum if needed.
+///
+/// Although the root knows could already know which prefix resulted in the global minimum (by
+/// keeping track of which ones it assigned), it does not know the whole minimal path. Thus, we
+/// still need the same wrapup as the [`static_mpi_solver_generic`]:
+///
+/// After the barrier was broken the coordinator broadcasts who won and its cost.
+/// Everybody now knows who won. The winner then finally broadcasts the winning tour to every node.
+/// Thus, at the end, every node knows the best cost (from the root) and the best path (from the
+/// winner). Remember that this path-sending was done lazily as an network efficiency optimization.
+#[cfg(feature = "mpi")]
+pub fn dynamic_mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solution {
+    todo!()
 }
 
 #[cfg(test)]
