@@ -1163,8 +1163,8 @@ fn dynamic_mpi_solver_root(world: &SystemCommunicator, graph_matrix: &NAMatrix) 
         // If cost >= 0.0, this is not an initial request.
         // Thus, we (maybe) have to update our `current_winner`.
         if msg.0 >= 0.0 && msg.0 < current_winner.0 {
-                current_winner.0 = msg.0;
-                current_winner.1 = msg.1;
+            current_winner.0 = msg.0;
+            current_winner.1 = msg.1;
         }
 
         if let Some(next_value) = current_prefix {
