@@ -78,9 +78,16 @@ pub use crate::datastructures::vecmatrix::VecMatrix;
 pub use crate::datastructures::nalgebra::NAMatrix;
 
 /// helper for MPI calls to send both some accumulated cost and the rank who calculated it
+/// See either [`static_mpi_solver_generic`] or [`dynamic_mpi_solver`]
 #[derive(Default, Clone, Copy, Equivalence)]
 #[cfg(feature = "mpi")]
 pub struct MPICostRank(pub f64, pub mpi::topology::Rank);
+
+/// helper for MPI calls to send both the global minimum cost and the next path to compute
+/// See [`dynamic_mpi_solver_generic`]
+#[derive(Default, Clone, Copy, Equivalence)]
+#[cfg(feature = "mpi")]
+pub struct MPICostPath(pub f64, pub [usize; 3]);
 
 #[cfg(test)]
 mod test {

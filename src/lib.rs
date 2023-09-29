@@ -68,8 +68,8 @@ fn exact_run(
         Parallelism::MPI => match algorithm {
             ExactAlgorithm::V0 => exact::static_mpi_solver(&m),
             ExactAlgorithm::V1 => exact::dynamic_mpi_solver(&m),
-            _ => unimplemented!()
-        }
+            _ => unimplemented!(),
+        },
     };
 
     println!("Best Cost: {}", best_cost);
