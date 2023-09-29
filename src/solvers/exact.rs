@@ -723,7 +723,7 @@ fn threaded_solver_generic(
         .unwrap()
 }
 
-/// Alias to `mpi_solver_generic(graph_matrix, 3)`. See [`mpi_solver_generic`].
+/// Alias to `static_mpi_solver_generic(graph_matrix, 3)`. See [`static_mpi_solver_generic`].
 #[cfg(feature = "mpi")]
 pub fn static_mpi_solver(graph_matrix: &NAMatrix) -> Solution {
     static_mpi_solver_generic(graph_matrix, 3)
@@ -815,7 +815,7 @@ pub fn static_mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) 
     (winner.0, winner_path)
 }
 
-/// As it is a very interconnected logic, see [`mpi_solver_generic`] for a thorough explaination.
+/// As it is a very interconnected logic, see [`static_mpi_solver_generic`] for a thorough explaination.
 #[cfg(feature = "mpi")]
 fn static_mpi_solver_generic_root(world: &SystemCommunicator) -> MPICostRank {
     let size = world.size();
@@ -876,7 +876,7 @@ fn static_mpi_solver_generic_root(world: &SystemCommunicator) -> MPICostRank {
     current_winner
 }
 
-/// As it is a very interconnected logic, see [`mpi_solver_generic`] for a thorough explaination.
+/// As it is a very interconnected logic, see [`static_mpi_solver_generic`] for a thorough explaination.
 #[cfg(feature = "mpi")]
 fn static_mpi_solver_generic_nonroot(
     world: &SystemCommunicator,
@@ -963,7 +963,7 @@ fn static_mpi_solver_generic_nonroot(
 }
 
 /// Works like [`_fifth_improved_solver_rec`] but we also prune against the `global_best_cost`.
-/// See [`mpi_solver_generic`] to understand how we get that.
+/// See [`static_mpi_solver_generic`] to understand how we get that.
 #[cfg(feature = "mpi")]
 fn _static_mpi_improved_solver_rec(
     graph_matrix: &NAMatrix,
@@ -1114,6 +1114,52 @@ pub fn dynamic_mpi_solver(graph_matrix: &NAMatrix) -> Solution {
 /// winner). Remember that this path-sending was done lazily as an network efficiency optimization.
 #[cfg(feature = "mpi")]
 pub fn dynamic_mpi_solver_generic(graph_matrix: &NAMatrix, prefix_length: usize) -> Solution {
+    /* Driver and wrapup code are basically the same as [`static_mpi_solver_generic`]
+     * but third and fourth function parameters for root and non-root wouldn't make
+     * it more readable either.
+     */
+    let universe = mpi::initialize().unwrap();
+    let world = universe.world();
+    let rank = world.rank();
+    let root = world.process_at_rank(0);
+
+    // Will be used once the entire computation is done
+    // Has to be available to both root and non-root as we broadcast into it
+    let mut winner = MPICostRank(f64::INFINITY, 0);
+    let mut winner_path = vec![0; graph_matrix.dim()];
+
+    if rank == 0 {
+        winner = dynamic_mpi_solver_generic_root(&world);
+    } else {
+        // This is just the local winner path, look below on how the winner broadcasts its one.
+        winner_path = dynamic_mpi_solver_generic_nonroot(&world, graph_matrix, prefix_length);
+    }
+
+    // After the barrier was broken we can broadcast the winner rank and cost
+    root.broadcast_into(&mut winner);
+
+    // Now the winner can broadcast to everyone the path
+    let winner_process = world.process_at_rank(winner.1);
+    winner_process.broadcast_into(&mut winner_path[..]);
+
+    // After we all know the cost and path, we can finally return with the exact result
+    (winner.0, winner_path)
+}
+
+TODO dont forget that the first nonroot they can compute themselves lol
+/// As it is a very interconnected logic, see [`dynamic_mpi_solver_generic`] for a thorough explaination.
+#[cfg(feature = "mpi")]
+fn dynamic_mpi_solver_generic_root(world: &SystemCommunicator) -> MPICostRank {
+    todo!()
+}
+
+/// As it is a very interconnected logic, see [`dynamic_mpi_solver_generic`] for a thorough explaination.
+#[cfg(feature = "mpi")]
+fn dynamic_mpi_solver_generic_nonroot(
+    world: &SystemCommunicator,
+    graph_matrix: &NAMatrix,
+    prefix_length: usize,
+) -> Path {
     todo!()
 }
 
