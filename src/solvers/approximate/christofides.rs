@@ -1,3 +1,4 @@
+//! This module contains the Christofides algorithm.
 use blossom::WeightedGraph;
 use nalgebra::DMatrix;
 use rayon::prelude::*;

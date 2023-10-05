@@ -1,3 +1,7 @@
+//! This module contains algorithms to approximate
+//! a minimum-weight exact matching.
+//!
+//! This is used in [`crate::solvers::approximate::christofides`].
 #[cfg(feature = "mpi")]
 use std::{
     mem::transmute,

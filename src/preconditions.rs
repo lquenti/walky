@@ -1,3 +1,5 @@
+//! This module defines functions that evaluate,
+//! if certain conditions hold on a given graph.
 use std::collections::HashSet;
 
 use crate::datastructures::Graph;

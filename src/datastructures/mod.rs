@@ -1,3 +1,4 @@
+//! This module defines basic datastructures for this crate.
 mod nalgebra;
 mod vecmatrix;
 
@@ -7,6 +8,7 @@ pub use crate::parser::{Edge, Graph, Vertex};
 #[cfg(feature = "mpi")]
 use mpi::traits::*;
 
+/// Defines properties/functions, that an adjacency matrix of a graph has.
 pub trait AdjacencyMatrix {
     /// Creates an unconnected graph with `dim` many vertices
     fn from_dim(dim: usize) -> Self;
@@ -68,7 +70,11 @@ pub trait AdjacencyMatrix {
     }
 }
 
+/// Represents a path in a graph.
 pub type Path = Vec<usize>;
+/// Represents the solution to a TSP instance:
+///
+/// `Solution(solution_weight, solution_cycle)`
 pub type Solution = (f64, Vec<usize>);
 
 /// Naive Matrix implementation with `Vec<Vec<>>`
