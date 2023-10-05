@@ -62,11 +62,14 @@ fn exact_run(
             ExactAlgorithm::V4 => exact::fourth_improved_solver(&m),
             ExactAlgorithm::V5 => exact::fifth_improved_solver(&m),
             ExactAlgorithm::V6 => exact::sixth_improved_solver(&m),
-            ExactAlgorithm::HeldKarp => unimplemented!(),
         },
         Parallelism::MultiThreaded => exact::threaded_solver(&m),
         #[cfg(feature = "mpi")]
-        Parallelism::MPI => exact::mpi_solver(&m),
+        Parallelism::MPI => match algorithm {
+            ExactAlgorithm::V0 => exact::static_mpi_solver(&m),
+            ExactAlgorithm::V1 => exact::dynamic_mpi_solver(&m),
+            _ => unimplemented!(),
+        },
     };
 
     println!("Best Cost: {}", best_cost);

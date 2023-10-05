@@ -73,8 +73,6 @@ pub enum ExactAlgorithm {
     V5,
     /// Cache MST distance once computed
     V6,
-    /// The Held-Karp Dynamic Programming Algorithm
-    HeldKarp,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
