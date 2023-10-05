@@ -1,3 +1,5 @@
+//! This module implements the parser logic
+//! for the [`TravellingSalesmanProblemInstance`] struct.
 use std::ops::{Deref, DerefMut};
 
 use blossom::WeightedGraph;

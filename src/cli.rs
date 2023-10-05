@@ -1,3 +1,5 @@
+//! This module defines the commands and subcommands of the `walky` cli.
+
 use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 

@@ -13,6 +13,11 @@ pub const PAR_COMPUTATION: usize = 1;
 #[cfg(feature = "mpi")]
 pub const MPI_COMPUTATION: usize = 2;
 
+/// Convenience function.
+///
+/// # Panics
+///
+/// Always, with an explanitory panic message.
 #[inline]
 pub fn panic_on_invaid_mode<const MODE: usize>() -> ! {
     panic!("The Mode {} is not valid", MODE)
