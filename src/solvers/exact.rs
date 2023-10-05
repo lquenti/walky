@@ -1174,7 +1174,7 @@ fn dynamic_mpi_solver_root(world: &SystemCommunicator, graph_matrix: &NAMatrix) 
 
             // Set the `current_prefix` to the next one
             loop {
-                // TODO the conversion is a performance penalty
+                // the conversion is a performance penalty (#53)
                 current_prefix =
                     get_next_value(&mut current_prefix.unwrap(), n).map(|v| [v[0], v[1], v[2]]);
                 if current_prefix.is_none() {
@@ -1213,7 +1213,7 @@ fn dynamic_mpi_solver_nonroot(world: &SystemCommunicator, graph_matrix: &NAMatri
         // ask for a new prefix
         let (cost_path, _) = root.receive::<MPICostPath>();
         let global_best_cost = cost_path.0;
-        // TODO PERFORMANCE PENALTY, can we avoid it
+        // performance penalty (#53)
         let mut current_prefix = cost_path.1.to_vec();
 
         // if there is nothing to do, wait for the rest then quit
