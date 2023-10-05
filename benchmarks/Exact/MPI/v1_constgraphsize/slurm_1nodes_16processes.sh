@@ -1,10 +1,11 @@
 #!/bin/bash
-#SBATCH -N 4
+#SBATCH -N 1
 #SBATCH --ntasks-per-node=16
-#SBATCH -t 6:00:00
+#SBATCH -p medium
+#SBATCH -t 24:00:00
 
 # Your milage may vary
-NUMBER_OF_NODES=4
+NUMBER_OF_NODES=1
 NUMBER_OF_TASKS_PER_NODE=16
 
 # This are sane defaults
@@ -22,11 +23,11 @@ module load openmpi
 for ((i=0; i<=${NUMBER_OF_WARMUP_RUNS}; i+=1))
 do
   mpirun -n $N \
-    /home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky \
+    /home/uni11/gwdg1/GWDG/lars.quentin01/code/walky/target/release/walky \
     exact \
-    v0 \
+    v1 \
     -p mpi \
-    /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/${GRAPH_SIZE}.xml
+    /home/uni11/gwdg1/GWDG/lars.quentin01/code/walky/utils/gen_matrix_fast/results/${GRAPH_SIZE}.xml
 done
 
 # benchmark
@@ -34,10 +35,10 @@ for ((i=0; i<=${NUMBER_OF_BENCHMARK_RUNS}; i+=1))
 do
   echo "run ${i}/${NUMBER_OF_BENCHMARK_RUNS}" >> $OUTPUT_FILE 2>&1
   mpirun -n $N \
-    /home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky \
+    /home/uni11/gwdg1/GWDG/lars.quentin01/code/walky/target/release/walky \
     exact \
-    v0 \
+    v1 \
     -p mpi \
-    /home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results/${GRAPH_SIZE}.xml \
+    /home/uni11/gwdg1/GWDG/lars.quentin01/code/walky/utils/gen_matrix_fast/results/${GRAPH_SIZE}.xml \
     >> $OUTPUT_FILE 2>&1
 done

@@ -1,7 +1,8 @@
 #!/bin/bash
 #SBATCH -N 8
 #SBATCH --ntasks-per-node=1
-#SBATCH -t 6:00:00
+#SBATCH -p medium
+#SBATCH -t 24:00:00
 
 # Your milage may vary
 NUMBER_OF_NODES=8

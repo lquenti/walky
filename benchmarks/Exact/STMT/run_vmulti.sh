@@ -1,6 +1,6 @@
 # cluster conf
-PROGRAM="/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky"
-XML_PATH="/home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results"
+PROGRAM="/home/uni11/gwdg1/GWDG/lars.quentin01/code/walky/target/release/walky"
+XML_PATH="/home/uni11/gwdg1/GWDG/lars.quentin01/code/walky/utils/gen_matrix_fast/results"
 #v0...
 
 # local testing
@@ -11,6 +11,6 @@ hyperfine \
   --shell=none \
   --warmup 2 \
   --runs 10 \
-  --export-json results/results_${VX}.json \
+  --export-json results/results_multi.json \
   --parameter-scan N 3 50 \
   "${PROGRAM} exact -p multi-threaded v0 ${XML_PATH}/{N}.xml"
