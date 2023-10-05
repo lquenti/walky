@@ -1,6 +1,6 @@
 # cluster conf
-PROGRAM="/home/uni11/gwdg1/GWDG/lars.quentin01/walky/target/release/walky"
-XML_PATH="/home/uni11/gwdg1/GWDG/lars.quentin01/walky/utils/gen_matrix_fast/results"
+PROGRAM="/home/uni11/gwdg1/GWDG/lars.quentin01/code/walky/target/release/walky"
+XML_PATH="/home/uni11/gwdg1/GWDG/lars.quentin01/code/walky/utils/gen_matrix_fast/results"
 #v0...
 
 # local testing
