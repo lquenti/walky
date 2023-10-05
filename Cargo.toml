@@ -9,6 +9,11 @@ license = "MIT"
 authors = ["Lars Quentin <lars@lquenti.de>", "Johann Carl Meyer <info@johannc.de>"]
 readme = "./README.md"
 
+exclude = [
+    "benchmarks/*",
+    "utils/*",
+]
+
 [dependencies]
 clap = {version = "4.2.5", features = ["derive"]}                                  # for cli arg parsing
 quick-xml = {version = "0.28.2", features = ["serialize"]}                         # for xml-parsing
