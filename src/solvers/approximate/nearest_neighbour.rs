@@ -89,17 +89,16 @@ pub fn n_nearest_neighbour<const MODE: usize>(graph_matrix: &NAMatrix, n: usize)
             .min_by_key(|&(distance, _)| OrderedFloat(distance))
             .unwrap(),
         #[cfg(feature = "mpi")]
-        MPI_COMPUTATION => todo!(), // We just support n=dim for now
+        MPI_COMPUTATION => {
+            eprintln!("MPI just supports using every start node");
+            return nearest_neighbour_mpi(graph_matrix);
+        }
         _ => panic_on_invaid_mode::<MODE>(),
     }
 }
 
 /// Call [`single_nearest_neighbour`] for every starting node.
 pub fn nearest_neighbour<const MODE: usize>(graph_matrix: &NAMatrix) -> Solution {
-    #[cfg(feature = "mpi")]
-    if MODE == MPI_COMPUTATION {
-        return nearest_neighbour_mpi(graph_matrix);
-    }
     n_nearest_neighbour::<MODE>(graph_matrix, graph_matrix.dim())
 }
 
