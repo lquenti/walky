@@ -5,6 +5,8 @@ use delegate::delegate;
 use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
 
+use crate::preconditions::{is_fully_connected, is_multi_edge, is_undirected};
+
 /// Can be parsed from an xml document with the
 /// [XML-TSPLIB](http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/XML-TSPLIB/Description.pdf)
 /// format.
@@ -25,14 +27,18 @@ impl TravellingSalesmanProblemInstance {
     /// This parsing does not check whether the graph is a valid TSP instance
     /// as long as it is a valid xml document.
     pub fn parse_from_xml(xml: &str) -> Result<Self, quick_xml::DeError> {
-        from_str(xml)
+        let res: Result<Self, quick_xml::DeError> = from_str(xml);
+        if let Ok(tspi) = &res {
+            assert!(tspi.do_conditions_hold());
+        }
+        res
     }
 
-    /// #TODO: specify the conditions
-    ///
     /// Check if the defined conditions on the graph apply.
+    /// See [`crate::preconditions`]
     pub fn do_conditions_hold(&self) -> bool {
-        todo!()
+        let g = &self.graph;
+        is_fully_connected(g) && (!is_multi_edge(g)) && is_undirected(g)
     }
 }
 
