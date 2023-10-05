@@ -4,7 +4,7 @@ use crate::{
 };
 use std::{error::Error, fs::File, io::Read, path::PathBuf};
 
-use cli::{ApproxAlgorithm, Cli, ExactAlgorithm, LowerBoundAlgorithm, MSTAlgorithm, Parallelism};
+use cli::{ApproxAlgorithm, Cli, ExactAlgorithm, LowerBoundAlgorithm, Parallelism};
 use one_tree::one_tree_lower_bound;
 use solvers::{approximate::nearest_neighbour::nearest_neighbour, exact};
 
@@ -160,33 +160,6 @@ fn approx_run(
     Ok(())
 }
 
-/// Executes the driver logic for computing a minimal spanning tree
-fn mst_run(
-    algorithm: MSTAlgorithm,
-    input_file: PathBuf,
-    parallelism: Parallelism,
-) -> Result<(), Box<dyn Error>> {
-    let tsp_instance = get_tsp_instance(input_file)?;
-    let na_matrix: NAMatrix = (&tsp_instance.graph).into();
-    #[cfg(feature = "benchmarking")]
-    let now = Instant::now();
-
-    let mst = match algorithm {
-        MSTAlgorithm::Prim => match parallelism {
-            Parallelism::SingleThreaded => {
-                prim::<{ computation_mode::SEQ_COMPUTATION }>(&na_matrix)
-            }
-            Parallelism::MultiThreaded => prim::<{ computation_mode::PAR_COMPUTATION }>(&na_matrix),
-            #[cfg(feature = "mpi")]
-            Parallelism::MPI => prim::<{ computation_mode::MPI_COMPUTATION }>(&na_matrix),
-        },
-    };
-    println!("MST weight: {}", mst.undirected_edge_weight());
-    #[cfg(feature = "benchmarking")]
-    println!("elapsed seconds: {}", now.elapsed().as_secs_f64());
-    Ok(())
-}
-
 /// Executes the driver logic for computing a lower bound
 fn lower_bound_run(
     algorithm: LowerBoundAlgorithm,
@@ -223,6 +196,19 @@ fn lower_bound_run(
             };
             println!("1-tree lower bound: {}", lower_bound);
         }
+        LowerBoundAlgorithm::MST => {
+            let mst = match parallelism {
+                Parallelism::SingleThreaded => {
+                    prim::<{ computation_mode::SEQ_COMPUTATION }>(&na_matrix)
+                }
+                Parallelism::MultiThreaded => {
+                    prim::<{ computation_mode::PAR_COMPUTATION }>(&na_matrix)
+                }
+                #[cfg(feature = "mpi")]
+                Parallelism::MPI => prim::<{ computation_mode::MPI_COMPUTATION }>(&na_matrix),
+            };
+            println!("MST lower bound: {}", mst.undirected_edge_weight());
+        }
     }
     #[cfg(feature = "benchmarking")]
     println!("elapsed seconds: {}", now.elapsed().as_secs_f64());
@@ -243,11 +229,6 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
             parallelism,
             lower_bound,
         } => approx_run(algorithm, input_file, parallelism, lower_bound),
-        cli::Commands::MST {
-            algorithm,
-            input_file,
-            parallelism,
-        } => mst_run(algorithm, input_file, parallelism),
         cli::Commands::LowerBound {
             algorithm,
             input_file,

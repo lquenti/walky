@@ -35,16 +35,6 @@ pub enum Commands {
         #[arg(short, long, value_enum)]
         lower_bound: Option<LowerBoundAlgorithm>,
     },
-    /// Compute the Minimal Spanning Tree of a given TSP instance
-    MST {
-        /// The Algorithm to use
-        algorithm: MSTAlgorithm,
-        /// Path to the TSPLIB-XML file
-        input_file: PathBuf,
-        /// Whether to solve it sequential or parallel
-        #[arg(short, long, default_value_t=Parallelism::SingleThreaded, value_enum)]
-        parallelism: Parallelism,
-    },
     /// Compute a lower bound cost of a TSP instance
     LowerBound {
         /// The Algorithm to use
@@ -84,15 +74,11 @@ pub enum ApproxAlgorithm {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-pub enum MSTAlgorithm {
-    /// Prim's algorithm for finding the MST
-    Prim,
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum LowerBoundAlgorithm {
     /// The one tree lower bound
     OneTree,
+    /// The MST lower bound
+    MST,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
