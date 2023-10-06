@@ -1,3 +1,4 @@
+use crate::solvers::approximate::christofides::christofides_exact;
 use crate::{
     datastructures::NAMatrix, mst::prim, parser::TravellingSalesmanProblemInstance,
     solvers::approximate::christofides::christofides,
@@ -137,10 +138,10 @@ fn approx_run(
 
             let solution = match parallelism {
                 Parallelism::SingleThreaded => {
-                    christofides::<{ computation_mode::SEQ_COMPUTATION }>(&graph)
+                    christofides_exact::<{ computation_mode::SEQ_COMPUTATION }>(&graph)
                 }
                 Parallelism::MultiThreaded => {
-                    christofides::<{ computation_mode::PAR_COMPUTATION }>(&graph)
+                    christofides_exact::<{ computation_mode::PAR_COMPUTATION }>(&graph)
                 }
                 #[cfg(feature = "mpi")]
                 Parallelism::MPI => {
