@@ -63,14 +63,14 @@ pub fn christofides_generic<const MODE: usize>(
     );
 
     // 1. find MST
-    let mst = prim::<MODE>(&graph_matr);
+    let mst = prim::<MODE>(graph_matr);
 
     // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST,
     // then compute a minimum-weight maximum matching for the subgraph
-    let matching = matching_computer(&mst, &graph_matr);
+    let matching = matching_computer(&mst, graph_matr);
 
     // 3. union the perfect matching with the MST into a multigraph
-    let multigraph = fill_multigraph_with_mst_and_matching::<MODE>(&graph_matr, &mst, matching);
+    let multigraph = fill_multigraph_with_mst_and_matching::<MODE>(graph_matr, &mst, matching);
 
     // 4. compute a eulerian cycle through the multigraph
     let mut euler_cycle = eulerian_cycle_from_multigraph(multigraph);
