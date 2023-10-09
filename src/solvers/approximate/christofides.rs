@@ -7,7 +7,7 @@ use crate::{
     computation_mode::*,
     datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix, Solution},
     mst::prim,
-    solvers::approximate::matching::approx_min_cost_matching,
+    solvers::{approximate::matching::approx_min_cost_matching, is_hamiltonian_cycle},
 };
 
 /// Computes an approximation to the TSP, using Christofides algorithm.
@@ -82,6 +82,7 @@ pub fn christofides_generic<const MODE: usize>(
         .windows(2)
         .map(|window| graph_matr[(window[0], window[1])])
         .sum();
+    assert!(is_hamiltonian_cycle(hamilton_cycle.as_slice(), graph_matr));
     (sum_cost, hamilton_cycle)
 }
 
