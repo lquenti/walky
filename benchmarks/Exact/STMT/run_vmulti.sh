@@ -7,6 +7,8 @@ XML_PATH="/home/uni11/gwdg1/GWDG/lars.quentin01/code/walky/utils/gen_matrix_fast
 #PROGRAM="/home/lquenti/code/walky/target/release/walky"
 #XML_PATH="/home/lquenti/code/walky/utils/gen_matrix_fast/results/"
 
+mkdir -p ./results
+
 hyperfine \
   --shell=none \
   --warmup 2 \

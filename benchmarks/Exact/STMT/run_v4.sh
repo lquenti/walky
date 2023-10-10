@@ -9,6 +9,8 @@ XML_PATH="/home/uni11/gwdg1/GWDG/lars.quentin01/code/walky/utils/gen_matrix_fast
 
 VX=v4
 
+mkdir -p ./results
+
 hyperfine \
   --shell=none \
   --warmup 2 \
