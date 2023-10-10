@@ -1182,15 +1182,19 @@ fn dynamic_mpi_solver_root(world: &SystemCommunicator, graph_matrix: &NAMatrix) 
                     break;
                 }
                 // if it has at least two times the same digit, its not a valid path
-                let is_unique =
-                    current_prefix.unwrap().len() == current_prefix.unwrap().iter().collect::<FxHashSet<_>>().len();
+                let is_unique = current_prefix.unwrap().len()
+                    == current_prefix
+                        .unwrap()
+                        .iter()
+                        .collect::<FxHashSet<_>>()
+                        .len();
                 if is_unique {
                     break;
                 }
             }
         } else {
             // tell the worker that there is no more work to do (zeroed out vector)
-            let sendbuf = MPICostPath(current_winner.0, [0,0,0]);
+            let sendbuf = MPICostPath(current_winner.0, [0, 0, 0]);
             world.process_at_rank(msg.1).send(&sendbuf);
             number_of_waiting_processes += 1;
         }
