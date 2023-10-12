@@ -13,8 +13,6 @@ use crate::{
 /// This implementation uses for performance reasons a randomized approximation to
 /// the min-const matching problem (see [`super::matching::approx_min_cost_matching`].
 ///
-/// For an implementation with exact min-cost matching implementation see [`christofides_exact`].
-///
 /// For further description, see also [`christofides_generic`].
 pub fn christofides<const MODE: usize>(graph: &NAMatrix) -> Solution {
     christofides_generic::<MODE>(graph, compute_approx_matching::<MODE>)
