@@ -1,4 +1,3 @@
-use crate::solvers::approximate::christofides::christofides_exact;
 use crate::{
     datastructures::NAMatrix, mst::prim, parser::TravellingSalesmanProblemInstance,
     solvers::approximate::christofides::christofides,
@@ -101,47 +100,6 @@ fn approx_run(
                 }
                 Parallelism::MultiThreaded => {
                     christofides::<{ computation_mode::PAR_COMPUTATION }>(&graph)
-                }
-                #[cfg(feature = "mpi")]
-                Parallelism::MPI => {
-                    let universe = mpi::initialize().unwrap();
-                    let world = universe.world();
-                    let rank = world.rank();
-                    let root_process = world.process_at_rank(0);
-
-                    if rank == ROOT_RANK {
-                        christofides::<{ computation_mode::MPI_COMPUTATION }>(&graph)
-                    } else {
-                        let mut tries = 0;
-                        let graph = NAMatrix::from_dim(1);
-                        let (mut matching, graph) = bootstrap_mpi_matching_calc(
-                            &root_process,
-                            &mut [],
-                            rank,
-                            &mut tries,
-                            &graph,
-                        );
-                        mpi_improve_matching(&graph, matching.as_mut_slice(), tries, world);
-                        // non-root process is done here
-                        return Ok(());
-                    }
-                }
-            };
-            println!("Christofides solution weight: {}", solution.0);
-            #[cfg(feature = "benchmarking")]
-            println!("elapsed seconds: {}", now.elapsed().as_secs_f64());
-        }
-        ApproxAlgorithm::ChristofidesExact => {
-            let graph = (&tsp_instance.graph).into();
-            #[cfg(feature = "benchmarking")]
-            let now = Instant::now();
-
-            let solution = match parallelism {
-                Parallelism::SingleThreaded => {
-                    christofides_exact::<{ computation_mode::SEQ_COMPUTATION }>(&graph)
-                }
-                Parallelism::MultiThreaded => {
-                    christofides_exact::<{ computation_mode::PAR_COMPUTATION }>(&graph)
                 }
                 #[cfg(feature = "mpi")]
                 Parallelism::MPI => {

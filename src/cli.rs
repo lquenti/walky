@@ -73,8 +73,6 @@ pub enum ApproxAlgorithm {
     NearestNeighbour,
     /// The Christofides(-Serdyukov) algorithm, with randomized min-cost perfect matching solver
     Christofides,
-    /// The Christofides(-Serdyukov) algorithm, with exact min-cost perfect matching solver
-    ChristofidesExact,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
