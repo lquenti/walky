@@ -69,7 +69,7 @@ pub fn christofides_generic<const MODE: usize>(
         .windows(2)
         .map(|window| graph_matr[(window[0], window[1])])
         .sum();
-    assert!(is_hamiltonian_cycle(hamilton_cycle.as_slice(), graph_matr));
+    debug_assert!(is_hamiltonian_cycle(hamilton_cycle.as_slice(), graph_matr));
     (sum_cost, hamilton_cycle)
 }
 
