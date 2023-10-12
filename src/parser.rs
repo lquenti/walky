@@ -2,7 +2,6 @@
 //! for the [`TravellingSalesmanProblemInstance`] struct.
 use std::ops::{Deref, DerefMut};
 
-use blossom::WeightedGraph;
 use delegate::delegate;
 use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
@@ -126,24 +125,6 @@ impl From<Vec<Vec<Edge>>> for Graph {
     fn from(value: Vec<Vec<Edge>>) -> Self {
         let vec = value.into_iter().map(Vertex::from).collect();
         Graph { vertices: vec }
-    }
-}
-
-impl From<&Graph> for WeightedGraph {
-    /// conversion from the [`Graph`] type of this crate, to the [`WeightedGraph`] type of the
-    /// crate [`blossom`]
-    fn from(value: &Graph) -> Self {
-        WeightedGraph::new(
-            value
-                .iter()
-                .enumerate()
-                .map(|(from, vertices)| {
-                    let adjacent_vertices: Vec<usize> = vertices.iter().map(|e| e.to).collect();
-                    let edge_cost: Vec<f64> = vertices.iter().map(|e| e.cost).collect();
-                    (from, (adjacent_vertices, edge_cost))
-                })
-                .collect(),
-        )
     }
 }
 
