@@ -36,12 +36,15 @@ def find_matched_files(folder_path):
         if nodes_processes:
             measurements = get_measurements(file_path)
             matched_files.append((nodes_processes, measurements))
-
+            print(measurements)
     return matched_files
 
 xs = find_matched_files(FOLDER_PATH)
 
 # do plot logic here
+for x in xs:
+  if len(x[1]) == 0:
+    print(x)
 single_process_per_node = [(x[0][0], statistics.median(x[1])) for x in xs if x[0][1] == 1]
 single_process_per_node.sort(key=lambda x: x[0])
 
