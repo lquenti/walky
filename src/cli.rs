@@ -71,7 +71,7 @@ pub enum ExactAlgorithm {
 pub enum ApproxAlgorithm {
     /// Starting at each vertex, always visiting the lowest possible next vertex
     NearestNeighbour,
-    /// The Christofides(-Serdyukov) algorithm
+    /// The Christofides(-Serdyukov) algorithm, with randomized min-cost perfect matching solver
     Christofides,
 }
 

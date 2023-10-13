@@ -1,5 +1,4 @@
 //! This module contains the Christofides algorithm.
-use blossom::WeightedGraph;
 use nalgebra::DMatrix;
 use rayon::prelude::*;
 
@@ -7,30 +6,16 @@ use crate::{
     computation_mode::*,
     datastructures::{AdjacencyMatrix, Edge, Graph, NAMatrix, Solution},
     mst::prim,
-    solvers::approximate::matching::approx_min_cost_matching,
+    solvers::{approximate::matching::approx_min_cost_matching, is_hamiltonian_cycle},
 };
 
 /// Computes an approximation to the TSP, using Christofides algorithm.
 /// This implementation uses for performance reasons a randomized approximation to
 /// the min-const matching problem (see [`super::matching::approx_min_cost_matching`].
 ///
-/// For an implementation with exact min-cost matching implementation see [`christofides_exact`].
-///
 /// For further description, see also [`christofides_generic`].
 pub fn christofides<const MODE: usize>(graph: &NAMatrix) -> Solution {
     christofides_generic::<MODE>(graph, compute_approx_matching::<MODE>)
-}
-
-/// Computes an approximation to the TSP, using Christofides algorithm.
-/// This implementation is much slower than [`christofides`], since it uses
-/// an exact solution to the min-cost matching problem,
-/// which is also not parallelized.
-///
-/// For an implementation with approximated min-cost matching implementation see [`christofides_exact`].
-///
-/// For further description, see also [`christofides_generic`].
-pub fn christofides_exact<const MODE: usize>(graph: &NAMatrix) -> Solution {
-    christofides_generic::<MODE>(graph, compute_exact_matching)
 }
 
 /// See [the original paper from
@@ -63,14 +48,14 @@ pub fn christofides_generic<const MODE: usize>(
     );
 
     // 1. find MST
-    let mst = prim::<MODE>(&graph_matr);
+    let mst = prim::<MODE>(graph_matr);
 
     // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST,
     // then compute a minimum-weight maximum matching for the subgraph
-    let matching = matching_computer(&mst, &graph_matr);
+    let matching = matching_computer(&mst, graph_matr);
 
     // 3. union the perfect matching with the MST into a multigraph
-    let multigraph = fill_multigraph_with_mst_and_matching::<MODE>(&graph_matr, &mst, matching);
+    let multigraph = fill_multigraph_with_mst_and_matching::<MODE>(graph_matr, &mst, matching);
 
     // 4. compute a eulerian cycle through the multigraph
     let mut euler_cycle = eulerian_cycle_from_multigraph(multigraph);
@@ -82,27 +67,8 @@ pub fn christofides_generic<const MODE: usize>(
         .windows(2)
         .map(|window| graph_matr[(window[0], window[1])])
         .sum();
+    debug_assert!(is_hamiltonian_cycle(hamilton_cycle.as_slice(), graph_matr));
     (sum_cost, hamilton_cycle)
-}
-
-/// This function is being passed to [`christofides_generic`] in the `matching_computer` argument,
-/// see there for more info on what this function does.
-///
-/// This function uses the [`blossom`] crate and it's function [`WeightedGraph::maximin_matching`]
-/// to calculate a perfect matching of minimal weight.
-#[inline]
-fn compute_exact_matching(mst: &Graph, graph: &NAMatrix) -> Vec<[usize; 2]> {
-    // 2. compute subgraph of `graph` only with vertices that have odd degree in the MST,
-    // then compute a minimum-weight maximum matching for the subgraph
-    let subgraph: WeightedGraph = Into::<WeightedGraph>::into(graph)
-        .filter_vertices(|&vertex| mst.vertex_degree(vertex) % 2 == 1);
-
-    //note: the maximal matching is perfect
-    let matching = subgraph
-        .maximin_matching()
-        .expect("Something went wrong: could not compute the maximal minimum weight matching");
-
-    matching.edges().into_iter().map(|(a, b)| [a, b]).collect()
 }
 
 /// This function is being passed to [`christofides_generic`] in the `matching_computer` argument,
