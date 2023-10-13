@@ -81,6 +81,10 @@ pub enum LowerBoundAlgorithm {
     OneTree,
     /// The MST lower bound
     MST,
+    /// The MST lower bound,
+    /// computed with prims algorithm
+    /// using a priority queue
+    MSTQueue,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]

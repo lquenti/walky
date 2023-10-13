@@ -1,3 +1,4 @@
+use crate::mst::prim_with_excluded_node_priority_queue;
 use crate::{
     datastructures::NAMatrix, mst::prim, parser::TravellingSalesmanProblemInstance,
     solvers::approximate::christofides::christofides,
@@ -207,6 +208,13 @@ fn lower_bound_run(
                 #[cfg(feature = "mpi")]
                 Parallelism::MPI => prim::<{ computation_mode::MPI_COMPUTATION }>(&na_matrix),
             };
+            println!("MST lower bound: {}", mst.undirected_edge_weight());
+        }
+        LowerBoundAlgorithm::MSTQueue => {
+            if parallelism != Parallelism::SingleThreaded {
+                eprintln!("Only sequential computation is supported for this algorithm.");
+            }
+            let mst = prim_with_excluded_node_priority_queue(&na_matrix, &[]);
             println!("MST lower bound: {}", mst.undirected_edge_weight());
         }
     }
