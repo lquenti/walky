@@ -125,7 +125,7 @@ Arguments:
 
           Possible values:
           - nearest-neighbour: Starting at each vertex, always visiting the lowest possible next vertex
-          - christofides:      The Christofides(-Serdyukov) algorithm
+          - christofides:      The Christofides(-Serdyukov) algorithm, with randomized min-cost perfect matching solver
 
   <INPUT_FILE>
           Path to the TSPLIB-XML file
@@ -133,7 +133,7 @@ Arguments:
 Options:
   -p, --parallelism <PARALLELISM>
           Whether to solve it sequential or parallel
-
+          
           [default: single-threaded]
 
           Possible values:
@@ -144,8 +144,9 @@ Options:
           Whether to also compute a lower_bound. Optional
 
           Possible values:
-          - one-tree: The one tree lower bound
-          - mst:      The MST lower bound
+          - one-tree:  The one tree lower bound
+          - mst:       The MST lower bound
+          - mst-queue: The MST lower bound, computed with prims algorithm using a priority queue
 
   -h, --help
           Print help (see a summary with '-h')
