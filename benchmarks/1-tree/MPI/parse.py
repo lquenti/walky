@@ -56,12 +56,49 @@ multi_processes_per_node.sort(key=lambda x: x[0])
 print(single_process_per_node)
 print(multi_processes_per_node)
 
-plt.plot(*map(list, zip(*single_process_per_node)), label = "single node", c="blue")
-plt.plot(*map(list, zip(*multi_processes_per_node)), label = "multi nodes", c="red")
+x_data, y_data = map(list, zip(*single_process_per_node))
+#plt.plot(*map(list, zip(*single_process_per_node)), label = "single node", c="blue")
+#plt.plot(*map(list, zip(*multi_processes_per_node)), label = "multi nodes", c="red")
+import numpy as np
+import scipy as sp
+# ~~ use this when plotting on logarithmic axes
+x_log = np.log10(x_data)
+y_log = np.log10(y_data)
+xref=np.logspace(x_log.min(),x_log.max(),num=50)
+reg = sp.stats.linregress(x_log, y_log)
+p = reg.slope
+a = np.power(10, reg.intercept)
+
+plt.plot(xref, a*np.power(xref, p), "b--", alpha=.5,\
+        label="regression: $y \\in \\mathcal{O}(" + " x^{" + f"{p:.1f}" + "})$")
+
+# ~~ use this when plotting on non-logarithmix axes
+#def powerlaw(x, a,p):
+#    return a*(x**p)
+#popt, pcov = sp.optimize.curve_fit(powerlaw, *single_threaded)
+#a, p = popt
+#plt.plot(xref, a*np.power(xref, p), "b--", alpha=.5,\
+#        label="regression: $y \\in \\mathcal{O}(" + " x^{" + f"{p:.1f}" + "})$")
+
+plt.plot(x_data, y_data, label = "single node measurement", marker="o", markersize=3)
+
+x_data, y_data = map(list, zip(*multi_processes_per_node))
+x_log = np.log10(x_data)
+y_log = np.log10(y_data)
+reg = sp.stats.linregress(x_log, y_log)
+xref=np.logspace(x_log.min(),x_log.max(),num=50)
+p = reg.slope
+a = np.power(10, reg.intercept)
+plt.plot(xref, a*np.power(xref, p), "--", alpha=.5, c="red",\
+         label="regression: $y \\in \\mathcal{O}(" + " x^{" + f"{p:.1f}" + "})$")
+plt.plot(x_data, y_data, label = "multi nodes measurement", marker="o", markersize=3, c="red")
 plt.legend()
 plt.xlabel("number of processes")
-plt.ylabel("t")
+plt.ylabel('time [s]')
 plt.title("1-tree Lower Bound MPI (n=3000)")
+
+plt.xscale("log")
+plt.yscale("log")
 
 #plt.show()
 plt.savefig("1-tree-mpi.pdf")
