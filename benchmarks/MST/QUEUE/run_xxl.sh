@@ -9,7 +9,7 @@ WALKYDIR=$ABSPATH/../../..
 
 # cluster conf
 PROGRAM="$WALKYDIR/target/release/walky"
-XML_PATH="$WALKYDIR/utils/gen_matrix_fast/results"
+XML_PATH="/scratch/users/hpctraining75"
 
 # local testing
 #PROGRAM="/home/lquenti/code/walky/target/release/walky"
@@ -17,13 +17,12 @@ XML_PATH="$WALKYDIR/utils/gen_matrix_fast/results"
 
 #rm -rf results
 #mkdir results
-
-module load python/3.9
 module load openmpi
+module load python/3.9.0
 
-for ((N=100; N<=3000; N+=100)); do
-  echo "${N}/3000"
-  command="python3 ../../run_often.py \"$PROGRAM lower-bound mst-queue ${XML_PATH}/$N.xml\" ./results/result_${N}_${PARALLELISM}.json"
+for ((N=4000; N<=10000; N+=1000)); do
+  echo "${N}/10000"
+  command="python3 ../../run_often.py \"$PROGRAM lower-bound mst-queue  ${XML_PATH}/$N.xml\" ./results/result_${N}_${PARALLELISM}.json"
   eval "$command"
 done
 
