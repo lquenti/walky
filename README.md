@@ -175,8 +175,9 @@ Arguments:
           The Algorithm to use
 
           Possible values:
-          - one-tree: The one tree lower bound
-          - mst:      The MST lower bound
+          - one-tree:  The one tree lower bound
+          - mst:       The MST lower bound
+          - mst-queue: The MST lower bound, computed with prims algorithm using a priority queue
 
   <INPUT_FILE>
           Path to the TSPLIB-XML file
@@ -184,7 +185,7 @@ Arguments:
 Options:
   -p, --parallelism <PARALLELISM>
           Whether to solve it sequential or parallel
-
+          
           [default: single-threaded]
 
           Possible values:
