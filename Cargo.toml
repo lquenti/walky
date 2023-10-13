@@ -1,6 +1,6 @@
 [package]
 name = "walky"
-    version = "1.0.2"
+    version = "1.1.0"
 edition = "2021"
 description = "A TSP solver written in Rust"
 homepage = "https://github.com/lquenti/walky"
