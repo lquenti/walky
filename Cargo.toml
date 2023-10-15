@@ -12,6 +12,7 @@ readme = "./README.md"
 exclude = [
     "benchmarks/*",
     "utils/*",
+    "technical-report/*"
 ]
 
 [dependencies]
