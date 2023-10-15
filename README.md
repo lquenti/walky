@@ -1,6 +1,3 @@
-### Note:
-This version is still a work in progress. In particular, it misses a 40-page long formal report describing the ins- and outs of the used algorithms and their performance. Once we are allowed to publish it, this note will be removed.
-
 # Walky - A Highly Parallelized TSP Solver (Supports MPI!)
 
 Walky is a highly parallelized solver for the Travelling Salesman Problem (TSP). It has the following features
@@ -13,6 +10,16 @@ Walky is a highly parallelized solver for the Travelling Salesman Problem (TSP).
 - Well documented, well tested, highly optimized
 
 For a great visual introduction to the topic, the [video essay by reducible](https://www.youtube.com/watch?v=GiDsjIBOVoA) is highly recommended.
+
+## Technical report
+
+Besides the [full docstring coverage on `docs.rs`](https://docs.rs/walky/latest/walky/), the main technical documentation is a very detailed technical report.
+
+See [`./technical-report/final_report.pdf`](./technical-report/final_report.pdf) for a deep dive on
+- How the algorithms work, including visualizations
+- The structure of the Rust project
+- Detailed benchmarks, including MPI analysis for cluster usage
+and much more.
 
 ## Installation
 
