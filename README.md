@@ -207,6 +207,14 @@ Options:
           Print version
 ```
 
+### As a library call
+
+```
+let points = vec![[0.0, 0.0], [0.0, 1.0], [2.0, 3.0]];
+let graph = NAMatrix::from_points(&points);
+let solution = christofides::<{ computation_mode::PAR_COMPUTATION }>(&graph);
+```
+
 ## Algorithms
 
 The algorithms can be found in the technical report (which will be uploaded soon)
