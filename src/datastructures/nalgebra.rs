@@ -13,19 +13,15 @@ impl NAMatrix {
     /// Create from set of x/y points, using the euclidean distance
     pub fn from_points(points: &[[f64; 2]]) -> Self {
         let mut matrix = NAMatrix::from_dim(points.len());
-        for i in 0..points.len() {
-            let from = &points[i];
-            let weights: Vec<f64> = points
-                .par_iter()
-                .skip(i + 1)
-                .map(|to| ((from[0] - to[0]).powi(2) + (from[1] - to[1]).powi(2)).sqrt())
-                .collect();
-            weights.iter().enumerate().for_each(|(j, weight)| {
+        points.iter().enumerate().for_each(|(i, from)| {
+            points.iter().skip(i + 1).enumerate().for_each(|(j, to)| {
                 let j = i + j + 1;
-                matrix[(i, j)] = *weight;
-                matrix[(j, i)] = *weight;
+                let weight = ((from[0] - to[0]).powi(2) + (from[1] - to[1]).powi(2)).sqrt();
+                // uses the fact, that the euclidean distance is symmetric
+                matrix[(i, j)] = weight;
+                matrix[(j, i)] = weight;
             });
-        }
+        });
         matrix
     }
 }
