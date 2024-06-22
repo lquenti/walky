@@ -24,6 +24,27 @@ impl NAMatrix {
         });
         matrix
     }
+    /// Create from set of x/y points, using the euclidean distance.
+    /// Computation is parallelized via rayon.
+    pub fn par_from_points(points: &[[f64; 2]]) -> Self {
+        let mut matrix = NAMatrix::from_dim(points.len());
+        points
+            .par_iter()
+            .zip(matrix.par_column_iter_mut())
+            .for_each(|(from, mut matrix_col_j)| {
+                //let from = &points[i];
+                points
+                    .iter()
+                    .zip(matrix_col_j.iter_mut())
+                    .for_each(|(to, matrix_ij)| {
+                        let weight = ((from[0] - to[0]).powi(2) + (from[1] - to[1]).powi(2)).sqrt();
+                        // cannot use the fact, that the euclidean distance is symmetric,
+                        // due to borrowing rules for parallel iterators
+                        *matrix_ij = weight;
+                    });
+            });
+        matrix
+    }
 }
 
 impl Deref for NAMatrix {
