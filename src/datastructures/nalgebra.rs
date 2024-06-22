@@ -10,7 +10,7 @@ use super::{AdjacencyMatrix, Edge};
 pub struct NAMatrix(pub DMatrix<f64>);
 
 impl NAMatrix {
-    /// Create from set of x/y points
+    /// Create from set of x/y points, using the euclidean distance
     pub fn from_points(points: &[[f64; 2]]) -> Self {
         let mut matrix = NAMatrix::from_dim(points.len());
         for i in 0..points.len() {
