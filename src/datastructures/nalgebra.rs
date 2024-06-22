@@ -145,4 +145,18 @@ mod test {
             }
         }
     }
+
+    #[test]
+    fn test_par_from_points() {
+        let points = vec![[0.0, 0.0], [0.0, 1.0], [2.0, 3.0]];
+        let matrix = NAMatrix::par_from_points(&points);
+        for i in 0..points.len() {
+            for j in 0..points.len() {
+                let dist = ((points[i][0] - points[j][0]).powi(2)
+                    + (points[i][1] - points[j][1]).powi(2))
+                .sqrt();
+                assert_eq!(dist, matrix[(i, j)]);
+            }
+        }
+    }
 }
