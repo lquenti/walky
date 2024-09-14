@@ -96,6 +96,13 @@ impl<const START: usize> SmallSet<START> {
     }
 }
 
+impl<const START: usize> Default for SmallSet<START> {
+    /// yields the empty set
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<const START: usize> fmt::Display for SmallSet<START> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{{")?;
