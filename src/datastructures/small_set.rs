@@ -85,7 +85,7 @@ impl<const START: usize> SmallSet<START> {
         );
         // maxn = 2^{n+1}
         let maxn = 2usize << n;
-        (0..maxn).map(|bits| Self::from_bits(bits))
+        (0..maxn).map(Self::from_bits)
     }
 
     /// returns an iterator over all items in the set
