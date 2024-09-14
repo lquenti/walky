@@ -6,16 +6,91 @@ use std::{
 };
 
 use crate::{
-    datastructures::{AdjacencyMatrix, NAMatrix, Path, Solution},
+    datastructures::{small_set::SmallSet, AdjacencyMatrix, NAMatrix, Path, Solution},
     mst,
 };
 
+use nalgebra::DMatrix;
+use ordered_float::OrderedFloat;
 use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 
 #[cfg(feature = "mpi")]
 use crate::datastructures::{MPICostPath, MPICostRank};
 #[cfg(feature = "mpi")]
 use mpi::{topology::SystemCommunicator, traits::*};
+
+/// The Held-Karp algorithm is a dynamic programming approach on the
+/// TSP. This implementation gives the length of the optimal solution,
+/// but not the solution vector itself.
+///
+/// # Complexity
+/// - time: `O(n^2 * 2^n)`
+/// - space: `O(n * 2^n)`
+///
+/// # panics
+/// if the given graph has more than `usize::BITS` many vertices.
+pub fn held_karp<T>(graph_matrix: &T) -> f64
+where
+    T: AdjacencyMatrix,
+{
+    // attention: the graph_matrix uses 0-based indexing,
+    // but the SmallSet::<1> uses 1-based indexing.
+    // Source for the algorithm formulation:
+    // https://en.wikipedia.org/wiki/Held%E2%80%93Karp_algorithm#Pseudocode
+
+    let n = graph_matrix.dim();
+    assert!(
+        n <= usize::BITS as usize,
+        "The Held-Karp implementation is only valid for graphs with at most {} vertices.",
+        usize::BITS
+    );
+
+    // optimization possibility: chose the initial vector capacity as the binomial coefficient (n+1) choose k.
+    let mut sets: Box<[Vec<SmallSet<1>>]> = (0..=n).map(|_| Vec::<SmallSet<1>>::new()).collect();
+    for set in SmallSet::<1>::enumerate_sets(n) {
+        sets[set.len() as usize].push(set);
+    }
+
+    let mut dp = DMatrix::<f64>::zeros(4 << n, n + 1);
+
+    for k in 2..=n {
+        dp[(SmallSet::<1>::singleton(k).to_bits(), k)] = graph_matrix.get(0, k - 1);
+    }
+
+    // Iterate over all sets, ordered by their length / cardinality.
+    // Skip cardinalities 0 and 1.
+    for sets_of_length in sets.iter().skip(2) {
+        for set in sets_of_length {
+            for k in set.iter() {
+                let set_without_k = set.remove(k);
+                dp[(set.to_bits(), k)] = set
+                    .iter()
+                    .filter(|&m| m != k)
+                    .map(|m| {
+                        OrderedFloat(
+                            dp[(set_without_k.to_bits(), m)] + graph_matrix.get(m - 1, k - 1),
+                        )
+                    })
+                    .min()
+                    .expect("This minimum should always be over an non-enpty set.")
+                    .into_inner();
+            }
+        }
+    }
+    let set_2_to_n = {
+        let mut set = SmallSet::<1>::new();
+        for k in 2..=n {
+            set = set.insert(k);
+        }
+        set
+    };
+
+    (2..=n)
+        .map(|k| OrderedFloat(dp[(set_2_to_n.to_bits(), k)] + graph_matrix.get(k - 1, 0)))
+        .min()
+        .unwrap_or(OrderedFloat(f64::INFINITY))
+        .into_inner()
+}
 
 /// Simplest possible solution: just go through all the nodes in order.
 /// No further optimizations. See [`next_permutation`] on how the permutations are generated.
@@ -1262,6 +1337,7 @@ fn dynamic_mpi_solver_nonroot(world: &SystemCommunicator, graph_matrix: &NAMatri
 #[cfg(test)]
 mod exact_solver {
     use approx::relative_eq;
+    use nalgebra::dmatrix;
 
     use super::*;
     use crate::datastructures::{NAMatrix, VecMatrix};
@@ -1964,5 +2040,25 @@ mod exact_solver {
             vec![3, 2, 1, 0],
         ];
         assert_eq!(expected, results);
+    }
+
+    #[test]
+    fn test_held_karp_triangle() {
+        // 3
+        // |\
+        // | \
+        // 1--2
+        let triangle = NAMatrix(dmatrix![0., 1., 1.; 1., 0., 1.; 1., 1., 0.]);
+        assert_eq!(held_karp(&triangle), 3.);
+    }
+    #[test]
+    fn test_held_karp_square() {
+        // 4--3
+        // |  |
+        // 1--2
+        let square = NAMatrix(
+            dmatrix![0., 1., f64::INFINITY, 1.; 1., 0., 1., f64::INFINITY; f64::INFINITY, 1., 0., 1.; 1.,f64::INFINITY, 1., 0.],
+        );
+        assert_eq!(held_karp(&square), 4.);
     }
 }
