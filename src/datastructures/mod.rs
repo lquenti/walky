@@ -2,6 +2,8 @@
 mod nalgebra;
 mod vecmatrix;
 
+pub mod small_set;
+
 /// Adjacency list based on TSPLIB-XML
 pub use crate::parser::{Edge, Graph, Vertex};
 
