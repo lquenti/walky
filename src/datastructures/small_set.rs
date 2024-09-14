@@ -28,6 +28,11 @@ impl<const START: usize> SmallSet<START> {
         self.data.count_ones()
     }
 
+    /// Checks, if the set is empty.
+    pub const fn is_empty(&self) -> bool {
+        self.data == 0
+    }
+
     /// creates the singleton `{k}`
     pub const fn singleton(k: usize) -> Self {
         debug_assert!(k >= START, "cannot store this k, it is too small");
@@ -138,5 +143,14 @@ mod tests {
     fn test_display_small_set() {
         let set = SmallSet::<1>::from_bits(0b101);
         assert_eq!(set.to_string(), "{1, 3, }");
+    }
+
+    #[test]
+    fn test_is_empty_set() {
+        let set = SmallSet::<3>::new();
+        assert!(set.is_empty());
+
+        let set = set.insert(4);
+        assert!(!set.is_empty(), "set should contain the value 4");
     }
 }
