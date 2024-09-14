@@ -3,7 +3,7 @@ use core::fmt;
 /// `SmallSet` is a set data structure. It my contain integer values from the range
 /// `START..START+`[`usize::BITS`] (exclusive).
 /// The set is represented via one [`usize`] value.
-#[derive(PartialEq, Eq, Clone, Copy, Debug, Hash)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Hash, Default)]
 pub struct SmallSet<const START: usize> {
     data: usize,
 }
@@ -93,13 +93,6 @@ impl<const START: usize> SmallSet<START> {
         (0..usize::BITS)
             .filter(|k| (self.data >> k) & 1 != 0)
             .map(|idx| START + idx as usize)
-    }
-}
-
-impl<const START: usize> Default for SmallSet<START> {
-    /// yields the empty set
-    fn default() -> Self {
-        Self::new()
     }
 }
 
